@@ -17,7 +17,7 @@ import os
 import openai
 from kspdg.pe1.e1_envs import PE1_E1_I3_Env
 
-openai.api_key = "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"
+openai.api_key = "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" # This is a test key, not working anymore
 #os.environ["OPENAI_API_KEY"]
 
 def get_completion_calculator(prompt, model="gpt-3.5-turbo"):

@@ -27,7 +27,7 @@ class OpenInterpreterAgent(KSPDGBaseAgent):
         # print the observation to align with the headers
         print(observation)
         
-        return [1.0, 0, 0, 1.0]
+        return [1.0, 0, 0, 5.0]
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Open Interpreter Agent.')
@@ -40,7 +40,7 @@ if __name__ == "__main__":
         agent=my_agent, 
         env_cls=PE1_E1_I3_Env, 
         env_kwargs=None,
-        runner_timeout=100,     # agent runner that will timeout after 100 seconds
+        runner_timeout=240,     # agent runner that will timeout after 100 seconds
         debug=False)
     runner.run()
 

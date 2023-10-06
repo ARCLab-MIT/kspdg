@@ -21,6 +21,10 @@ class KERBIN:
 Kerbin = Body(parent=None, name="Kerbin", k=KERBIN.MU, R=KERBIN.RADIUS, mass=KERBIN.MASS)
 
 class CodedByGPT4Agent(KSPDGBaseAgent):
+    """
+    Coded by GPT-4 after this conversation
+    https://chat.openai.com/share/f1919fba-e5b2-474e-9c2e-39f878305701
+    """
 
     def __init__(self, history_size=5):
         super().__init__()

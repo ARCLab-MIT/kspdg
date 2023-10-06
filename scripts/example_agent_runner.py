@@ -4,7 +4,7 @@
 
 """
 This example shows how to define agents so that they can be systematically run
-in a specific environment (important for agent evaluation purpuses)
+in a specific environment (important for agent evaluation purposes)
 
 Instructions to Run:
 - Start KSP game application.

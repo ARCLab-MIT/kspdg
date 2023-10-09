@@ -9,8 +9,11 @@
 - “Function calling and other API updates.” Accessed: Sep. 24, 2023. [Online]. Available: https://openai.com/blog/function-calling-and-other-api-updates
 - “microsoft/autogen: Enable Next-Gen Large Language Model Applications. Join our Discord: https://discord.gg/pAbnFJrkgZ.” Accessed: Oct. 04, 2023. [Online]. Available: https://github.com/microsoft/autogen
 
-
+## Tutorials
+- A Hackers’ Guide to Language Models, (Sep. 24, 2023) [Online Video]. Available: https://www.youtube.com/watch?v=jkrNMKz9pWU
 
 ## Papers
 - W. Zhou et al., “Agents: An Open-source Framework for Autonomous Language Agents.” arXiv, Sep. 14, 2023. doi: - R. E. Allen, Y. Rachlin, J. Ruprecht, S. Loughran, J. Varey, and H. Viggh, “SpaceGym: Discrete and Differential Games in Non-Cooperative Space Operations,” in 2023 IEEE Aerospace Conference, Mar. 2023, pp. 1–12. doi: 10.1109/AERO55745.2023.10115968.
 10.48550/arXiv.2309.07870.
+
+  

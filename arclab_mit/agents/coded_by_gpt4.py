@@ -41,41 +41,35 @@ class CodedByGPT4Agent(KSPDGBaseAgent):
         return Orbit.from_vectors(Kerbin, r, v)
 
     def get_action(self, observation):
-        # Append the current observation to history
-        self.history.append(observation)
-        print("Observation:")
+        self.history.append(np.array(observation))
+        print("Current observation:")
         print(observation)
-        
-        # Use history to derive more info (like average velocities, accelerations, etc.)
-        # For demonstration, let's just use the current observation:
-        current_observation = self.history[-1]
-        
-        pursuer_orbit = self.get_orbit_from_observation(current_observation)
-        evader_orbit = self.get_orbit_from_observation(current_observation[0:3] + current_observation[9:15])
+        window_size = min(5, len(self.history))  # Last 5 observations
+        # Convert deque to numpy array for slicing and averaging
+        avg_observation = np.mean(np.array(list(self.history))[-window_size:], axis=0)
 
-        # Compute relative position and velocity
+        pursuer_orbit = self.get_orbit_from_observation(avg_observation)
+        evader_orbit = self.get_orbit_from_observation(np.concatenate([avg_observation[0:3], avg_observation[9:15]]))
+
         rel_pos = (evader_orbit.r - pursuer_orbit.r).value
         rel_vel = (evader_orbit.v - pursuer_orbit.v).value
 
-        # For now, let's make dV align with the relative velocity
         dV_direction = rel_vel / np.linalg.norm(rel_vel)
-        # The magnitude of dV can be set to a fraction of the max thrust, for instance:
-        dV_magnitude = 0.5 * self.VACUUM_MAX_THRUST_FORWARD / current_observation[1]  # This can be refined further
+
+        distance_to_target = np.linalg.norm(rel_pos)
+        dV_magnitude = distance_to_target * self.VACUUM_MAX_THRUST_FORWARD / avg_observation[1]
 
         dV = dV_direction * dV_magnitude
 
-        # Normalize desired dV with respect to maximum possible delta-V
-        throttle_forward = dV[0] / (self.VACUUM_MAX_THRUST_FORWARD / current_observation[1])
-        throttle_right = dV[1] / (self.VACUUM_MAX_THRUST_RIGHT / current_observation[1])
-        throttle_down = dV[2] / (self.VACUUM_MAX_THRUST_DOWN / current_observation[1])
+        throttle_forward = dV[0] / (self.VACUUM_MAX_THRUST_FORWARD / avg_observation[1])
+        throttle_right = dV[1] / (self.VACUUM_MAX_THRUST_RIGHT / avg_observation[1])
+        throttle_down = dV[2] / (self.VACUUM_MAX_THRUST_DOWN / avg_observation[1])
 
-        # Clip values
         throttle_forward = np.clip(throttle_forward, -1.0, 1.0)
         throttle_right = np.clip(throttle_right, -1.0, 1.0)
         throttle_down = np.clip(throttle_down, -1.0, 1.0)
 
-        # Burn duration (can be adjusted based on your strategy)
-        burn_duration = 1.0
+        burn_duration = 1.0  # This could also be dynamically adjusted
         action = [throttle_forward, throttle_right, throttle_down, burn_duration]
         print("Action:")
         print(action)

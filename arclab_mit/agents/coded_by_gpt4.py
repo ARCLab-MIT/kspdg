@@ -2,7 +2,6 @@ from kspdg.agent_api.base_agent import KSPDGBaseAgent
 from kspdg.pe1.e1_envs import PE1_E1_I3_Env
 from kspdg.agent_api.runner import AgentEnvRunner
 
-
 from poliastro.twobody import Orbit
 from poliastro.maneuver import Maneuver
 from poliastro.bodies import Body
@@ -10,15 +9,18 @@ from astropy import units as u
 from collections import deque
 import numpy as np
 
+
 # Define Kerbin
 class KERBIN:
-    G = 9.80665 # standard gravity [m/s/s]
+    G = 9.80665  # standard gravity [m/s/s]
     RADIUS = 6.0e5 * u.m
-    MU = 3.5316e12 * u.m**3 / u.s**2
+    MU = 3.5316e12 * u.m ** 3 / u.s ** 2
     # Mass is derived from MU = G * Mass
     MASS = MU / G
 
+
 Kerbin = Body(parent=None, name="Kerbin", k=KERBIN.MU, R=KERBIN.RADIUS, mass=KERBIN.MASS)
+
 
 class CodedByGPT4Agent(KSPDGBaseAgent):
     """
@@ -41,35 +43,41 @@ class CodedByGPT4Agent(KSPDGBaseAgent):
         return Orbit.from_vectors(Kerbin, r, v)
 
     def get_action(self, observation):
-        self.history.append(np.array(observation))
-        print("Current observation:")
+        # Append the current observation to history
+        self.history.append(observation)
+        print("Observation:")
         print(observation)
-        window_size = min(5, len(self.history))  # Last 5 observations
-        # Convert deque to numpy array for slicing and averaging
-        avg_observation = np.mean(np.array(list(self.history))[-window_size:], axis=0)
 
-        pursuer_orbit = self.get_orbit_from_observation(avg_observation)
-        evader_orbit = self.get_orbit_from_observation(np.concatenate([avg_observation[0:3], avg_observation[9:15]]))
+        # Use history to derive more info (like average velocities, accelerations, etc.)
+        # For demonstration, let's just use the current observation:
+        current_observation = self.history[-1]
 
+        pursuer_orbit = self.get_orbit_from_observation(current_observation)
+        evader_orbit = self.get_orbit_from_observation(current_observation[0:3] + current_observation[9:15])
+
+        # Compute relative position and velocity
         rel_pos = (evader_orbit.r - pursuer_orbit.r).value
         rel_vel = (evader_orbit.v - pursuer_orbit.v).value
 
+        # For now, let's make dV align with the relative velocity
         dV_direction = rel_vel / np.linalg.norm(rel_vel)
-
-        distance_to_target = np.linalg.norm(rel_pos)
-        dV_magnitude = distance_to_target * self.VACUUM_MAX_THRUST_FORWARD / avg_observation[1]
+        # The magnitude of dV can be set to a fraction of the max thrust, for instance:
+        dV_magnitude = 0.5 * self.VACUUM_MAX_THRUST_FORWARD / current_observation[1]  # This can be refined further
 
         dV = dV_direction * dV_magnitude
 
-        throttle_forward = dV[0] / (self.VACUUM_MAX_THRUST_FORWARD / avg_observation[1])
-        throttle_right = dV[1] / (self.VACUUM_MAX_THRUST_RIGHT / avg_observation[1])
-        throttle_down = dV[2] / (self.VACUUM_MAX_THRUST_DOWN / avg_observation[1])
+        # Normalize desired dV with respect to maximum possible delta-V
+        throttle_forward = dV[0] / (self.VACUUM_MAX_THRUST_FORWARD / current_observation[1])
+        throttle_right = dV[1] / (self.VACUUM_MAX_THRUST_RIGHT / current_observation[1])
+        throttle_down = dV[2] / (self.VACUUM_MAX_THRUST_DOWN / current_observation[1])
 
+        # Clip values
         throttle_forward = np.clip(throttle_forward, -1.0, 1.0)
         throttle_right = np.clip(throttle_right, -1.0, 1.0)
         throttle_down = np.clip(throttle_down, -1.0, 1.0)
 
-        burn_duration = 1.0  # This could also be dynamically adjusted
+        # Burn duration (can be adjusted based on your strategy)
+        burn_duration = 1.0
         action = [throttle_forward, throttle_right, throttle_down, burn_duration]
         print("Action:")
         print(action)
@@ -77,12 +85,11 @@ class CodedByGPT4Agent(KSPDGBaseAgent):
 
 
 if __name__ == "__main__":
-    
-    my_agent = CodedByGPT4Agent()    
+    my_agent = CodedByGPT4Agent()
     runner = AgentEnvRunner(
-        agent=my_agent, 
-        env_cls=PE1_E1_I3_Env, 
+        agent=my_agent,
+        env_cls=PE1_E1_I3_Env,
         env_kwargs=None,
-        runner_timeout=240,     # agent runner that will timeout after 100 seconds
+        runner_timeout=240,  # agent runner that will timeout after 100 seconds
         debug=False)
     runner.run()

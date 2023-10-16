@@ -11,6 +11,7 @@
 
 ## Tutorials
 - A Hackers’ Guide to Language Models, (Sep. 24, 2023) [Online Video]. Available: https://www.youtube.com/watch?v=jkrNMKz9pWU
+- Simple Game Tutorial Solving pe1_i3 Mission [Google Drive]. https://drive.google.com/drive/u/4/folders/1W-tDci2dvqc4ZEkBKlanhSMWhxQvNgKy
 
 ## Papers
 - W. Zhou et al., “Agents: An Open-source Framework for Autonomous Language Agents.” arXiv, Sep. 14, 2023. doi: - R. E. Allen, Y. Rachlin, J. Ruprecht, S. Loughran, J. Varey, and H. Viggh, “SpaceGym: Discrete and Differential Games in Non-Cooperative Space Operations,” in 2023 IEEE Aerospace Conference, Mar. 2023, pp. 1–12. doi: 10.1109/AERO55745.2023.10115968.

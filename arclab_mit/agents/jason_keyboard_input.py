@@ -39,7 +39,7 @@ class KeyboardControlledAgent(KSPDGBaseAgent):
         self.forward_throttle = 0
         self.right_throttle = 0
         self.down_throttle = 0
-        self.actions_dict = {
+        self.actions_dict = {                   # Names for all the different columns to append data to, useful for the csv export.
             'throttles': [],
             'time': [],
             'vehicle_mass': [],
@@ -92,6 +92,11 @@ class KeyboardControlledAgent(KSPDGBaseAgent):
             pass
 
     def save_actions(self, observation):
+        """
+            Saves the actions to a dictionary, importing the data from the observation and the activated throttles.
+            Args:
+                observation: observation from the environment
+        """
         if (any([self.forward_throttle, self.right_throttle, self.down_throttle])):
             keys = list(self.actions_dict.keys())
             keys.remove('throttles')
@@ -116,7 +121,7 @@ if __name__ == "__main__":
         agent=keyboard_agent, 
         env_cls=PE1_E1_I3_Env, 
         env_kwargs=None,
-        runner_timeout=5,
+        runner_timeout=50,
         # debug=True
         debug=False
         )

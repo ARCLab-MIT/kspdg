@@ -2,7 +2,6 @@ from kspdg.agent_api.base_agent import KSPDGBaseAgent
 from kspdg.pe1.e1_envs import PE1_E1_I3_Env
 from kspdg.agent_api.runner import AgentEnvRunner
 
-
 from poliastro.twobody import Orbit
 from poliastro.maneuver import Maneuver
 from poliastro.bodies import Body
@@ -10,15 +9,18 @@ from astropy import units as u
 from collections import deque
 import numpy as np
 
+
 # Define Kerbin
 class KERBIN:
-    G = 9.80665 # standard gravity [m/s/s]
+    G = 9.80665  # standard gravity [m/s/s]
     RADIUS = 6.0e5 * u.m
-    MU = 3.5316e12 * u.m**3 / u.s**2
+    MU = 3.5316e12 * u.m ** 3 / u.s ** 2
     # Mass is derived from MU = G * Mass
     MASS = MU / G
 
+
 Kerbin = Body(parent=None, name="Kerbin", k=KERBIN.MU, R=KERBIN.RADIUS, mass=KERBIN.MASS)
+
 
 class CodedByGPT4Agent(KSPDGBaseAgent):
     """
@@ -45,11 +47,11 @@ class CodedByGPT4Agent(KSPDGBaseAgent):
         self.history.append(observation)
         print("Observation:")
         print(observation)
-        
+
         # Use history to derive more info (like average velocities, accelerations, etc.)
         # For demonstration, let's just use the current observation:
         current_observation = self.history[-1]
-        
+
         pursuer_orbit = self.get_orbit_from_observation(current_observation)
         evader_orbit = self.get_orbit_from_observation(current_observation[0:3] + current_observation[9:15])
 
@@ -83,12 +85,11 @@ class CodedByGPT4Agent(KSPDGBaseAgent):
 
 
 if __name__ == "__main__":
-    
-    my_agent = CodedByGPT4Agent()    
+    my_agent = CodedByGPT4Agent()
     runner = AgentEnvRunner(
-        agent=my_agent, 
-        env_cls=PE1_E1_I3_Env, 
+        agent=my_agent,
+        env_cls=PE1_E1_I3_Env,
         env_kwargs=None,
-        runner_timeout=240,     # agent runner that will timeout after 100 seconds
+        runner_timeout=240,  # agent runner that will timeout after 100 seconds
         debug=False)
     runner.run()

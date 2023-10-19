@@ -1,10 +1,15 @@
 import openai
-import argparse
+import os
+from kspdg.agent_api.base_agent import KSPDGBaseAgent
+from kspdg.pe1.e1_envs import PE1_E1_I3_Env
+from kspdg.agent_api.runner import AgentEnvRunner
 
 
-class TextBasedAgent:
+class TextBasedAgent(KSPDGBaseAgent):
     def __init__(self):
-        self.api_key = "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"
+        self.api_key = os.environ.get("OPENAI_API_KEY")
+        if self.api_key == None:
+            raise AssertionError("Please set the OPENAI_API_KEY variable")
         self.system_prompt = ""  # TODO add prompt
         self.observation_history = ""  # TODO add observations
 

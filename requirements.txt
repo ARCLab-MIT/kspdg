@@ -3,4 +3,6 @@ krpc
 open-interpreter
 openai 
 brotli
+os
+
 

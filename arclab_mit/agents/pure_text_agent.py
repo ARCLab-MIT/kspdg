@@ -9,7 +9,9 @@ class TextBasedAgent(KSPDGBaseAgent):
     def __init__(self):
         self.api_key = os.environ.get("OPENAI_API_KEY")
         if self.api_key == None:
-            raise AssertionError("Please set the OPENAI_API_KEY variable")
+            self.api_key = input("Please enter your OPENAI_API_KEY: ")
+            if not self.api_key:
+                raise AssertionError("Please set the OPENAI_API_KEY variable")
         self.system_prompt = ""  # TODO add prompt
         self.observation_history = ""  # TODO add observations
 

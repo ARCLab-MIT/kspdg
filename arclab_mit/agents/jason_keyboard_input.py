@@ -104,6 +104,7 @@ class KeyboardControlledAgent(KSPDGBaseAgent):
             for i, key in enumerate(keys):
                 self.actions_dict[key].append(observation[i])
             print(self.actions_dict)
+            
     def get_action(self, observation):
         """ compute agent's action given observation
         This function is necessary to define as it overrides 
@@ -121,7 +122,7 @@ if __name__ == "__main__":
         agent=keyboard_agent, 
         env_cls=PE1_E1_I3_Env, 
         env_kwargs=None,
-        runner_timeout=50,
+        runner_timeout=300,
         # debug=True
         debug=False
         )

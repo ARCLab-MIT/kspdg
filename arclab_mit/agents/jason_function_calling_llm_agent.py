@@ -4,7 +4,14 @@ from kspdg.agent_api.runner import AgentEnvRunner
 import openai
 import json
 
-openai.api_key = "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"
+import os
+from os.path import join, dirname
+from dotenv import load_dotenv
+
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(dotenv_path)
+
+openai.api_key = os.environ.get('OPENAI_API_KEY')
 
 class LLMAgent(KSPDGBaseAgent):
     """An agent that uses ChatGPT to make decisions based on observations."""

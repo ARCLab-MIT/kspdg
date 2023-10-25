@@ -2,7 +2,7 @@ import sys
 import openai
 import os
 
-kspdg_path = "/Users/eli/SPACEGYM-KSPDG/src/kspdg/base_agent.py"
+kspdg_path = "/Users/eli/SPACEGYM-KSPDG/src/"
 sys.path.append(kspdg_path)
 
 from kspdg.agent_api.base_agent import KSPDGBaseAgent
@@ -42,12 +42,20 @@ class TextBasedAgent:  # (KSPDGBaseAgent)
 
 if __name__ == "__main__":
     text_agent = TextBasedAgent()
+    runner = AgentEnvRunner(
+        agent=text_agent,
+        env_cls=PE1_E1_I3_Env,
+        env_kwargs=None,
+        runner_timeout=240,
+        debug=False,
+    )
+    runner.run()
 
-    # Generate a response based on the system prompt and observation history
-    response_text = text_agent.generate_response()
+    # # Generate a response based on the system prompt and observation history
+    # response_text = text_agent.generate_response()
 
-    # Parse the response to get the action vector
-    action_vector = text_agent.parse_response(response_text)
+    # # Parse the response to get the action vector
+    # action_vector = text_agent.parse_response(response_text)
 
-    print("Generated Response:", response_text)
-    print("Action Vector:", action_vector)
+    # print("Generated Response:", response_text)
+    # print("Action Vector:", action_vector)

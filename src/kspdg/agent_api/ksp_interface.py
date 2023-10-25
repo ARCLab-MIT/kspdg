@@ -28,6 +28,10 @@ def ksp_interface_loop(
             class of (not instance of) KSPDG environment to run agent within
         env_kwargs : dict
             keyword args to be passed when instantiating environment class
+        termination_event : multiprocessing.Event
+            flags all process to terminate (e.g. agent and environment)
+        observation_query_event : multiprocessing.Event
+            when set, runner is requesting an observation from environment
     """
 
     # create a separate logger becasue this is a separate process
@@ -36,7 +40,7 @@ def ksp_interface_loop(
     def observation_handshake():
         # check for environment observation request from solver
         if observation_query_event.is_set():
-            logger.debug("env observation request received. Transmitting...")
+            logger.debug("Env observation request received. Transmitting...")
             obs_conn_send.send(env.get_observation())
             observation_query_event.clear()
 
@@ -65,21 +69,29 @@ def ksp_interface_loop(
         if agent_act is None:
             continue
 
-        # execute DG solution in KSP environment
+        # execute agent's action in KSP environment
         _, _, env_done, env_info = env.step(action=agent_act)
 
-        # terminate loops if successful capture
+        # terminate agent runner loops if environment flags a done episode
         if env_done:
-            logger.info("Environment Done")
+            logger.info("Environment episode done. Terminating runner...")
             termination_event.set()
             break
 
-        if termination_event.is_set():
+        elif not env_done and termination_event.is_set():
+            logger.info("Runner terminated before episode done")
             break
 
+    # check to see if runner is waiting for an observation,
+    # if so, send None so that runner can keep moving and 
+    # identify the termination flag
+    if observation_query_event.is_set():
+        logger.info("Runner termination event has been set. Sending None observation...")
+        obs_conn_send.send(None)
+
     # return procedure for mp.Process
-    logger.info("\nsaving environment info...")
-    return_dict["env_info"] =  env_info
+    logger.info("saving environment info...")
+    return_dict["agent_env_results"] =  env_info
 
     # cleanup
     logger.info("\n~~~Closing KSPDG envrionment~~~\n")

@@ -9,6 +9,9 @@
 - “Function calling and other API updates.” Accessed: Sep. 24, 2023. [Online]. Available: https://openai.com/blog/function-calling-and-other-api-updates
 - “microsoft/autogen: Enable Next-Gen Large Language Model Applications. Join our Discord: https://discord.gg/pAbnFJrkgZ.” Accessed: Oct. 04, 2023. [Online]. Available: https://github.com/microsoft/autogen
 
+## LLMs
+- “OpenLemur/Lemur: Lemur: Open Foundation Models for Language Agents.” [Online]. Available: https://github.com/OpenLemur/Lemur
+
 ## Tutorials
 - A Hackers’ Guide to Language Models, (Sep. 24, 2023) [Online Video]. Available: https://www.youtube.com/watch?v=jkrNMKz9pWU
 - Simple Game Tutorial Solving pe1_i3 Mission [Google Drive]. https://drive.google.com/drive/u/4/folders/1W-tDci2dvqc4ZEkBKlanhSMWhxQvNgKy

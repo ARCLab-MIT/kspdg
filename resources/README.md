@@ -8,6 +8,7 @@
 - linuxgurugamer, “KaptainsLog.” Sep. 27, 2021. Accessed: Sep. 26, 2023. [Online]. Available: https://github.com/linuxgurugamer/KaptainsLog
 - “Function calling and other API updates.” Accessed: Sep. 24, 2023. [Online]. Available: https://openai.com/blog/function-calling-and-other-api-updates
 - “microsoft/autogen: Enable Next-Gen Large Language Model Applications. Join our Discord: https://discord.gg/pAbnFJrkgZ.” Accessed: Oct. 04, 2023. [Online]. Available: https://github.com/microsoft/autogen
+- “OpenAgents: An Open Platform for Language Agents in the Wild.” XLANG NLP Lab, Oct. 27, 2023. Accessed: Oct. 27, 2023. [Online]. Available: https://github.com/xlang-ai/OpenAgents
 
 ## LLMs
 - “OpenLemur/Lemur: Lemur: Open Foundation Models for Language Agents.” [Online]. Available: https://github.com/OpenLemur/Lemur

@@ -13,14 +13,17 @@ from kspdg.agent_api.base_agent import KSPDGBaseAgent
 from kspdg.utils.loggers import create_logger
 from kspdg.agent_api.ksp_interface import ksp_interface_loop
 
-DEFAULT_RUNNER_TIMEOUT = 600 #[s]
 
 class AgentEnvRunner():
+
+    OBSERVATION_POLL_TIMEOUT = 20.0  #[s]
+    ENVIRONMENT_ACTIVATION_TIMEOUT = 20.0  #[s]
+
     def __init__(self, 
         agent:KSPDGBaseAgent,
         env_cls:type[KSPDGBaseEnv], 
         env_kwargs:Dict, 
-        runner_timeout:float=DEFAULT_RUNNER_TIMEOUT, 
+        runner_timeout:float=None, 
         debug:bool=False):
         """ instantiates agent-environment pair and brokers communication between processes
 
@@ -41,7 +44,8 @@ class AgentEnvRunner():
             env_kwargs : dict
                 keyword args to be passed when instantiating environment class
             runner_timeout : float
-                total time to run agent-environment pair
+                total time to run agent-environment pair,
+                if None, wait for environment done
             action_rollout_time_horizon : float
                 amount of time to allocate for an action to rollout in the environment
                 before a new action is queried from the agent
@@ -79,7 +83,7 @@ class AgentEnvRunner():
                 self.env_cls, 
                 self.env_kwargs,
                 obs_conn_send, 
-                act_conn_recv, 
+                act_conn_recv,
                 self.termination_event, 
                 self.observation_query_event,
                 return_dict,
@@ -117,17 +121,20 @@ class AgentEnvRunner():
         while not self.termination_event.is_set():
 
             # request/receive observation from environment
-            self.logger.debug("requesting new environment observation")
+            self.logger.debug("Requesting new environment observation")
             self.observation_query_event.set()
-            if self.obs_conn_recv.poll(timeout=20.0):
+            if self.obs_conn_recv.poll(timeout=self.OBSERVATION_POLL_TIMEOUT):
                 try:
                     observation = self.obs_conn_recv.recv()
+                    if observation is None and self.termination_event.is_set():
+                        self.logger.info("Termination event set during observation request, terminating agent...")
+                        break
                 except EOFError:
-                    self.logger.info("environment closed, terminating agent...")
+                    self.logger.info("Environment closed, terminating agent...")
                     self.termination_event.set()
                     break
             else:
-                self.logger.info("non-responsive executor, terminating agent...")
+                self.logger.info("Non-responsive environment, terminating agent...")
                 self.termination_event.set()
                 break
 
@@ -143,10 +150,11 @@ class AgentEnvRunner():
 
 
             # check for agent timeout
-            if time.time() - policy_loop_start > self.runner_timeout:
-                self.termination_event.set()
-                self.logger.info("\n~~~AGENT TIMEOUT REACHED~~~\n")
-                break
+            if self.runner_timeout is not None:
+                if time.time() - policy_loop_start > self.runner_timeout:
+                    self.termination_event.set()
+                    self.logger.info("\n~~~AGENT TIMEOUT REACHED~~~\n")
+                    break
 
         # cleanup agent
         self.stop_agent()

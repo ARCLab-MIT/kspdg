@@ -4,5 +4,6 @@ open-interpreter
 openai 
 brotli
 os
+fastcore
 
 

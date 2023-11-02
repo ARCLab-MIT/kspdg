@@ -117,14 +117,18 @@ class KeyboardControlledAgent(KSPDGBaseAgent):
         return [self.forward_throttle, self.right_throttle, self.down_throttle, 0.5]
 
 if __name__ == "__main__":
-    keyboard_agent = KeyboardControlledAgent()    
-    runner = AgentEnvRunner(
-        agent=keyboard_agent, 
-        env_cls=PE1_E1_I3_Env, 
-        env_kwargs=None,
-        runner_timeout=300,
-        # debug=True
-        debug=False
-        )
-    runner.run()
-    write_dict_to_csv(keyboard_agent.actions_dict, '../agents_data/pe1_i3_keyboard_agent_actions_' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.csv')
+    try:
+        keyboard_agent = KeyboardControlledAgent()
+        runner = AgentEnvRunner(
+            agent=keyboard_agent,
+            env_cls=PE1_E1_I3_Env,
+            env_kwargs=None,
+            runner_timeout=300,
+            # debug=True
+            debug=False
+            )
+        runner.run()
+    except:
+        print("Saving actions to csv...")
+    finally:
+        write_dict_to_csv(keyboard_agent.actions_dict, '../agents_data/pe1_i3_keyboard_agent_actions_' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.csv')

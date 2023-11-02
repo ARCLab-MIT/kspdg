@@ -41,15 +41,21 @@ class LLMAgent(KSPDGBaseAgent):
                 "type": "object",
                 "properties": {
                     "forward_throttle": {
-                        "type": "integer",
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum" : 1,
                         "description": "The forward throttle.",
                     },
                     "right_throttle": {
-                        "type": "integer",
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum" : 1,
                         "description": "The right throttle.",
                     },
                     "down_throttle": {
-                        "type": "integer",
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum" : 1,
                         "description": "The down throttle.",
                     },
                 },
@@ -92,7 +98,7 @@ class LLMAgent(KSPDGBaseAgent):
             function_name = response["function_call"]["name"]
             if function_name not in available_functions:
                 print("error: LLM called wrong function, name:", function_name)
-                return [0,0,0,0.1]
+                return [0, 0, 0, 0.1]
 
             function_to_call = available_functions[function_name]
             function_args = json.loads(response["function_call"]["arguments"])
@@ -105,7 +111,7 @@ class LLMAgent(KSPDGBaseAgent):
         messages = [{"role": "user", "content": prompt},
                     {"role": "system", "content": "You are a language model calculator that has to calculate the spacecraft's throttles\
                                                    You aim to solve a pursuer evader problem, where you are given the pursuer and evader's position and velocity as well as other parameters.\
-                                                   After reasoning, please call the perform_action function."}]
+                                                   After reasoning, please call the perform_action function giving numerical arguments only."}]
         response = openai.ChatCompletion.create(
             model=model,
             messages=messages,

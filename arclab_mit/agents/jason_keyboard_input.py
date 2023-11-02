@@ -129,6 +129,7 @@ if __name__ == "__main__":
             )
         runner.run()
     except:
-        print("Saving actions to csv...")
+        print("Something went wrong")
     finally:
+        print("Saving data to csv")
         write_dict_to_csv(keyboard_agent.actions_dict, '../agents_data/pe1_i3_keyboard_agent_actions_' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.csv')

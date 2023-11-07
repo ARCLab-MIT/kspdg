@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.2.0] - 2023-11-05
+
+### Added
+
+### Fixed
+
+- Resolve [iss7](https://github.com/mit-ll/spacegym-kspdg/issues/7) by switching print statements to logger statements in lbg1_base.py
+
+### Changed
+
+- Conda environment is no longer pinned to python 3.9 due to removal of poliastro dependency. This will cause the most recent python version (currently 3.12) to be used when creating the environment
+- `evaluate.pyc` script has been replaced by python-version-specific binaries `evaluate.cpython-39.pyc` (for python 3.9) and `evaluate.cpython-312.pyc` (for python 3.12). This is to avoid a `RuntimeError: Bad magic number in .pyc file` when trying to run evaluate.pyc from the wrong python version
+
+### Removed
+
+- poliastro dependency and related functions in `utils.py`. This removes functions for propagating orbits which were used for non-essential metric evals. For further justification, see [this issue](https://github.com/mit-ll/spacegym-kspdg/issues/8)
+- `utils.estimate_capture_dv` and related unit tests which depended upon poliastro
+- `utils.solve_lambert` and related unit tests which depended upon poliastro
+- `utils.propagate_orbit_tof` and related unit tests which depended upon poliastro
+
 ## [v0.1.0] - 2023-10-23
 
 ### Added

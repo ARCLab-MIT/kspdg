@@ -117,7 +117,6 @@ class LadyBanditGuardGroup1Env(KSPDGBaseEnv):
     PARAMS.INFO.K_BANDIT_FUEL_USAGE = "bandit_fuel_usage"
     PARAMS.INFO.K_LADY_FUEL_USAGE = "lady_fuel_usage"
     PARAMS.INFO.K_GUARD_FUEL_USAGE = "guard_fuel_usage"
-    PARAMS.INFO.K_LB_DV_AT_TF = "expected_lady_bandit_deltav_at_final_time"
 
     PARAMS.INFO.K_WEIGHTED_SCORE = "weighted_score"
     PARAMS.INFO.V_SCORE_BG_DIST_SCALE = 1e6
@@ -215,13 +214,13 @@ class LadyBanditGuardGroup1Env(KSPDGBaseEnv):
 
         # Set the bandit as the the active (i.e. human-controlled) vessel
         # and target lady
-        print("Changing active vehicle to Bandit and setting target to Lady...")
+        self.logger.info("Changing active vehicle to Bandit and setting target to Lady...")
         self.conn.space_center.active_vessel = self.vesBandit
         self.conn.space_center.target_vessel = self.vesLady
         time.sleep(0.5)   # give time to re-orient
 
         # orient bandit in target-pointing direction
-        print("Activating Bandit SAS, RCS and orienting to Lady...")
+        self.logger.info("Activating Bandit SAS, RCS and orienting to Lady...")
         self.vesBandit.control.sas = True
         time.sleep(0.1)   # give time to re-orient
         self.vesBandit.control.sas_mode = self.vesBandit.control.sas_mode.target
@@ -415,23 +414,6 @@ class LadyBanditGuardGroup1Env(KSPDGBaseEnv):
             bg_dist=self.min_bg_dist
         )
 
-        # compute approximate delta-v need to intercept non-maneuvering lady
-        if done:
-
-            # call capture dv estimator
-            dv0, dvf = U.estimate_capture_dv(
-                p0_prs=p0_b_cb__rhcbci,
-                v0_prs=v0_b_cb__rhcbci,
-                p0_evd=p0_l_cb__rhcbci,
-                v0_evd=v0_l_cb__rhcbci,
-                tof=self.episode_timeout
-            )
-
-            info[self.PARAMS.INFO.K_LB_DV_AT_TF] = dv0 + dvf
-
-        else:
-            info[self.PARAMS.INFO.K_LB_DV_AT_TF] = None
-
         return info
 
     def get_observation(self) -> ArrayLike:
@@ -535,21 +517,21 @@ class LadyBanditGuardGroup1Env(KSPDGBaseEnv):
             d_vesL_vesB = self.get_lb_relative_distance()
             is_lady_captured = d_vesL_vesB < self.lady_capture_dist
             if is_lady_captured:
-                print("\n~~~SUCCESS! LADY CAPTURED BY BANDIT~~~\n")
+                self.logger.info("\n~~~SUCCESS! LADY CAPTURED BY BANDIT~~~\n")
 
             # check termination condition: bandit-guard proximity
             d_vesB_vesG = self.get_bg_relative_distance()
             is_bandit_captured = d_vesB_vesG < self.bandit_capture_dist
             if is_bandit_captured:
-                print("\n~~~FAILURE! BANDIT CAPTURED BY GUARD~~~\n")
+                self.logger.info("\n~~~FAILURE! BANDIT CAPTURED BY GUARD~~~\n")
 
             # check for episode timeout
             is_timeout = self.vesBandit.met > self.episode_timeout
             if is_timeout:
-                print("\n~~~EPISODE TIMEOUT~~~\n")
+                self.logger.info("\n~~~EPISODE TIMEOUT~~~\n")
 
             if is_lady_captured or is_bandit_captured or is_timeout:
-                print("Terminating episode...\n")
+                self.logger.info("Terminating episode...\n")
                 self.is_episode_done = True
                 self.stop_bot_thread = True
                 self.stop_episode_termination_thread = True

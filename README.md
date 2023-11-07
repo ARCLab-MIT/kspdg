@@ -208,7 +208,7 @@ conda activate kspdg
 
 > :warning: **Troubleshooting**
 >
-> - Note that the `kspdg` library depends upon [poliastro](https://docs.poliastro.space/en/stable/), which in turn depends upon [astropy](https://www.astropy.org/), which in turn depends upon [pyerfa](https://github.com/liberfa/pyerfa)
+> - Note that the `kspdg` library depends upon [astropy](https://www.astropy.org/), which in turn depends upon [pyerfa](https://github.com/liberfa/pyerfa)
 > - **FOR MAC USERS with M1 chipsets:** as of this writing, [pyerfa has not fully supported M1's arm64 architecture](https://github.com/liberfa/pyerfa/issues/83)
 > - This can lead to errors running `kspdg` such as
 >
@@ -333,9 +333,7 @@ This example walks through how to evaluate agents for scoring purpose in the AIA
 
 The agent evaluation process uses a compiled python script located in `scripts/evaluate.cpython-39.pyc` with input arguments in the ordering: `<agent-config-file> <environment-module> <environment-class>`.
 
-The `<agent-config-file>` points to a `.yaml` file that configures the user-defined agent to be evaluated; including a path to the agent module, the name of the agent class to be instantiated, and any arguments to be passed to the agent during instantiation.
-
-The `<environment-module>` and `<environment-class>` define the environment in which the agent will be evaluated. `<environment-module>` points to the module within the `kspdg` library to be imported (using dot-separated notation with the root package `kspdg` omitted as it is assumed) and `<environment-class>` defines the specific environment (aka scenario or challenge problem) to be instantiated.
+See [`evaluation/configs/example_eval_cfg.yaml``](evaluation/configs/example_eval_cfg.yaml) for an example of the config file
 
 Here is a basic example for running an agent-environment evaluation. As with other examples, you begin by:
 
@@ -346,7 +344,8 @@ Here is a basic example for running an agent-environment evaluation. As with oth
 ```bash
 conda activate kspdg # while it is not strictly necessary to use conda environments, it is encouraged for development and debugging purpose
 cd evaluation # working directory is important due to relative path in cfg.yaml
-python evaluate.pyc configs/example_eval_cfg.yaml
+python evaluate.cpython-312.pyc configs/example_eval_cfg.yaml   # assuming your conda env has python 3.12
+                                                                # ohterwise call evaluate.cpython-39.pyc for python 3.9
 ```
 
 This should output to a file in the `results/` subdirectory with a name like `kspdg_results_20231018_125336.txt`. That file has JSON-formatted results that look like

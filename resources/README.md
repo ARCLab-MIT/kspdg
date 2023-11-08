@@ -21,4 +21,6 @@
 - W. Zhou et al., “Agents: An Open-source Framework for Autonomous Language Agents.” arXiv, Sep. 14, 2023. doi: - R. E. Allen, Y. Rachlin, J. Ruprecht, S. Loughran, J. Varey, and H. Viggh, “SpaceGym: Discrete and Differential Games in Non-Cooperative Space Operations,” in 2023 IEEE Aerospace Conference, Mar. 2023, pp. 1–12. doi: 10.1109/AERO55745.2023.10115968.
 10.48550/arXiv.2309.07870.
 
+## Prompts
+- [Voyager prompts for minecraft agents](https://github.com/MineDojo/Voyager/tree/main/voyager/prompts)
   

@@ -3,7 +3,8 @@ import json
 import os
 
 pattern = r"pe\d+_i\d+_keyboard_agent_actions_\d{8}-\d{6}\.csv"
-csv_file_path = r"C:\Users\aleja\Documents\GitHub\arclab_mit\agents_data\""
+csv_file_path = r".\arclab_mit\agents_data\""
+
 def csv_to_json(csv_file_path):
     # Read the CSV file
     df = pd.read_csv(csv_file_path)

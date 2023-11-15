@@ -16,8 +16,7 @@ def load_and_parse_json_history(directory_path : str, problem_env : str):
                     history.extend(data)
             except json.JSONDecodeError:
                 print(f"Error parsing JSON file: {file_path}")
-    result = {'messages': [item for sublist in history for item in sublist['messages']]}
-    print(result)
+    result = [item for sublist in history for item in sublist['messages']]
     return result
 
 def get_history(problem_env: str = ''):

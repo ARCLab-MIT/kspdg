@@ -10,6 +10,9 @@ __pycache__/
 # CSV files
 *.csv
 
+# JSON convos
+history*.json
+
 # C extensions
 *.so
 

@@ -17,7 +17,7 @@ from kspdg.pe1.e1_envs import PE1_E1_I3_Env
 
 @pytest.fixture
 def pe1_e1_i3_env():
-    '''setup and teardown of the PursuitEnvV20220516 object connected to kRPC server'''
+    '''setup and teardown of the pursuit-evade env object connected to kRPC server'''
     env = PE1_E1_I3_Env()
     env.reset()
     yield env
@@ -156,7 +156,29 @@ def test_get_combined_rcs_properties_0(pe1_e1_i3_env):
     # check that weighted score has improved by approaching the other agent
     assert info1[env.PARAMS.INFO.K_WEIGHTED_SCORE] < info0[env.PARAMS.INFO.K_WEIGHTED_SCORE] 
 
-def test_convert_rhntw_to_rhpbody_0(pe1_e1_i3_env):
+def test_convert_rhcbci_to_rhvbody_0(pe1_e1_i3_env):
+    '''check z-axis of rhcbci points north'''
+    # ~~ ARRANGE ~~
+
+    if pe1_e1_i3_env is None:
+        env = PE1_E1_I3_Env()
+        env.reset()
+    else:
+        env = pe1_e1_i3_env
+
+    env.conn.space_center.target_vessel = None
+    env.vesPursue.control.rcs = False
+    time.sleep(0.5)
+    v_exp__rhpbody = [1, 0, 0]
+
+    # vector pointing normal
+    v__rhcbci = [0, 0, 1]
+    env.vesPursue.control.sas_mode = env.vesPursue.control.sas_mode.normal
+    time.sleep(2.0)   # give time to re-orient
+    v__rhpbody = pe1_e1_i3_env.convert_rhcbci_to_rhvbody(v__rhcbci, vessel=env.vesPursue)
+    assert np.allclose(v__rhpbody, v_exp__rhpbody, atol=1e-2)
+
+def test_convert_rhntw_to_rhvbody_0(pe1_e1_i3_env):
     '''check along-track vec in right-hand NTW frame transforms to forward in right-hand pursuer body coords'''
 
     # rename for ease of use
@@ -170,43 +192,156 @@ def test_convert_rhntw_to_rhpbody_0(pe1_e1_i3_env):
     v__rhntw = [0, 1, 0]
     env.vesPursue.control.sas_mode = env.vesPursue.control.sas_mode.prograde
     time.sleep(0.5)   # give time to re-orient
-    v__rhpbody = pe1_e1_i3_env.convert_rhntw_to_rhpbody(v__rhntw)
+    v__rhpbody = pe1_e1_i3_env.convert_rhntw_to_rhvbody(v__rhntw, vessel=env.vesPursue)
     assert np.allclose(v__rhpbody, v_exp__rhpbody, atol=1e-2)
 
     # vector pointing radial out
     v__rhntw = [1, 0, 0]
     env.vesPursue.control.sas_mode = env.vesPursue.control.sas_mode.radial
     time.sleep(2.0)   # give time to re-orient
-    v__rhpbody = pe1_e1_i3_env.convert_rhntw_to_rhpbody(v__rhntw)
+    v__rhpbody = pe1_e1_i3_env.convert_rhntw_to_rhvbody(v__rhntw, vessel=env.vesPursue)
     assert np.allclose(v__rhpbody, v_exp__rhpbody, atol=1e-2)
 
     # vector pointing normal
     v__rhntw = [0, 0, 1]
     env.vesPursue.control.sas_mode = env.vesPursue.control.sas_mode.normal
     time.sleep(2.0)   # give time to re-orient
-    v__rhpbody = pe1_e1_i3_env.convert_rhntw_to_rhpbody(v__rhntw)
+    v__rhpbody = pe1_e1_i3_env.convert_rhntw_to_rhvbody(v__rhntw, vessel=env.vesPursue)
     assert np.allclose(v__rhpbody, v_exp__rhpbody, atol=1e-2)
 
     # vector pointing retrograde
     v__rhntw = [0, -1, 0]
     env.vesPursue.control.sas_mode = env.vesPursue.control.sas_mode.retrograde
     time.sleep(2.0)   # give time to re-orient
-    v__rhpbody = pe1_e1_i3_env.convert_rhntw_to_rhpbody(v__rhntw)
+    v__rhpbody = pe1_e1_i3_env.convert_rhntw_to_rhvbody(v__rhntw, vessel=env.vesPursue)
     assert np.allclose(v__rhpbody, v_exp__rhpbody, atol=1e-2)
 
     # vector pointing in-radial
     v__rhntw = [-1, 0, 0]
     env.vesPursue.control.sas_mode = env.vesPursue.control.sas_mode.anti_radial
     time.sleep(2.0)   # give time to re-orient
-    v__rhpbody = pe1_e1_i3_env.convert_rhntw_to_rhpbody(v__rhntw)
+    v__rhpbody = pe1_e1_i3_env.convert_rhntw_to_rhvbody(v__rhntw, vessel=env.vesPursue)
     assert np.allclose(v__rhpbody, v_exp__rhpbody, atol=1e-2)
 
     # vector pointing retrograde
     v__rhntw = [0, 0, -1]
     env.vesPursue.control.sas_mode = env.vesPursue.control.sas_mode.anti_normal
     time.sleep(2.0)   # give time to re-orient
-    v__rhpbody = pe1_e1_i3_env.convert_rhntw_to_rhpbody(v__rhntw)
+    v__rhpbody = pe1_e1_i3_env.convert_rhntw_to_rhvbody(v__rhntw, vessel=env.vesPursue)
     assert np.allclose(v__rhpbody, v_exp__rhpbody, atol=1e-2)
+
+def test_step_action_space_0(pe1_e1_i3_env):
+    '''check that step accepts various action input formats without error'''
+    # ~~ ARRANGE ~~
+
+    if pe1_e1_i3_env is None:
+        env = PE1_E1_I3_Env()
+        env.reset()
+    else:
+        env = pe1_e1_i3_env
+
+    # ~~ ACT ~~ 
+    env.step([1.0, 0, 0, 1.0])
+    env.step({
+        "burn_vec":[1.0, 0, 0, 1.0],
+        "ref_frame":0
+    })
+    env.step({
+        "burn_vec":[1.0, 0, 0, 1.0],
+        "ref_frame":1
+    })
+    env.step({
+        "burn_vec":[1.0, 0, 0, 1.0],
+        "ref_frame":2
+    })
+
+    with pytest.raises(ValueError):
+        env.step({
+            "burn_vec":[1.0, 0, 0, 1.0],
+            "ref_frame":3
+        })
+
+def test_step_action_ref_frame_1(pe1_e1_i3_env):
+    '''check that inclination only burn does not affect speed or radius'''
+    # ~~ ARRANGE ~~
+
+    if pe1_e1_i3_env is None:
+        env = PE1_E1_I3_Env()
+        env.reset()
+    else:
+        env = pe1_e1_i3_env
+
+    env.conn.space_center.target_vessel = None
+    env.vesPursue.control.rcs = False
+    env.vesPursue.control.sas_mode = env.vesPursue.control.sas_mode.normal
+    time.sleep(2.0)   # give time to re-orient
+    env.vesPursue.control.rcs = True
+
+    # ~~ ACT ~~ 
+    obs0 = env.get_observation()
+    r0 = np.linalg.norm(obs0[3:6])
+    v0 = np.linalg.norm(obs0[6:9])
+    env.step({
+        "burn_vec":[0, 0, 1.0, 1.0],
+        "ref_frame":1
+    })
+    time.sleep(1.0)
+
+    obs1 = env.get_observation()
+    r1 = np.linalg.norm(obs1[3:6])
+    v1 = np.linalg.norm(obs1[6:9])
+
+    # ~~ ASSERT ~~
+    assert np.isclose(r0, r1)
+    assert np.isclose(v0, v1)
+
+def test_step_action_ref_frame_2(pe1_e1_i3_env):
+    '''action in ref frame 2 produces expected delta-vs
+
+    Works by pointing the vehicle in various directions but then 
+    calling a orbit normal burn which should keep radial distance
+    and speed the same
+    '''
+    # ~~ ARRANGE ~~
+
+    if pe1_e1_i3_env is None:
+        env = PE1_E1_I3_Env()
+        env.reset()
+    else:
+        env = pe1_e1_i3_env
+
+    env.conn.space_center.target_vessel = None
+    time.sleep(0.1)
+
+    # ~~ ACT and ASSERT ~~
+
+    for point_dir in [
+        env.vesPursue.control.sas_mode.prograde, 
+        env.vesPursue.control.sas_mode.normal,
+        env.vesPursue.control.sas_mode.radial]:
+
+        env.vesPursue.control.rcs = False
+        env.vesPursue.control.sas_mode = point_dir
+        time.sleep(2.0)   # give time to re-orient
+        env.vesPursue.control.rcs = True
+
+        obs0 = env.get_observation()
+        r0 = np.linalg.norm(obs0[3:6])
+        v0 = np.linalg.norm(obs0[6:9])
+
+        env.step({
+            "burn_vec":[0, 0, 1.0, 1.0],
+            "ref_frame":2
+        })
+        time.sleep(1.0)
+
+        obs1 = env.get_observation()
+        r1 = np.linalg.norm(obs1[3:6])
+        v1 = np.linalg.norm(obs1[6:9])
+
+        # ~~ ASSERT ~~
+        assert np.isclose(r0, r1)
+        assert np.isclose(v0, v1)
 
 if __name__ == "__main__":
     test_get_info_0(None)

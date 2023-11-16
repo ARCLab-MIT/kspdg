@@ -8,7 +8,6 @@ import numpy as np
 
 from types import SimpleNamespace
 from typing import List, Dict
-from threading import Thread
 
 import kspdg.utils.constants as C
 import kspdg.utils.utils as U
@@ -44,6 +43,7 @@ class PursuitEvadeGroup1Env(KSPDGBaseEnv):
     PARAMS.EVADER = SimpleNamespace()
     PARAMS.PURSUER.RCS = SimpleNamespace()
     PARAMS.OBSERVATION = SimpleNamespace()
+    PARAMS.ACTION = SimpleNamespace()
     PARAMS.INFO = SimpleNamespace()
 
     # observation space paramterization
@@ -85,6 +85,10 @@ class PursuitEvadeGroup1Env(KSPDGBaseEnv):
     PARAMS.OBSERVATION.I_EVADER_VY = 13
     PARAMS.OBSERVATION.K_EVADER_VZ = "velz_e_cb__rhcbci"
     PARAMS.OBSERVATION.I_EVADER_VZ = 14
+
+    # action space params
+    PARAMS.ACTION.K_BURN_VEC = "burn_vec"
+    PARAMS.ACTION.K_REF_FRAME = "ref_frame"
 
     # info metric parameters
     PARAMS.INFO.K_CLOSEST_APPROACH = "closest_approach"
@@ -173,16 +177,21 @@ class PursuitEvadeGroup1Env(KSPDGBaseEnv):
         # establish load file for environment resets
         self.loadfile = loadfile
 
-        # establish observation space (see get_observation for mapping)
+        # establish observation space (see get_observation() for mapping)
         self.observation_space = gym.spaces.Box(
             low = np.concatenate((np.zeros(3), -np.inf*np.ones(12))),
             high = np.inf * np.ones(15)
         )
 
-        # establish action space (forward, right, down, time)
-        self.action_space = gym.spaces.Box(
-            low=np.array([-1.0, -1.0, -1.0, 0.0]), 
-            high=np.array([1.0, 1.0, 1.0, 10.0])
+        # establish action space (see step() for mapping)
+        self.action_space = gym.spaces.Dict(
+            {
+                self.PARAMS.ACTION.K_BURN_VEC: gym.spaces.Box(
+                    low=np.array([-1.0, -1.0, -1.0, 0.0]), 
+                    high=np.array([1.0, 1.0, 1.0, 10.0])
+                ),
+                self.PARAMS.ACTION.K_BURN_VEC: gym.spaces.Discrete(2)
+            }
         )
         
         # don't call reset. This allows instantiation and partial testing
@@ -224,60 +233,9 @@ class PursuitEvadeGroup1Env(KSPDGBaseEnv):
         self.pursuer_init_mass = self.vesPursue.mass
         self.evader_init_mass = self.vesEvade.mass
 
-    def _start_bot_threads(self) -> None:
-        """ Start parallel thread to execute Evader's evasive maneuvers
-        """
-
-        self.stop_bot_thread = False
-
-        # check that thread does not exist or is not running
-        if hasattr(self, "evade_thread"):
-            if self.evade_thread.is_alive():
-                raise ConnectionError("evade_thread is already running."+ 
-                    " Close and join evade_thread before restarting")
-
-        self.evade_thread = Thread(target=self.evasive_maneuvers)
-        self.evade_thread.start()
-
     def step(self, action):
-        ''' Apply thrust and torque actuation for specified time duration
-        Args:
-            action : np.ndarray
-                4-tuple of throttle values in 3D and timestep (forward, right, down, tstep)
-
-        Ref: 
-            Actions are in forward, right, down to align with the right-handed version of the
-            Vessel Surface Reference Frame 
-            https://krpc.github.io/krpc/tutorials/reference-frames.html#vessel-surface-reference-frame
-        '''
-
-        # parse and apply action
-        self.vesPursue.control.forward = action[0]
-        self.vesPursue.control.right = action[1]
-        self.vesPursue.control.up = -action[2]
-
-        # execute maneuver for specified time, checking for end
-        # conditions while you do
-        timeout = time.time() + action[3]
-        while True: 
-            if self.is_episode_done or time.time() > timeout:
-                break
-
-        # zero out thrusts
-        self.vesPursue.control.forward = 0.0
-        self.vesPursue.control.up = 0.0
-        self.vesPursue.control.right = 0.0
-
-        # get observation
-        obs = self.get_observation()
-
-        # compute performance metrics
-        info = self.get_info(obs, self.is_episode_done)
-
-        # compute reward
-        rew = self.get_reward(info, self.is_episode_done)
-
-        return obs, rew, self.is_episode_done, info
+        """Apply thrust and torque actuation for specified time duration"""
+        return self.step_v1(action=action, vesAgent=self.vesPursue)
     
     def get_weighted_score(self, dist: float, speed: float, time: float, fuel: float):
         """ Compute a scaled, weighted sum of scoring metrics
@@ -510,6 +468,11 @@ class PursuitEvadeGroup1Env(KSPDGBaseEnv):
         '''compute relative speed between pursuer and evader'''
         v_vesE_vesP__lhpbody = self.vesEvade.velocity(self.vesPursue.reference_frame)
         return np.linalg.norm(v_vesE_vesP__lhpbody)
+    
+    def bot_policy(self):
+        """ Re-direct function to rename generic func to lbg1-specific func
+        """
+        self.evasive_maneuvers()
 
     def evasive_maneuvers(self):
         ''' evasive maneuvers algorithm
@@ -540,86 +503,3 @@ class PursuitEvadeGroup1Env(KSPDGBaseEnv):
                 self.stop_bot_thread = True
                 self.stop_episode_termination_thread = True
 
-    def close(self):
-
-        # handle evasive maneuvering thread
-        self.stop_bot_thread = True
-        self.evade_thread.join()
-
-        # handle episode termination thread
-        self.stop_episode_termination_thread = True
-        self.episode_termination_thread.join()
-
-        # close connection to krpc server
-        self.conn.close()
-
-    def convert_rhntw_to_rhpbody(self, v__rhntw: List[float]) -> List[float]:
-        '''Converts vector in right-handed NTW frame to pursuer vessel right-oriented body frame
-        Args:
-            v__ntw : List[float]
-                3-vector represented in orbital NTW coords
-        
-        Returns
-            v__rhpbody : List[float]
-                3-vector vector represented in pursuer's right-hadded body coords (forward, right, down)
-        
-        Ref:
-            Left-handed vessel body system: 
-                https://krpc.github.io/krpc/tutorials/reference-frames.html#vessel-surface-reference-frame
-            Right-handed NTW system: Vallado, 3rd Edition Sec 3.3.3
-        '''
-
-        # convert right-handed NTW coords to left-handed NTW
-        v__lhntw = U.convert_rhntw_to_lhntw(v__rhntw=v__rhntw)
-
-        # convert left-handed NTW to left-handed vessel body coords
-        # ref: https://krpc.github.io/krpc/python/api/space-center/space-center.html#SpaceCenter.transform_direction
-        # ref: https://krpc.github.io/krpc/tutorials/reference-frames.html#vessel-surface-reference-frame
-        v__lhpbody = list(self.conn.space_center.transform_direction(
-            direction = tuple(v__lhntw),
-            from_ = self.vesPursue.orbital_reference_frame,
-            to = self.vesPursue.reference_frame
-        ))
-
-        # convert left-handed body coords (right, forward, down) to right-handed body coords (forward, right, down)
-        v__rhpbody = U.convert_lhbody_to_rhbody(v__lhbody=v__lhpbody)
-
-        return v__rhpbody
-
-    def convert_rhcbci_to_rhpbody(self, v__rhcbci: List[float]) -> List[float]:
-        '''Converts vector in right-handed celestial-body-centered-inertial frame to 
-        pursuer vessel right-oriented body frame
-
-        Args:
-            v__rhcbci : List[float]
-                3-vector represented in celestial-body-centered-inertial fram 
-                (similar to ECI coords, but we aren't necessarily orbitiing Earth)
-        
-        Returns
-            v__rhpbody : List[float]
-                3-vector vector represented in pursuer's right-hadded body coords (forward, right, down)
-        
-        Ref:
-            Left-handed vessel body system: 
-                https://krpc.github.io/krpc/tutorials/reference-frames.html#vessel-surface-reference-frame
-            KSP's body-centered inertial reference frame is left-handed
-            (see https://krpc.github.io/krpc/python/api/space-center/celestial-body.html#SpaceCenter.CelestialBody.non_rotating_reference_frame)
-            Right-handed ECI system: Vallado, 3rd Edition Sec 3.3
-        '''
-
-        # convert right-handed CBCI coords to left-handed CBCI
-        v__lhcbci = U.convert_rhcbci_to_lhcbci(v__rhcbci=v__rhcbci)
-
-        # convert left-handed CBCI to left-handed vessel body coords
-        # ref: https://krpc.github.io/krpc/python/api/space-center/space-center.html#SpaceCenter.transform_direction
-        # ref: https://krpc.github.io/krpc/tutorials/reference-frames.html#vessel-surface-reference-frame
-        v__lhpbody = list(self.conn.space_center.transform_direction(
-            direction = tuple(v__lhcbci),
-            from_ = self.vesPursue.orbit.body.non_rotating_reference_frame,
-            to = self.vesPursue.reference_frame
-        ))
-
-        # convert left-handed body coords (right, forward, down) to right-handed body coords (forward, right, down)
-        v__rhpbody = U.convert_lhbody_to_rhbody(v__lhbody=v__lhpbody)
-
-        return v__rhpbody

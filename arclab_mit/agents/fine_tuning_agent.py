@@ -115,24 +115,31 @@ class LLMAgent(KSPDGBaseAgent):
         return [0,0,0,0.1]
 
     def get_completion(self, prompt, model="gpt-4-1106-preview"):
-        messages = [{"role": "system", "content": "You are a language model calculator that has to calculate the spacecraft's throttles\
-                                                   You aim to solve a pursuer evader problem, where you are given the pursuer and evader's position and velocity as well as other parameters.\
-                                                   After reasoning, please call the perform_action function giving ###numerical arguments only.###"}]
-        history = JSON_parsing.get_history("pe1_i3")
+        if first_comnpletion:
+            messages = [{"role": "system", "content": "You are a language model calculator that has to calculate the spacecraft's throttles\
+                                                       You aim to solve a pursuer evader problem, where you are given the pursuer and evader's position and velocity as well as other parameters.\
+                                                       After reasoning, please call the perform_action function giving ###numerical arguments only.###"}]
+        else:
+            messages = []
         """
-                    for i in range(0,10):
+        history = JSON_parsing.get_history("pe1_i3")
+        for i in range(0,10):
             messages.append(history[random.randint(0, len(history) - 1)])
         
-        """
         for list in history:
             messages.append(list)
+        """
         messages.append({"role": "user", "content": prompt})
+        time_before = time.time()
         response = openai.ChatCompletion.create(
             model=model,
             messages=messages,
             functions=self.functions,
             temperature=0  # randomness, cool approach if we want to adjust some param with this
         )
+        time_after = time.time()
+        print ("Completion took " + str(time_after - time_before) + " seconds")
+        first_completion = False
 
         return response.choices[0].message
 

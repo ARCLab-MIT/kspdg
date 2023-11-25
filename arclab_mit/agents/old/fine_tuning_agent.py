@@ -19,16 +19,12 @@ import json
 import time
 import numpy
 import sys
-import krpc
 
 import random
 
 from kspdg.agent_api.base_agent import KSPDGBaseAgent
 from kspdg.agent_api.runner import AgentEnvRunner
 from kspdg.pe1.e1_envs import PE1_E1_I3_Env
-from kspdg.pe1.e1_envs import PE1_E1_I2_Env
-from kspdg.pe1.e1_envs import PE1_E1_I1_Env
-from kspdg.pe1.e1_envs import PE1_E1_I4_Env
 
 from os.path import join, dirname
 from dotenv import load_dotenv
@@ -36,10 +32,10 @@ from dotenv import load_dotenv
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 
-openai.api_key = os.environ["OPENAI_API_KEY"]
-openai.api_key = "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"
-print (openai.api_key)
+import JSON_parsing
 
+openai.api_key = os.environ["OPENAI_API_KEY"]
+print (openai.api_key)
 
 class LLMAgent(KSPDGBaseAgent):
     """An agent that uses ChatGPT to make decisions based on observations."""
@@ -54,38 +50,28 @@ class LLMAgent(KSPDGBaseAgent):
                 "properties": {
                     "ft": {
                         "type": "integer",
-#                        "multipleOf" : 0.01,
-                        "minimum": -1,
+                        "minimum": 0,
                         "maximum": 1,
                         "description": "The forward throttle.",
                     },
                     "rt": {
                         "type": "integer",
-#                        "multipleOf" : 0.01,
-                        "minimum": -1,
+                        "minimum": 0,
                         "maximum": 1,
                         "description": "The right throttle.",
                     },
                     "dt": {
                         "type": "integer",
-#                        "multipleOf" : 0.01,
-                        "minimum": -1,
+                        "minimum": 0,
                         "maximum": 1,
                         "description": "The down throttle.",
                     },
                 },
-                "required": ["ft", "rt", "dt"],
+                "required": ["forward_throttle", "right_throttle", "down_throttle"],
             },
         }]
         self.first_completion = True
         self.closest_distance = sys.float_info.max
-
-        # Connect to the KRPC server.
-        self.conn = vessel = krpc.connect()
-        # Get the active vessel
-        self.vessel = self.conn.space_center.active_vessel
-        # Get the body
-        self.body = self.vessel.orbit.body
 
     def evaluation (self, observation):
         position = [observation[9] - observation[3], observation[10] - observation[4], observation[11] - observation[5]]
@@ -96,51 +82,33 @@ class LLMAgent(KSPDGBaseAgent):
         velocity = numpy.linalg.norm(deltav, ord=2)
         if (distance < self.closest_distance):
             self.closest_distance = distance
-            print(f'Closest Distance: {self.closest_distance:.2f}')
-        print(f'Distance: {distance:.2f}')
-        print(f'Velocity: {velocity:.2f}')
-        print(f'Mission time: {mission_time:.2f}')
-        print(f'Fuel: {fuel:.2f}')
+            print(f'Distance: {distance:.2f}')
+            print(f'Velocity: {velocity:.2f}')
+            print(f'Mission time: {mission_time:.2f}')
+            print(f'Fuel: {fuel:.2f}')
         return
 
 
     def get_action(self, observation):
-
-        # NOTE: Observations are given in the celestial body non-rotating reference frame using right-handed coordinate system.
-        # To check it compute vessel position and velocity in the celestial body orbital frame as follows
-        #
-        # celestial_body_frame = self.body.orbital_reference_frame
-        # vessel_frame = self.vessel.reference_frame
-        # vessel_velocity_in_celestial_frame = self.conn.space_center.transform_velocity([0,0,0], [0,0,0], vessel_frame, celestial_body_frame)
-        # vessel_position_in_celestial_frame = self.conn.space_center.transform_position([0,0,0], vessel_frame, celestial_body_frame)
-        #
-        # and confirm that these values are close to persuader position and velocity from observation considering that y-axis has opposite sign
-        # due to the fact the kRPC uses left-handed coordinate system. Differences are due to the movement of the vessel reference frame.
-
         """ compute agent's action given observation """
         print("get_action called, prompting ChatGPT...")
 
-        persuader_position = [observation[3], observation[4], observation[5]]
-        persuader_velocity = [observation[6], observation[7], observation[8]]
-        evader_position = [observation[9], observation[10], observation[11]]
-        evader_velocity = [observation[12], observation[13], observation[14]]
-
-        message = "Best action for\n".join([
+        message = "\n".join([
             f"t: {observation[0]} [s]",
-            f"m: {observation[1]} [kg]",
-            f"f: {observation[2]} [kg]",
-            f"px: {persuader_position[0]} [m]",
-            f"py: {persuader_position[1]} [m]",
-            f"pz: {persuader_position[2]} [m]",
-            f"pvx: {persuader_velocity[0]} [m/s]",
-            f"pvy: {persuader_velocity[1]} [m/s]",
-            f"pvz: {persuader_velocity[2]} [m/s]",
-            f"ex: {evader_position[0]} [m]",
-            f"ey: {evader_position[1]} [m]",
-            f"ez: {evader_position[2]} [m]",
-            f"evx: {evader_velocity[0]} [m/s]",
-            f"evy: {evader_velocity[1]} [m/s]",
-            f"evz: {evader_velocity[2]} [m/s]",
+            f"current vehicle (pursuer) mass: {observation[1]} [kg]",
+            f"current vehicle (pursuer) propellant (mono prop): {observation[2]} [kg]",
+            f"pursuer position x: {observation[3]} [m]",
+            f"pursuer position y: {observation[4]} [m]",
+            f"pursuer position z: {observation[5]} [m]",
+            f"pursuer velocity x: {observation[6]} [m/s]",
+            f"pursuer velocity y: {observation[7]} [m/s]",
+            f"pursuer velocity z: {observation[8]} [m/s]",
+            f"evader position x: {observation[9]} [m]",
+            f"evader position y: {observation[10]} [m]",
+            f"evader position z: {observation[11]} [m]",
+            f"evader velocity x: {observation[12]} [m/s]",
+            f"evader velocity y: {observation[13]} [m/s]",
+            f"evader velocity z: {observation[14]} [m/s]",
         ])
         self.evaluation (observation)
         try:
@@ -155,9 +123,9 @@ class LLMAgent(KSPDGBaseAgent):
     def check_response(self, response):
         print(response)
         if response.get("function_call"):
-            duration = 0.5
+            duration = 1.0
             available_functions = {
-                "perform_action": lambda ft, rt, dt: [ft, rt, dt, duration],
+                "perform_action": lambda forward_throttle, right_throttle, down_throttle: [forward_throttle, right_throttle, down_throttle, duration],
             }
             function_name = response["function_call"]["name"]
             if function_name not in available_functions:
@@ -165,24 +133,7 @@ class LLMAgent(KSPDGBaseAgent):
                 return [0, 0, 0, 0.1]
 
             function_to_call = available_functions[function_name]
-
-            # Get and clean function args
-            function_args = response["function_call"]["arguments"]
-            index = function_args.find("perform_action(")
-            if index != -1:
-                # Extract perform_action arguments
-                function_args = function_args[index+len("perform_action("):]
-                index = function_args.find(")")
-                if index != -1:
-                    function_args = function_args[:index]
-                # Surround arguments with quotes
-                function_args = function_args.replace("ft", '"ft"')
-                function_args = function_args.replace("rt", '"rt"')
-                function_args = function_args.replace("dt", '"dt"')
-                function_args = function_args.replace(',\n}', '\n}')
-            function_args = json.loads(function_args)
-
-            # Get response
+            function_args = json.loads(response["function_call"]["arguments"])
             function_response = function_to_call(**function_args)
             return function_response
 
@@ -190,13 +141,10 @@ class LLMAgent(KSPDGBaseAgent):
         return [0,0,0,0.1]
 
     def get_completion(self, prompt, model="ft:gpt-3.5-turbo-1106:personal::8MFqjElw"):
-        #model = "ft:gpt-3.5-turbo-1106:personal:kspgpt:8NMUS0kq"
-        #model = "gpt-3.5-turbo-1106"
-        model = "ft:gpt-3.5-turbo-1106:personal:kspgpt:8Nd7OJkC"
         if self.first_completion:
             messages = [{"role": "system", "content": "You are a language model calculator that has to calculate the spacecraft's throttles\
                                                        You aim to solve a pursuer evader problem, where you are given the pursuer and evader's position and velocity as well as other parameters.\
-                                                       After reasoning, please call the perform_action function giving ###numerical arguments only.###. Show throttle calculations."}]
+                                                       After reasoning, please call the perform_action function giving ###numerical arguments only.###"}]
         else:
             messages = []
         messages.append({"role": "user", "content": prompt})
@@ -205,7 +153,7 @@ class LLMAgent(KSPDGBaseAgent):
             model=model,
             messages=messages,
             functions=self.functions,
-#            max_tokens = 100, # limit output tokens (enough for valid responses)
+            max_tokens = 70, # limit output tokens (enough for valid responses)
             temperature=0  # randomness, cool approach if we want to adjust some param with this
         )
         time_after = time.time()
@@ -216,25 +164,10 @@ class LLMAgent(KSPDGBaseAgent):
 
 
 if __name__ == "__main__":
-
-    if len(sys.argv) < 2:
-        print("Use: python fine_tuning_agent.py <scenario>")
-        sys.exit(1)
-    scenario = sys.argv[1]
-
-    scenarios = {}
-    scenarios["PE1_E1_I1"] = PE1_E1_I1_Env
-    scenarios["PE1_E1_I2"] = PE1_E1_I2_Env
-    scenarios["PE1_E1_I3"] = PE1_E1_I3_Env
-    scenarios["PE1_E1_I4"] = PE1_E1_I4_Env
-    if not scenario in scenarios:
-        print("Invalid scenario: " + scenario + " not in " + str(scenarios.keys()))
-        sys.exit(1)
-
     my_agent = LLMAgent()
     runner = AgentEnvRunner(
         agent=my_agent,
-        env_cls=scenarios[scenario],
+        env_cls=PE1_E1_I3_Env,
         env_kwargs=None,
         runner_timeout=240,
         debug=False)

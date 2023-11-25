@@ -4,12 +4,12 @@
 
 # Example agent-environment configuration YAML for evaluation
 
-user_id: "Evaluation Test"  # your individual team or user name goes here
-user_key:  "f2dcf0d1-f977-4e8b-9103-d03be0bffeec" # your indivdiualized id goes here (distributed to you by organizers)
-scenario_environment: PE1_E1_I3_V1
+user_id: "MIT-ARCLab"  # your individual team or user name goes here
+user_key:  "a4ec1334-217f-d79c-101f-b0f991590f50" # your indivdiualized id goes here (distributed to you by organizers)
+scenario_environment: PE1_E1_I4_V1
 agent_module_path: "../src/kspdg/agent_api/example_agent.py"  # this must be relative to working directory when script is called
 agent_cls: NaivePursuitAgent
-agent_name: "Naive-Ned" # identifier name for logging purposes. 
+agent_name: "Naive-Ned" # identifier name for logging purposes.
                         # The same agent class with different inputs can lead to different behaviors,
                         # so you should give each instantiation their own name
 agent_kwargs:

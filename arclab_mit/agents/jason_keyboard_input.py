@@ -2,6 +2,7 @@
 from pynput import keyboard
 from kspdg.agent_api.base_agent import KSPDGBaseAgent
 from kspdg.pe1.e1_envs import PE1_E1_I3_Env
+from kspdg.pe1.e1_envs import PE1_E1_I2_Env
 from kspdg.agent_api.runner import AgentEnvRunner
 
 # New imports from the original code
@@ -120,7 +121,7 @@ if __name__ == "__main__":
         keyboard_agent = KeyboardControlledAgent()
         runner = AgentEnvRunner(
             agent=keyboard_agent,
-            env_cls=PE1_E1_I3_Env,
+            env_cls=PE1_E1_I2_Env,
             env_kwargs=None,
             runner_timeout=300,
             # debug=True
@@ -130,5 +131,6 @@ if __name__ == "__main__":
     except:
         print("Something went wrong")
     finally:
-        print("Saving data to csv")
-        write_dict_to_csv(keyboard_agent.actions_dict, '../agents_data/pe1_i3_keyboard_agent_actions_' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.csv')
+        print("Saving data to csv...")
+        write_dict_to_csv(keyboard_agent.actions_dict, '../agents_data/pe1_i2_keyboard_agent_actions_' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.csv')
+        print("Success!" + '../agents_data/pe1_i2_keyboard_agent_actions_' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + ".csv")

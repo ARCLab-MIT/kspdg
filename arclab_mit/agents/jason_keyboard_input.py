@@ -97,13 +97,12 @@ class KeyboardControlledAgent(KSPDGBaseAgent):
             Args:
                 observation: observation from the environment
         """
-        if (any([self.forward_throttle, self.right_throttle, self.down_throttle])):
-            keys = list(self.actions_dict.keys())
-            keys.remove('throttles')
-            self.actions_dict['throttles'].append([self.forward_throttle, self.right_throttle, self.down_throttle])
-            for i, key in enumerate(keys):
-                self.actions_dict[key].append(observation[i])
-            print(self.actions_dict)
+        keys = list(self.actions_dict.keys())
+        keys.remove('throttles')
+        self.actions_dict['throttles'].append([self.forward_throttle, self.right_throttle, self.down_throttle])
+        for i, key in enumerate(keys):
+            self.actions_dict[key].append(observation[i])
+        print(self.actions_dict)
             
     def get_action(self, observation):
         """ compute agent's action given observation

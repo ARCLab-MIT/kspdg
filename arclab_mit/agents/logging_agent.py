@@ -18,12 +18,11 @@ class LoggingAgent(KSPDGBaseAgent):
         return [0,0,0,5]
 
 if __name__ == "__main__":
-    for _ in range(10):
-        runner = AgentEnvRunner(
-            agent=LoggingAgent(), 
-            env_cls=PE1_E1_I3_Env, 
-            env_kwargs=None,
-            runner_timeout=500,
-            debug=False
-            )
-        runner.run()
+    runner = AgentEnvRunner(
+        agent=LoggingAgent(), 
+        env_cls=PE1_E1_I3_Env, 
+        env_kwargs=None,
+        runner_timeout=500,
+        debug=False
+        )
+    runner.run()

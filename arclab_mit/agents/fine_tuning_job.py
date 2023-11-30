@@ -38,7 +38,6 @@ if __name__ == '__main__':
                                            validation_file=validation_file_id,
                                            model="gpt-3.5-turbo-1106",
                                            suffix='KSPGPT',
-#                                           hyperparameters={'n_epochs': '1'})
                                            hyperparameters={'n_epochs': 'auto'})
     jobId = response.id
 

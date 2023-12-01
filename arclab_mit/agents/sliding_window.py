@@ -24,6 +24,10 @@ class SlidingWindow:
         Arguments is a dictionary of arguments passed to perform_action function.
         """
     def append(self, prompt, arguments):
+        """ Append unless window size is 0 """
+        if self.size <= 0:
+            return
+
         """ If the window is full, remove the oldest message."""
         if len(self.window) >= self.size:
             self.window.pop(0)

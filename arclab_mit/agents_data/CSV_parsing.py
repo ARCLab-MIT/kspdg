@@ -38,9 +38,11 @@ def csv_to_json_for_history(csv_file_path : str, problem_env : str, use_short_na
 
     pos = 0
     for _, row in df.iterrows():
+        """
         # Skip [0, 0, 0] actions
         if row['throttles'] == '[0, 0, 0]':
             continue
+        """
 
         input_data = {k: v for k, v in row.items() if k != 'throttles' and k != 'next_throttles'}
         # Eliminate time
@@ -117,6 +119,13 @@ def csv_to_json_for_history(csv_file_path : str, problem_env : str, use_short_na
                 json_history.append(initial_message_structure)
         json_history.append(message_structure)
 
+        # Add message to json list
+        # Hack to append only first item since OpenAI does not support lists in JSON lines just only dictionaries
+        if len(json_history) < sliding_window_size:
+            json_list.append(json_history[:][0])
+        else:
+            json_list.append(json_history[-sliding_window_size:][0])
+        """
         if pos == 0:
             # Add message to json list
             if len(json_history) < sliding_window_size:
@@ -125,6 +134,7 @@ def csv_to_json_for_history(csv_file_path : str, problem_env : str, use_short_na
                 json_list.append(json_history[-sliding_window_size:])
             pos = stride
         pos -= 1
+        """
 
     # Save JSON to a file training and validation file
     json_file_path = csv_file_path.replace('.csv', '.json')
@@ -139,7 +149,7 @@ if __name__== '__main__':
     dotenv_path = "../agents/.env"
     load_dotenv(dotenv_path)
 
-    use_relative_coordinates = os.environ['USE_RELATIVE_COORDINATES']
+    use_relative_coordinates = (os.environ['USE_RELATIVE_COORDINATES'].lower() == "true")
     sliding_window_size = int(os.environ["SLIDING_WINDOW_SIZE"])
     sliding_window_stride = int(os.environ["SLIDING_WINDOW_STRIDE"])
 

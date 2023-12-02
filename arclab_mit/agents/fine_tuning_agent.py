@@ -17,7 +17,7 @@ import os
 import openai
 import json
 import time
-import numpy
+import numpy as np
 import sys
 import krpc
 import datetime
@@ -31,11 +31,21 @@ from kspdg.pe1.e1_envs import PE1_E1_I3_Env
 from kspdg.pe1.e1_envs import PE1_E1_I2_Env
 from kspdg.pe1.e1_envs import PE1_E1_I1_Env
 from kspdg.pe1.e1_envs import PE1_E1_I4_Env
+from kspdg.sb1.e1_envs import SB1_E1_I1_Env
+from kspdg.sb1.e1_envs import SB1_E1_I2_Env
+from kspdg.sb1.e1_envs import SB1_E1_I3_Env
+from kspdg.sb1.e1_envs import SB1_E1_I4_Env
+from kspdg.sb1.e1_envs import SB1_E1_I5_Env
 
 from os.path import join, dirname
 from dotenv import load_dotenv
 
 from sliding_window import SlidingWindow
+
+"""
+from arclab_mit.agents.extended_obs_agent.simulate import closest_approach
+from arclab_mit.agents.common import obs_to_state, state_to_message
+"""
 
 # Load configuration from .env
 #dotenv_path = join(dirname(__file__), 'arclib_mit', 'agents', '.env')
@@ -49,6 +59,83 @@ openai.api_key = os.environ["OPENAI_API_KEY"]
 #dotenv_path = join(dirname(__file__), 'arclib_mit', 'agents', 'alex_prompts.txt')
 dotenv_path = join(dirname(__file__), 'alex_prompts.txt')
 load_dotenv(dotenv_path)
+
+class State():
+    def __init__(self, observation):
+        self.mission_time = observation[0]
+        self.vehicle_mass = observation[1]
+        self.vehicle_propellant = observation[2]
+
+        self.pursuer_position = np.array([observation[3], observation[4], observation[5]])
+        self.pursuer_velocity = np.array([observation[6], observation[7], observation[8]])
+
+        self.evader_position = np.array([observation[9], observation[10], observation[11]])
+        self.evader_velocity = np.array([observation[12], observation[13], observation[14]])
+
+        self.rel_position = self.evader_position - self.pursuer_position
+        self.rel_velocity = self.evader_velocity - self.pursuer_velocity
+
+        self.distance = np.linalg.norm(self.rel_position, ord=2)
+        self.velocity = np.linalg.norm(self.rel_velocity, ord=2)
+
+    def distance_to_target(self):
+        return self.distance
+
+    def velocity_to_target(self):
+        return self.velocity
+
+
+def rotate_vector(vector, axis, angle):
+    # Rotate a vector around an axis by a specified angle (in radians)
+    axis = axis / np.linalg.norm(axis)
+    q = np.append(np.cos(angle / 2), axis * np.sin(angle / 2))
+    rotation_matrix = np.array([
+        [1 - 2 * (q[2]**2 + q[3]**2), 2 * (q[1]*q[2] - q[0]*q[3]), 2 * (q[1]*q[3] + q[0]*q[2])],
+        [2 * (q[1]*q[2] + q[0]*q[3]), 1 - 2 * (q[1]**2 + q[3]**2), 2 * (q[2]*q[3] - q[0]*q[1])],
+        [2 * (q[1]*q[3] - q[0]*q[2]), 2 * (q[2]*q[3] + q[0]*q[1]), 1 - 2 * (q[1]**2 + q[2]**2)]
+    ])
+    rotated_vector = np.dot(rotation_matrix, vector)
+    return rotated_vector
+
+def calculate_prograde_vector (initial, target):
+
+    # Calculate the pitch angle (angle between initial and target to)
+    pitch_angle = np.arccos(np.dot(initial, target) / (np.linalg.norm(initial) * np.linalg.norm(target)))
+
+    # Perform pitch adjustment
+    axis_of_rotation = np.cross(initial, target)
+    prograde_vector = rotate_vector(initial, axis_of_rotation, pitch_angle)
+
+    # print("Aligned Prograde Vector:", prograde_vector)
+    return prograde_vector
+
+def rotation_matrix_from_vectors(vec1, vec2):
+    """ Find the rotation matrix that aligns vec1 to vec2
+    :param vec1: A 3d "source" vector
+    :param vec2: A 3d "destination" vector
+    :return mat: A transform matrix (3x3) which when applied to vec1, aligns it with vec2.
+    """
+    a, b = (vec1 / np.linalg.norm(vec1)).reshape(3), (vec2 / np.linalg.norm(vec2)).reshape(3)
+    v = np.cross(a, b)
+    c = np.dot(a, b)
+    s = np.linalg.norm(v)
+    kmat = np.array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
+    rotation_matrix = np.eye(3) + kmat + kmat.dot(kmat) * ((1 - c) / (s ** 2))
+    return rotation_matrix
+class StateHistory():
+    def __init__(self):
+        self.history = []
+
+    def append(self, observation):
+        self.history.append(observation)
+
+    def len(self):
+        return len(self.history)
+    def get_at(self, pos):
+        return self.history[pos] if pos < len(self.history) else None
+
+    def get_lastState(self):
+        return self.history[-1] if len(self.history) > 0 else None
 
 class LLMAgent(KSPDGBaseAgent):
     """An agent that uses ChatGPT to make decisions based on observations."""
@@ -84,6 +171,8 @@ class LLMAgent(KSPDGBaseAgent):
             },
         }]
 
+        self.stateHistory = StateHistory()
+
         self.first_completion = True
         self.closest_distance = sys.float_info.max
         self.use_relative_coordinates = (os.environ['USE_RELATIVE_COORDINATES'].lower() == "true")
@@ -93,7 +182,7 @@ class LLMAgent(KSPDGBaseAgent):
         self.conn = vessel = krpc.connect()
         # Get the active vessel
         self.vessel = self.conn.space_center.active_vessel
-        # Get the body
+        # Get the celestial body
         self.body = self.vessel.orbit.body
 
         # Model
@@ -112,21 +201,30 @@ class LLMAgent(KSPDGBaseAgent):
         head = ['throttles', 'duration', 'time', 'vehicle_mass', 'vehicle_propellant', 'pursuer_pos_x', 'pursuer_pos_y', 'pursuer_pos_z', 'pursuer_vel_x', 'pursuer_vel_y', 'pursuer_vel_z', 'evader_pos_x', 'evader_pos_y', 'evader_pos_z', 'evader_vel_x', 'evader_vel_y', 'evader_vel_z']
         csv.writer(self.log).writerow(head)
 
+        # Interval between actions
+        self.duration = 0.5
+
+        # Threshold for prograde alignment
+        self.THRESHOLD = 0.1
+
+    # Return sun position in the celestial body orbital reference frame
+    def get_sunPosition(self):
+        reference_frame = self.body.orbital_reference_frame
+        # Get the sun position in the given reference frame
+        sun_pos = self.conn.space_center.bodies['Sun'].position(reference_frame)
+        return sun_pos
 
     def evaluation (self, observation):
-        position = [observation[9] - observation[3], observation[10] - observation[4], observation[11] - observation[5]]
-        deltav = [observation[12] - observation[6], observation[13] - observation[7], observation[14] - observation[8]]
-        mission_time = observation[0]
-        fuel = observation[2]
-        distance = numpy.linalg.norm(position, ord=2)
-        velocity = numpy.linalg.norm(deltav, ord=2)
+        state = State(observation)
+        distance = state.distance_to_target()
         if (distance < self.closest_distance):
             self.closest_distance = distance
         print(f'Closest Distance: {self.closest_distance:.2f}')
-        print(f'Distance: {distance:.2f}')
-        print(f'Velocity: {velocity:.2f}')
-        print(f'Mission time: {mission_time:.2f}')
-        print(f'Fuel: {fuel:.2f}')
+        print(f'Distance: {state.distance:.2f}')
+        print(f'Velocity: {state.velocity:.2f}')
+        print(f'Mission time: {state.mission_time:.2f}')
+        print(f'Fuel: {state.vehicle_propellant:.2f}')
+        print("Sun location: " + str(self.get_sunPosition()))
         return
 
     def save_action(self, observation, action):
@@ -152,17 +250,16 @@ class LLMAgent(KSPDGBaseAgent):
         # vessel_velocity_in_celestial_frame = self.conn.space_center.transform_velocity([0,0,0], [0,0,0], vessel_frame, celestial_body_frame)
         # vessel_position_in_celestial_frame = self.conn.space_center.transform_position([0,0,0], vessel_frame, celestial_body_frame)
         #
-        # and confirm that these values are close to persuader position and velocity from observation considering that y-axis has opposite sign
+        # and confirm that these values are close to pursuer position and velocity from observation considering that y-axis has opposite sign
         # due to the fact the kRPC uses left-handed coordinate system. Differences are due to the movement of the vessel reference frame.
 
         """ compute agent's action given observation """
         print("get_action called, prompting ChatGPT...")
-        self.evaluation (observation)
 
-        persuader_position = [observation[3], observation[4], observation[5]]
-        persuader_velocity = [observation[6], observation[7], observation[8]]
-        evader_position = [observation[9], observation[10], observation[11]]
-        evader_velocity = [observation[12], observation[13], observation[14]]
+        state = State(observation)
+        self.stateHistory.append(state)
+
+        self.evaluation (observation)
 
         message = os.environ['USER_PROMPT'] + " {"
         if self.ignore_time == "False":
@@ -178,69 +275,82 @@ class LLMAgent(KSPDGBaseAgent):
                 message += \
                     str(f"\"m\": {observation[1]}, ") + \
                     str(f"\"f\": {observation[2]}, ") + \
-                    str(f"\"rx\": {evader_position[0] - persuader_position[0]}, ") + \
-                    str(f"\"ry\": {evader_position[1] - persuader_position[1]}, ") + \
-                    str(f"\"rz\": {evader_position[2] - persuader_position[2]}, ") + \
-                    str(f"\"rvx\": {evader_velocity[0] - persuader_velocity[0]}, ") + \
-                    str(f"\"rvy\": {evader_velocity[1] - persuader_velocity[1]}, ") + \
-                    str(f"\"rvz\": {evader_velocity[2] - persuader_velocity[2]}") + \
+                    str(f"\"rx\": {state.rel_position[0]}, ") + \
+                    str(f"\"ry\": {state.rel_position[1]}, ") + \
+                    str(f"\"rz\": {state.rel_position[2]}, ") + \
+                    str(f"\"rvx\": {state.rel_velocity[0]}, ") + \
+                    str(f"\"rvy\": {state.rel_velocity[1]}, ") + \
+                    str(f"\"rvz\": {state.rel_velocity[2]}") + \
                     "}"
             else:
                 message += \
                     str(f"\"vehicle_mass\": {observation[1]}, ") + \
                     str(f"\"vehicle_propellant\": {observation[2]}, ") + \
-                    str(f"\"relative_pos_x\": {evader_position[0] - persuader_position[0]}, ") + \
-                    str(f"\"relative_pos_y\": {evader_position[1] - persuader_position[1]}, ") + \
-                    str(f"\"relative_pos_z\": {evader_position[2] - persuader_position[2]}, ") + \
-                    str(f"\"relative_vel_x\": {evader_velocity[0] - persuader_velocity[0]}, ") + \
-                    str(f"\"relative_vel_y\": {evader_velocity[1] - persuader_velocity[1]}, ") + \
-                    str(f"\"relative_vel_z\": {evader_velocity[2] - persuader_velocity[2]}") + \
+                    str(f"\"relative_pos_x\": {state.rel_position[0]}, ") + \
+                    str(f"\"relative_pos_y\": {state.rel_position[1]}, ") + \
+                    str(f"\"relative_pos_z\": {state.rel_position[2]}, ") + \
+                    str(f"\"relative_vel_x\": {state.rel_velocity[0]}, ") + \
+                    str(f"\"relative_vel_y\": {state.rel_velocity[1]}, ") + \
+                    str(f"\"relative_vel_z\": {state.rel_velocity[2]}") + \
                     "}"
         else:
             if self.use_short_argument_names:
                 message += \
                     str(f"\"m\": {observation[1]}, ") + \
                     str(f"\"f\": {observation[2]}, ") + \
-                    str(f"\"px\": {persuader_position[0]}, ") + \
-                    str(f"\"py\": {persuader_position[1]}, ") + \
-                    str(f"\"pz\": {persuader_position[2]}, ") + \
-                    str(f"\"pvx\": {persuader_velocity[0]}, ") + \
-                    str(f"\"pvy\": {persuader_velocity[1]}, ") + \
-                    str(f"\"pvz\": {persuader_velocity[2]}, ") + \
-                    str(f"\"ex\": {evader_position[0]}, ") + \
-                    str(f"\"ey\": {evader_position[1]}, ") +  \
-                    str(f"\"ez\": {evader_position[2]}, ") + \
-                    str(f"\"evx\": {evader_velocity[0]}, ") + \
-                    str(f"\"evy\": {evader_velocity[1]}, ") + \
-                    str(f"\"evz\": {evader_velocity[2]}") + \
+                    str(f"\"px\": {pursuer_position[0]}, ") + \
+                    str(f"\"py\": {pursuer_position[1]}, ") + \
+                    str(f"\"pz\": {pursuer_position[2]}, ") + \
+                    str(f"\"pvx\": {pursuer_velocity[0]}, ") + \
+                    str(f"\"pvy\": {pursuer_velocity[1]}, ") + \
+                    str(f"\"pvz\": {pursuer_velocity[2]}, ") + \
+                    str(f"\"ex\": {state.evader_position[0]}, ") + \
+                    str(f"\"ey\": {state.evader_position[1]}, ") +  \
+                    str(f"\"ez\": {state.evader_position[2]}, ") + \
+                    str(f"\"evx\": {state.evader_velocity[0]}, ") + \
+                    str(f"\"evy\": {state.evader_velocity[1]}, ") + \
+                    str(f"\"evz\": {state.evader_velocity[2]}") + \
                     "}"
             else:
                 message += \
                     str(f"\"vehicle_mass\": {observation[1]}, ") + \
                     str(f"\"vehicle_propellant\": {observation[2]}, ") + \
-                    str(f"\"persuader_pos_x\":  {persuader_position[0]}, ") + \
-                    str(f"\"persuader_pos_y\":  {persuader_position[1]}, ") + \
-                    str(f"\"persuader_pos_z\":  {persuader_position[2]}, ") + \
-                    str(f"\"persuader_vel_x\":  {persuader_velocity[0]}, ") + \
-                    str(f"\"persuader_vel_y\":  {persuader_velocity[1]}, ") + \
-                    str(f"\"persuader_vel_z\":  {persuader_velocity[2]}, ") + \
-                    str(f"\"evader_pos_x\":  {evader_position[0]}, ") + \
-                    str(f"\"evader_pos_y\":  {evader_position[1]}, ") +  \
-                    str(f"\"evader_pos_z\":  {evader_position[2]}, ") + \
-                    str(f"\"evader_vel_x\":  {evader_velocity[0]}, ") + \
-                    str(f"\"evader_vel_y\":  {evader_velocity[1]}, ") + \
-                    str(f"\"evader_vel_z\":  {evader_velocity[2]}") + \
+                    str(f"\"pursuer_pos_x\":  {state.pursuer_position[0]}, ") + \
+                    str(f"\"pursuer_pos_y\":  {state.pursuer_position[1]}, ") + \
+                    str(f"\"pursuer_pos_z\":  {state.pursuer_position[2]}, ") + \
+                    str(f"\"pursuer_vel_x\":  {state.pursuer_velocity[0]}, ") + \
+                    str(f"\"pursuer_vel_y\":  {state.pursuer_velocity[1]}, ") + \
+                    str(f"\"pursuer_vel_z\":  {state.pursuer_velocity[2]}, ") + \
+                    str(f"\"evader_pos_x\":  {state.evader_position[0]}, ") + \
+                    str(f"\"evader_pos_y\":  {state.evader_position[1]}, ") +  \
+                    str(f"\"evader_pos_z\":  {state.evader_position[2]}, ") + \
+                    str(f"\"evader_vel_x\":  {state.evader_velocity[0]}, ") + \
+                    str(f"\"evader_vel_y\":  {state.evader_velocity[1]}, ") + \
+                    str(f"\"evader_vel_z\":  {state.evader_velocity[2]}") + \
                     "}"
 
         # Generate prompt
         messages = []
+        messages.append({"role": "system", "content": os.environ['SYSTEM_PROMPT']})
         # Add system prompt if this is the first completion
+        """
         if self.first_completion:
             messages.append({"role": "system", "content": os.environ['SYSTEM_PROMPT']})
+        """
         # Append messages from the sliding window
         for item in self.sliding_window.get_messages():
             messages.append(item)
-        # Add user prompt for current observation
+
+        """"
+        # Add hint to query best action for current observation
+        # Estimate closest approach and time when both vehicles stop accelerating
+        closest_state, closest_time = closest_approach(obs_to_state(observation), 30)
+
+        hint = str(f"If your spacecraft and the evader both stop accelerating, this will be the simulated closest approach (happens at time {closest_time}s): {state_to_message(closest_state)}\n")
+        messages.append({"role": "user", "content": hint})
+        """
+
+        # Add user prompt to query best action for current observation
         messages.append({"role": "user", "content": message})
         prompt = messages
 
@@ -250,6 +360,61 @@ class LLMAgent(KSPDGBaseAgent):
         except Exception as e:
             print ("Exception: " + str(e))
             action = [0,0,0,0.1]
+
+        if action[3] == self.duration:
+            # If throttle is [0, 0, 0] and
+            if action[0] == 0 and action[1] == 0 and action[2] == 0:
+                if self.scenario.startswith('PE1'):
+                    # Add randomness to align prograde vector with relative position
+                    random_value = random.random()
+                    if random_value >= 0.5:
+                        vel_pos_frame = calculate_prograde_vector(state.rel_velocity, state.rel_position)
+                        vel_pos_frame = vel_pos_frame / np.linalg.norm(vel_pos_frame)
+
+                        if state.velocity > 50:
+                            action[0] = -1 # backward
+                        else:
+                            action[0] = 1 # forward
+
+                        # Rotate to align prograde vector with relative position
+                        if abs(vel_pos_frame[1]) > self.THRESHOLD:
+                            if vel_pos_frame[1] > 0:
+                                action[1] = -1 # left
+                            else:
+                                action[1] = 1 # right
+                        if abs(vel_pos_frame[1]) > self.THRESHOLD:
+                            if vel_pos_frame[2] > 0:
+                                action[2] = 1 # up
+                            else:
+                                action[1] = -1 # down
+
+                elif self.scenario.startswith('SB1'):
+
+                    # Add randomness to align prograde vector with relative position
+                    random_value = random.random()
+                    if random_value >= 0.5:
+                        vel_pos_frame = calculate_prograde_vector(state.rel_velocity, self.get_sunPosition()-state.pursuer_position)
+                        vel_pos_frame = vel_pos_frame / np.linalg.norm(vel_pos_frame)
+
+                        """
+                        if state.velocity > 50:
+                            action[0] = -1  # backward
+                        else:
+                            action[0] = 1  # forward
+                        """
+
+                        # Rotate to align prograde vector with relative position
+                        self.THRESHOLD = 1e-6
+                        if abs(vel_pos_frame[1]) > self.THRESHOLD:
+                            if vel_pos_frame[1] > 0:
+                                action[1] = -1  # left
+                            else:
+                                action[1] = 1  # right
+                        if abs(vel_pos_frame[1]) > self.THRESHOLD:
+                            if vel_pos_frame[2] > 0:
+                                action[2] = 1  # up
+                            else:
+                                action[1] = -1  # down
 
         # Add response to sliding window
         self.sliding_window.append(prompt=message,
@@ -285,35 +450,46 @@ class LLMAgent(KSPDGBaseAgent):
         #   "{\n  \"ft\": 1,\n  \"rt\": -1,\n  \"dt\": 1\n}"
         #   "ft: 1, rt: -1, dt: 1"
         #   "ft -1 rt 1 dt 0"
-        #   "{-1, 0, 0}
+        #   "-1, 0, 0"
         # Transform to the first form
-        index = function_args.find("{")
+        index = function_args.find("ft")
         if index == -1:
-            # Add "{" and "}"
-            function_args = "{" + function_args + "}"
-            # Add colons
-            index = function_args.find(":")
+            # Case
+            #   "1, 0 ,0"
+            action = function_args.split(',')
+            function_args = "{\n  \"ft\": " + action[0] + ",\n  \"rt\": " + action[1] + ",\n  \"dt\": " + action[2] + "\n}"
+        else:
+            index = function_args.find("{")
             if index == -1:
-                colons = ":"
-            else:
-                colons = ""
-            index = function_args.find(",")
-            if index == -1:
-                comma = ","
-            else:
-                comma = ""
+                # Cases:
+                #   "ft: 1, rt: -1, dt: 1"
+                #   "ft -1 rt 1 dt 0"
 
-            # Surround argument names with quotes
-            function_args = function_args.replace("ft", '"ft"' + colons)
-            function_args = function_args.replace("rt", comma + '"rt"' + colons)
-            function_args = function_args.replace("dt", comma + '"dt"' + colons)
+                # Add "{" and "}"
+                function_args = "{" + function_args + "}"
+                # Add colons
+                index = function_args.find(":")
+                if index == -1:
+                    colons = ":"
+                else:
+                    colons = ""
+                index = function_args.find(",")
+                if index == -1:
+                    comma = ","
+                else:
+                    comma = ""
+
+                # Surround argument names with quotes
+                function_args = function_args.replace("ft", '"ft"' + colons)
+                function_args = function_args.replace("rt", comma + '"rt"' + colons)
+                function_args = function_args.replace("dt", comma + '"dt"' + colons)
 
         return function_args
 
     def check_response(self, response):
         print("Response message: " + str(response))
         if response.get("function_call"):
-            duration = 0.5
+            duration = self.duration
             available_functions = {
                 "perform_action": lambda ft, rt, dt: [ft, rt, dt, duration],
             }
@@ -340,7 +516,7 @@ class LLMAgent(KSPDGBaseAgent):
 
         return function_response
 
-    def get_completion(self, prompt, model="ft:gpt-3.5-turbo-1106:personal::8MFqjElw"):
+    def get_completion(self, prompt, model="ft:gpt-3.5-turbo-1106:personal::8P6jHmTx"):
 
         print ("Prompt:")
         for message in prompt:
@@ -371,10 +547,17 @@ if __name__ == "__main__":
     scenarios["PE1_E1_I2"] = PE1_E1_I2_Env
     scenarios["PE1_E1_I3"] = PE1_E1_I3_Env
     scenarios["PE1_E1_I4"] = PE1_E1_I4_Env
+    scenarios["SB1_E1_I1"] = SB1_E1_I1_Env
+    scenarios["SB1_E1_I2"] = SB1_E1_I2_Env
+    scenarios["SB1_E1_I3"] = SB1_E1_I3_Env
+    scenarios["SB1_E1_I4"] = SB1_E1_I4_Env
+    scenarios["SB1_E1_I5"] = SB1_E1_I5_Env
 
     if not scenario in scenarios:
         print("Invalid scenario: " + scenario + " not in " + str(scenarios.keys()))
         sys.exit(1)
+
+    print("Running scenario: " + scenario)
 
     my_agent = LLMAgent()
     runner = AgentEnvRunner(

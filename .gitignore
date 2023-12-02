@@ -12,12 +12,17 @@ __pycache__/
 
 # JSON convos
 history*.json
+pe*.json
+sb*.json
 
 #JSONL convos
 *.jsonl
 
 #txt files
-*.txt
+*pe*.txt
+*sb*.txt
+kspdg*.txt
+result*.txt
 
 # C extensions
 *.so

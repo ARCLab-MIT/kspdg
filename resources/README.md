@@ -16,10 +16,15 @@
 ## Tutorials
 - A Hackers’ Guide to Language Models, (Sep. 24, 2023) [Online Video]. Available: https://www.youtube.com/watch?v=jkrNMKz9pWU
 - Simple Game Tutorial Solving pe1_i3 Mission [Google Drive]. https://drive.google.com/drive/u/4/folders/1W-tDci2dvqc4ZEkBKlanhSMWhxQvNgKy
-
+- [1hr Talk] Intro to Large Language Models [Online Video]. Available: https://www.youtube.com/watch?v=zjkBMFhNj_g&t=0s
+- A Survey of Techniques for Maximizing LLM Performance [Online Video]. Available: https://www.youtube.com/watch?v=ahnGLM-RC1Y
+- A video demoing 'ollama' for dockerizing LLMs [Online Video]. Available: https://youtu.be/jib1wjgIaa4?si=vhI8nc2MXOpVYcf6
 ## Papers
 - W. Zhou et al., “Agents: An Open-source Framework for Autonomous Language Agents.” arXiv, Sep. 14, 2023. doi: - R. E. Allen, Y. Rachlin, J. Ruprecht, S. Loughran, J. Varey, and H. Viggh, “SpaceGym: Discrete and Differential Games in Non-Cooperative Space Operations,” in 2023 IEEE Aerospace Conference, Mar. 2023, pp. 1–12. doi: 10.1109/AERO55745.2023.10115968.
 10.48550/arXiv.2309.07870.
+- N. Shinn, F. Cassano, E. Berman, A. Gopinath, K. Narasimhan, and S. Yao, “Reflexion: Language Agents with Verbal Reinforcement Learning.” arXiv, Oct. 10, 2023. doi: 10.48550/arXiv.2303.11366.
+- 
+Harsha Nori, Yin Tat Lee, Sheng Zhang, et al. "Can Generalist Foundation Models Outcompete Special-Purpose Tuning? Case Study in Medicine" arXiv, Nov. 28, 2023. doi: 10.48550/arXiv.2311.16452
 
 ## Prompts
 - [Voyager prompts for minecraft agents](https://github.com/MineDojo/Voyager/tree/main/voyager/prompts)

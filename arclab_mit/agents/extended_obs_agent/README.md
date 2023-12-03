@@ -1,2 +1,0 @@
-I'm trying to make an llm agent that gets additional derived observations as input, like relative position, relative velocity, etc.
-This folder contains some neccessary files and auxillary files/agents to do this

@@ -17,6 +17,7 @@ import os
 import openai
 import json
 
+import time
 import random
 
 from kspdg.agent_api.base_agent import KSPDGBaseAgent
@@ -30,8 +31,11 @@ dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 
 import JSON_parsing
+import time
 
 openai.api_key = os.environ["OPENAI_API_KEY"]
+print ("OpenAI API key: " + openai.api_key)
+
 
 
 class LLMAgent(KSPDGBaseAgent):
@@ -73,6 +77,8 @@ class LLMAgent(KSPDGBaseAgent):
         """ compute agent's action given observation """
         print("get_action called, prompting ChatGPT...")
 
+        inicio = time.time()
+
         message = "\n".join([
             f"mission elapsed time: {observation[0]} [s]",
             f"current vehicle (pursuer) mass: {observation[1]} [kg]",
@@ -92,12 +98,16 @@ class LLMAgent(KSPDGBaseAgent):
         ])
         action = self.check_response(response=self.get_completion(prompt=message))
         print(action)
+
+        fin = time.time()
+        print("Tiempo de ejecución: ", fin - inicio)
+
         return action
 
     def check_response(self, response):
         print(response)
         if response.get("function_call"):
-            duration = 10.0
+            duration = 1.0
             available_functions = {
                 "perform_action": lambda forward_throttle, right_throttle, down_throttle: [forward_throttle, right_throttle, down_throttle, duration],
             }
@@ -115,9 +125,12 @@ class LLMAgent(KSPDGBaseAgent):
         return [0,0,0,0.1]
 
     def get_completion(self, prompt, model="gpt-4-1106-preview"):
-        messages = [{"role": "system", "content": "You are a language model calculator that has to calculate the spacecraft's throttles\
-                                                   You aim to solve a pursuer evader problem, where you are given the pursuer and evader's position and velocity as well as other parameters.\
-                                                   After reasoning, please call the perform_action function giving ###numerical arguments only.###"}]
+        if self.first_completion:
+            messages = [{"role": "system", "content": "You are a language model calculator that has to calculate the spacecraft's throttles\
+                                                       You aim to solve a pursuer evader problem, where you are given the pursuer and evader's position and velocity as well as other parameters.\
+                                                       After reasoning, please call the perform_action function giving ###numerical arguments only.###"}]
+        else:
+            messages = []
         history = JSON_parsing.get_history("pe1_i3")
         """
                     for i in range(0,10):
@@ -127,12 +140,16 @@ class LLMAgent(KSPDGBaseAgent):
         for list in history:
             messages.append(list)
         messages.append({"role": "user", "content": prompt})
+        time_before = time.time()
         response = openai.ChatCompletion.create(
             model=model,
             messages=messages,
             functions=self.functions,
             temperature=0  # randomness, cool approach if we want to adjust some param with this
         )
+        time_after = time.time()
+        print ("Completion took " + str(time_after - time_before) + " seconds")
+        self.first_completion = False
 
         return response.choices[0].message
 

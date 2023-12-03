@@ -1,7 +1,12 @@
 """install pynput"""
 from pynput import keyboard
 from kspdg.agent_api.base_agent import KSPDGBaseAgent
+from kspdg.pe1.e1_envs import PE1_E1_I4_Env
 from kspdg.pe1.e1_envs import PE1_E1_I3_Env
+from kspdg.pe1.e1_envs import PE1_E1_I2_Env
+from kspdg.pe1.e1_envs import PE1_E1_I1_Env
+from kspdg.sb1.e1_envs import SB1_E1_I5_Env
+
 from kspdg.agent_api.runner import AgentEnvRunner
 
 # New imports from the original code
@@ -55,7 +60,10 @@ class KeyboardControlledAgent(KSPDGBaseAgent):
             'evader_pos_z': [],
             'evader_vel_x': [],
             'evader_vel_y': [],
-            'evader_vel_z': []
+            'evader_vel_z': [],
+            'sun_pos_x': [],
+            'sun_pos_y': [],
+            'sun_pos_z': [],
         }
 
         listener = keyboard.Listener(on_press=self.on_key_press, on_release=self.on_key_release)
@@ -97,19 +105,27 @@ class KeyboardControlledAgent(KSPDGBaseAgent):
             Args:
                 observation: observation from the environment
         """
-        if (any([self.forward_throttle, self.right_throttle, self.down_throttle])):
-            keys = list(self.actions_dict.keys())
-            keys.remove('throttles')
-            self.actions_dict['throttles'].append([self.forward_throttle, self.right_throttle, self.down_throttle])
-            for i, key in enumerate(keys):
-                self.actions_dict[key].append(observation[i])
-            print(self.actions_dict)
+        keys = list(self.actions_dict.keys())
+        keys.remove('throttles')
+        self.actions_dict['throttles'].append([self.forward_throttle, self.right_throttle, self.down_throttle])
+        for i, key in enumerate(keys):
+            self.actions_dict[key].append(observation[i])
+        print(self.actions_dict)
             
     def get_action(self, observation):
         """ compute agent's action given observation
         This function is necessary to define as it overrides 
         an abstract method
         """
+
+        """ add sun position for SB (sun-blocking) scenarios
+        """
+        if self.scenario.startswith('SB'):
+            reference_frame = self.body.orbital_reference_frame
+            sun_pos = self.conn.space_center.bodies['Sun'].position(reference_frame)
+            observation.append(sun_pos.x)
+            observation.append(sun_pos.y)
+            observation.append(sun_pos.z)
 
         # Return action list
         print(self.forward_throttle, self.right_throttle, self.down_throttle)
@@ -121,9 +137,9 @@ if __name__ == "__main__":
         keyboard_agent = KeyboardControlledAgent()
         runner = AgentEnvRunner(
             agent=keyboard_agent,
-            env_cls=PE1_E1_I3_Env,
+            env_cls=SB1_E1_I5_Env,
             env_kwargs=None,
-            runner_timeout=300,
+            runner_timeout=240,
             # debug=True
             debug=False
             )
@@ -131,5 +147,7 @@ if __name__ == "__main__":
     except:
         print("Something went wrong")
     finally:
-        print("Saving data to csv")
-        write_dict_to_csv(keyboard_agent.actions_dict, '../agents_data/pe1_i3_keyboard_agent_actions_' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.csv')
+        print("Saving data to csv...")
+        if(len(keyboard_agent.actions_dict['throttles']) > 10):
+            write_dict_to_csv(keyboard_agent.actions_dict, '../agents_data/pe1_i4_keyboard_agent_actions_' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.csv')
+            print("Success!" + '../agents_data/pe1_i4_keyboard_agent_actions_' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + ".csv")

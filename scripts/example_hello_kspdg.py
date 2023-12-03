@@ -15,9 +15,10 @@ Instructions to Run:
 """
 
 from kspdg.pe1.e1_envs import PE1_E1_I3_Env
+from kspdg.pe1.e1_envs import PE1_E1_I2_Env
 
 # instantiate and reset the environment to populate game
-env = PE1_E1_I3_Env()
+env = PE1_E1_I2_Env()
 env.reset()
 
 # Environment automatically orients pursuer toward target

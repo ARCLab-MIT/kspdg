@@ -12,6 +12,7 @@
 
 ## LLMs
 - “OpenLemur/Lemur: Lemur: Open Foundation Models for Language Agents.” [Online]. Available: https://github.com/OpenLemur/Lemur
+- "LLM Visualization" https://bbycroft.net/llm
 
 ## Tutorials
 - A Hackers’ Guide to Language Models, (Sep. 24, 2023) [Online Video]. Available: https://www.youtube.com/watch?v=jkrNMKz9pWU

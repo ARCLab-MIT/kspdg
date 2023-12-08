@@ -215,7 +215,6 @@ if __name__ == "__main__":
         print("Something went wrong: " + str(e))
     finally:
         print("Saving data to csv...")
-        sys.exit(0)
         if(len(keyboard_agent.actions_dict['throttles']) > 10):
             write_dict_to_csv(keyboard_agent.actions_dict, '../agents_data/pe1_e3_i2_keyboard_agent_actions_' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.csv')
             print("Success!" + '../agents_data/pe1_e3_i2_keyboard_agent_actions_' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + ".csv")

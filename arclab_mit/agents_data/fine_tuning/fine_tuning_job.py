@@ -3,12 +3,15 @@ import os
 import openai
 import time
 from dotenv import load_dotenv
+from os.path import join, dirname
 
 if __name__ == '__main__':
     # Load configuration from .env
-    load_dotenv()
+    dotenv_path = join(dirname(__file__), '..\\..\\agents\\.env')
+    load_dotenv(dotenv_path)
     openai.api_key = os.environ['OPENAI_API_KEY']
 #    openai.api_key = os.environ['OPENAI_API_KEY_MITM']
+    base_model = os.environ["BASE_MODEL"]
 
     if len(sys.argv) < 2:
         print("Use: python fine_tuning_job.py <training_file> [<validation_file>]")
@@ -36,7 +39,7 @@ if __name__ == '__main__':
     # Create a fine-tuning job
     response = openai.FineTuningJob.create(training_file=train_full_response_file.id,
                                            validation_file=validation_file_id,
-                                           model="gpt-3.5-turbo-1106",
+                                           model=base_model,
                                            suffix='KSPGPT',
                                            hyperparameters={'n_epochs': 'auto'})
     jobId = response.id
@@ -44,7 +47,7 @@ if __name__ == '__main__':
     print ("Created fine tunning job: " + jobId)
     print (response)
 
-    with open('result_' + jobId + '.txt', 'w') as result:
+    with open('results/result_' + jobId + '.txt', 'w') as result:
         result.write ("Created fine tunning job:")
         result.write (str(response))
         status_completion_list = ['succeeded', 'failed', 'cancelled']

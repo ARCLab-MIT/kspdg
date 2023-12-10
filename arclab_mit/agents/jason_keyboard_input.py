@@ -191,6 +191,7 @@ class KeyboardControlledAgent(KSPDGBaseAgent):
             observation.append(sun_pos[1])
             observation.append(sun_pos[2])
 
+
         # Return action list
         print(self.forward_throttle, self.right_throttle, self.down_throttle)
         self.save_actions(observation)
@@ -217,4 +218,5 @@ if __name__ == "__main__":
         print("Saving data to csv...")
         if(len(keyboard_agent.actions_dict['throttles']) > 10):
             write_dict_to_csv(keyboard_agent.actions_dict, '../agents_data/pe1_e3_i2_keyboard_agent_actions_' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.csv')
-            print("Success!" + '../agents_data/pe1_e3_i2_keyboard_agent_actions_' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + ".csv")
+            print("Success!" + '../agents_data/sb1_e1_i5_keyboard_agent_actions_' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + ".csv")
+

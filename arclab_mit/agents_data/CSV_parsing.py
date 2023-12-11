@@ -1,23 +1,20 @@
-import pandas as pd
+import ast
 import json
+import math
 import os
 import sys
-import random
-
-import ast
-
-from os.path import join, dirname
-from dotenv import load_dotenv
 
 import numpy as np
-import math
+import pandas as pd
+from dotenv import load_dotenv
 
-dotenv_path = join(dirname(__file__), '..\\agents\.env')
+#dotenv_path = join(dirname(__file__), '..\\agents\.env')
+dotenv_path = os.path.join(os.path.dirname(__file__), '..', 'agents', '.env')
 load_dotenv(dotenv_path)
 
 # Load configuration from alex_prompts.txt
 #dotenv_path = join(dirname(__file__), 'arclib_mit', 'agents', 'alex_prompts.txt')
-dotenv_path = join(dirname(__file__), '..\\agents\\alex_prompts.txt')
+dotenv_path = os.path.join(os.path.dirname(__file__), '..', 'agents', 'alex_prompts.txt')
 load_dotenv(dotenv_path)
 
 pattern = r"pe\d+_i\d+_keyboard_agent_actions_\d{8}-\d{6}\.csv"
@@ -104,6 +101,7 @@ def csv_to_json_for_history(csv_file_path : str, problem_env : str, use_short_na
     if "ASSISTANT_CONTENT" in os.environ:
         assistant_content = os.environ["ASSISTANT_CONTENT"]
 
+    """
     # Append system prompt at the beginning
     if problem_env.startswith('pe'):
         system_message_structure = {
@@ -121,6 +119,7 @@ def csv_to_json_for_history(csv_file_path : str, problem_env : str, use_short_na
             ]
         }
         json_list.append(system_message_structure)
+    """
 
     pos = 0
     skip_null_actions = False
@@ -257,10 +256,11 @@ def csv_to_json_for_history(csv_file_path : str, problem_env : str, use_short_na
             # Evaluate distance and alignment angle
             angle_gauge, distance_gauge = evaluate_angle_distance(alignment_angle, distance)
             chain_of_thought = os.environ['SB_CHAIN_OF_THOUGHT'].format(angle_gauge, alignment_angle, distance_gauge, distance)
+            question = os.environ['SB_USER_PROMPT'].format(json.dumps(input_data))
             message_structure = {
                 "messages": [
 #                    {"role": "system", "content": os.environ['SB_SYSTEM_PROMPT']},
-                    {"role": "user", "content": chain_of_thought + os.environ['SB_USER_PROMPT'] + json.dumps(input_data)},
+                    {"role": "user", "content": chain_of_thought + question},
                     {"role": "assistant", "content": assistant_content, "function_call": {"name": "perform_action",
                                                                              "arguments": "{\"ft\": " + str(output_label[0]) + ", \"rt\": " +
                                                                                                         str(output_label[1]) + ", \"dt\": " +
@@ -298,7 +298,7 @@ def csv_to_json_for_history(csv_file_path : str, problem_env : str, use_short_na
         """
 
         # Add message to json list
-        messages_in_window = []
+        messages_in_window = [{"role": "system", "content": os.environ['SB_SYSTEM_PROMPT']}]
         start = -(sliding_window_size+1)
         if len(json_history) < -start:
             start = 0

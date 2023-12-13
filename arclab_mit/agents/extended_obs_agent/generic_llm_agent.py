@@ -26,14 +26,12 @@ class LLMAgent(KSPDGBaseAgent):
         pass
 
     def get_action(self, observation):
-        # print("=" * 100)
-        # print("=" * 100)
-        # print("get_action called, prompting ChatGPT...")
+        print("=" * 60)
         print(observation[0])
         user_message = self.get_message(observation)
         self.messages.append({"role": "user", "content": user_message})
         
-        # print(user_message)
+        print(user_message)
         # print("=" * 30)
         
         # repeatedly pop the first pair (index 1 and 2) to not exceed context length
@@ -81,7 +79,7 @@ class LLMAgent(KSPDGBaseAgent):
             print("Time taken (seconds): ", time.time() - start_time)
             response_message = response["choices"][0]["message"]
         
-        # print(response_message)
+        print(response_message["content"])
 
         self.messages.append(response_message)
         
@@ -106,6 +104,7 @@ class LLMAgent(KSPDGBaseAgent):
             try:
                 function_args = json.loads(response_message["function_call"]["arguments"])
                 function_response = function_to_call(**function_args)
+                print("throttles:", function_response["burn_vec"][0:3])
                 return function_response
             except:
                 print("error occured while parsing arguments")

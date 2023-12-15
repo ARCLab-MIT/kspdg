@@ -482,7 +482,7 @@ class LLMAgent(KSPDGBaseAgent):
         if len(self.json_history) < self.sliding_window_size:
             padding = [{"role": "user", "content": user_prompt},
                        {"role": "assistant", "content": None, "function_call": {"name": "perform_action",
-                                                                                "arguments": "{\"ft\": 0, \"rt\": 0, \"dt\": 0}"}}]
+                                                                                "arguments": "{\"ft\": \"none\", \"rt\": \"none\", \"dt\": \"none\"}"}}]
 
             for i in range(self.sliding_window_size):
                 self.json_history.append(padding)
@@ -491,7 +491,7 @@ class LLMAgent(KSPDGBaseAgent):
         messages = []
 
         # Adding system prompt for each sample is necessary
-        #messages.append({"role": "system", "content": self.system_prompt})
+        messages.append({"role": "system", "content": self.system_prompt})
 
         # Add messages from the history
         if self.sliding_window_size > 0:
@@ -566,11 +566,12 @@ class LLMAgent(KSPDGBaseAgent):
                                     action[1] = -1  # down
 
         # Add message structure to history
+        enum_action = self.translate_action(action)
         self.json_history.append([{"role": "user", "content": user_prompt},
                                   {"role": "assistant",
                                    "content": None,
                                    "function_call": {"name": "perform_action",
-                                                     "arguments": "{\"ft\": " + str(action[0]) + ", \"rt\": " + str(action[1]) + ", \"dt\": " + str(action[2]) + "}"}}])
+                                                     "arguments": "{\"ft\": " + str(enum_action[0]) + ", \"rt\": " + str(enum_action[1]) + ", \"dt\": " + str(enum_action[2]) + "}"}}])
 
         print("Response action: " + str(action))
         return action
@@ -637,6 +638,27 @@ class LLMAgent(KSPDGBaseAgent):
                 function_args = function_args.replace("dt", comma + '"dt"' + colons)
 
         return function_args
+
+    def translate_action(self, action):
+        result = ["none", "none", "none"]
+
+        if action[0] == -1:
+            result[0] = 'backward'
+        elif action[0] == 1:
+            result[0] = 'forward'
+
+        if action[1] == -1:
+            result[1] = 'left'
+        elif action[1] == 1:
+            result[1] = 'right'
+
+        if action[2] == -1:
+            result[2] = 'down'
+        elif action[2] == 1:
+            result[2] = 'up'
+
+        result = ["\"" + item + "\"" for item in result]
+        return result
 
     def translate_enum_action(self, action):
         result = [0, 0, 0, action[3]]

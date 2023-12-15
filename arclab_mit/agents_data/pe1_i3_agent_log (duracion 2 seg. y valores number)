@@ -1,0 +1,581 @@
+C:\Users\turnz\anaconda3\envs\kspdg\python.exe C:\MIT\kspdg\arclab_mit\agents\fine_tuning_agent.py 
+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
+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
+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
+kspdg.agent_api.ksp_interface - INFO - 
+~~~Instantiating KSPDG envrionment~~~
+
+kspdg.base_envs - INFO - Connected to kRPC server
+kspdg.base_envs - INFO - Changing active vehicle...
+kspdg.base_envs - INFO - Activating Pursuer SAS, RCS and orienting to Evader...
+get_action called, prompting ChatGPT...
+Distance: 2618.00
+Velocity: 7.70
+Mission time: 4.78
+Fuel: 1200.00
+Completion took 2.837501049041748 seconds
+{
+  "role": "assistant",
+  "content": "I will calculate the spacecraft's throttles based on the given parameters.",
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":0.5,\"rt\":0.3,\"dt\":0.2}"
+  }
+}
+[0.5, 0.3, 0.2, 2.0]
+get_action called, prompting ChatGPT...
+Completion took 1.6274986267089844 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":0.5,\"rt\":0.2,\"dt\":-0.3}"
+  }
+}
+[0.5, 0.2, -0.3, 2.0]
+get_action called, prompting ChatGPT...
+Distance: 2613.15
+Velocity: 8.08
+Mission time: 11.70
+Fuel: 1197.44
+Completion took 1.0985009670257568 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":0.5,\"rt\":0.2,\"dt\":-0.3}"
+  }
+}
+[0.5, 0.2, -0.3, 2.0]
+get_action called, prompting ChatGPT...
+Distance: 2606.95
+Velocity: 8.04
+Mission time: 13.74
+Fuel: 1196.14
+Completion took 1.7255010604858398 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":0.5,\"rt\":0.2,\"dt\":-0.3}"
+  }
+}
+[0.5, 0.2, -0.3, 2.0]
+get_action called, prompting ChatGPT...
+Distance: 2598.31
+Velocity: 8.32
+Mission time: 15.78
+Fuel: 1194.87
+Completion took 0.9914999008178711 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":0.5,\"rt\":0.2,\"dt\":-0.3}"
+  }
+}
+[0.5, 0.2, -0.3, 2.0]
+get_action called, prompting ChatGPT...
+Completion took 1.4219977855682373 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":0.5,\"rt\":0.2,\"dt\":-0.3}"
+  }
+}
+[0.5, 0.2, -0.3, 2.0]
+get_action called, prompting ChatGPT...
+Completion took 3.450498104095459 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "// Based on the given state, calculate the best action to perform and send it to the spacecraft.\n\n// Extracted state variables\nconst pvx = 631.5591361503813; // m/s\nconst pvy = 2083.6490471071297; // m/s\nconst pvz = 0.7621782287148083; // m/s\n\n// Calculate the best action based on the state variables\nconst ft = 0.0; // No forward throttle\nconst rt = 0.0; // No right throttle\nconst dt = 0.0; // No down throttle\n\n// Send the best action to the spacecraft\nfunctions.perform_action({ ft, rt, dt });"
+  }
+}
+Exception: Expecting ':' delimiter: line 1 column 7 (char 6)
+[0, 0, 0, 0.1]
+get_action called, prompting ChatGPT...
+Distance: 2582.50
+Velocity: 11.04
+Mission time: 23.92
+Fuel: 1189.71
+Completion took 7.027998924255371 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "// Calculate the best action based on the given state variables\n// Note: These calculations are based on a specific control algorithm and may not be optimal for all scenarios.\n\n// Extracted state variables\nconst pvx = 606.988849944809; // velocity in x-direction [m/s]\nconst pvy = 2093.497335903654; // velocity in y-direction [m/s]\nconst pvz = 0.7038988791086288; // velocity in z-direction [m/s]\nconst ex = 720819.6084066058; // error in x-direction [m]\nconst ey = -207163.97061764204; // error in y-direction [m]\nconst ez = -0.36179095540705575; // error in z-direction [m]\nconst evx = 599.330033216019; // error in velocity in x-direction [m/s]\nconst evy = 2085.574620333357; // error in velocity in y-direction [m/s]\nconst evz = 0.0036782223474944864; // error in velocity in z-direction [m/s]\n\n// Control algorithm (example)\nconst ft = -0.5 * ex - 0.2 * evx + 0.1 * pvx; // forward throttle\nconst rt = -0.5 * ey - 0.2 * evy + 0.1 * pvy; // right throttle\nconst dt = -0.5 * ez - 0.2 * evz + 0.1 * pvz; // down throttle\n\n// Send the calculated throttles to the spacecraft\nfunctions.perform_action({ ft, rt, dt });"
+  }
+}
+Exception: Expecting ':' delimiter: line 1 column 7 (char 6)
+[0, 0, 0, 0.1]
+get_action called, prompting ChatGPT...
+Distance: 2512.61
+Velocity: 11.18
+Mission time: 31.04
+Fuel: 1189.68
+Completion took 3.1134989261627197 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "// Performing the action with the given throttles\nperform_action({\n  ft: 0.5,\n  rt: -0.2,\n  dt: 0.8\n});"
+  }
+}
+[0.5, -0.2, 0.8, 2.0]
+get_action called, prompting ChatGPT...
+Distance: 2482.02
+Velocity: 11.30
+Mission time: 34.14
+Fuel: 1189.68
+Completion took 1.4269986152648926 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":0.5,\"rt\":0.2,\"dt\":-0.3}"
+  }
+}
+[0.5, 0.2, -0.3, 2.0]
+get_action called, prompting ChatGPT...
+Distance: 2460.67
+Velocity: 12.79
+Mission time: 36.18
+Fuel: 1188.00
+Completion took 1.521500587463379 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":0.5,\"rt\":0.2,\"dt\":-0.3}"
+  }
+}
+[0.5, 0.2, -0.3, 2.0]
+get_action called, prompting ChatGPT...
+Distance: 2393.17
+Velocity: 13.71
+Mission time: 38.22
+Fuel: 1186.69
+Completion took 1.212498664855957 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":0.5,\"rt\":0.2,\"dt\":-0.3}"
+  }
+}
+[0.5, 0.2, -0.3, 2.0]
+get_action called, prompting ChatGPT...
+Distance: 2366.79
+Velocity: 14.68
+Mission time: 40.26
+Fuel: 1185.42
+Completion took 1.3074994087219238 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":0.5,\"rt\":0.2,\"dt\":-0.3}"
+  }
+}
+[0.5, 0.2, -0.3, 2.0]
+get_action called, prompting ChatGPT...
+Distance: 2337.89
+Velocity: 15.70
+Mission time: 42.30
+Fuel: 1184.11
+Completion took 1.4759995937347412 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":0.5,\"rt\":0.2,\"dt\":-0.3}"
+  }
+}
+[0.5, 0.2, -0.3, 2.0]
+get_action called, prompting ChatGPT...
+Completion took 1.8729991912841797 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":0.5,\"rt\":0.2,\"dt\":-0.3}"
+  }
+}
+[0.5, 0.2, -0.3, 2.0]
+get_action called, prompting ChatGPT...
+Distance: 2316.24
+Velocity: 17.88
+Mission time: 46.38
+Fuel: 1181.55
+Completion took 1.8945014476776123 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":0.5,\"rt\":0.2,\"dt\":-0.3}"
+  }
+}
+[0.5, 0.2, -0.3, 2.0]
+get_action called, prompting ChatGPT...
+Distance: 2279.76
+Velocity: 19.00
+Mission time: 48.42
+Fuel: 1180.26
+Completion took 1.516000509262085 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":0.5,\"rt\":0.2,\"dt\":-0.3}"
+  }
+}
+[0.5, 0.2, -0.3, 2.0]
+get_action called, prompting ChatGPT...
+Distance: 2240.74
+Velocity: 20.13
+Mission time: 50.46
+Fuel: 1178.96
+Completion took 1.6919982433319092 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":0.5,\"rt\":0.2,\"dt\":-0.3}"
+  }
+}
+[0.5, 0.2, -0.3, 2.0]
+get_action called, prompting ChatGPT...
+Distance: 2155.38
+Velocity: 21.30
+Mission time: 52.50
+Fuel: 1177.67
+Completion took 2.3024988174438477 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":0.5,\"rt\":0.2,\"dt\":-0.3}"
+  }
+}
+[0.5, 0.2, -0.3, 2.0]
+get_action called, prompting ChatGPT...
+Distance: 2108.82
+Velocity: 23.68
+Mission time: 56.56
+Fuel: 1175.09
+Completion took 1.6800003051757812 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":0.5,\"rt\":0.2,\"dt\":0.1}"
+  }
+}
+[0.5, 0.2, 0.1, 2.0]
+get_action called, prompting ChatGPT...
+Distance: 2016.22
+Velocity: 24.88
+Mission time: 58.58
+Fuel: 1173.80
+Completion took 6.604500770568848 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "// Based on the given state, calculate the best action to perform and send it to the spacecraft.\n\n// Extracted state values\nconst px = 737497.6204654869; // position x\nconst py = -135925.79033668706; // position y\nconst pz = 39.82165082189399; // position z\nconst pvx = 394.99207747122705; // velocity x\nconst pvy = 2158.830790436862; // velocity y\nconst pvz = 0.6269123739609612; // velocity z\nconst ex = 737936.1569088596; // target position x\nconst ey = -133958.24828340183; // target position y\nconst ez = -0.23403081280034854; // target position z\nconst evx = 387.5244380889593; // target velocity x\nconst evy = 2135.1042297500558; // target velocity y\nconst evz = 0.0036873810733906165; // target velocity z\n\n// Calculate the best action based on the state\n// ... (calculation logic goes here)\n\n// For now, let's assume a default action\nconst bestAction = {\n  ft: 0.5, // forward throttle\n  rt: 0.2, // right throttle\n  dt: -0.3, // down throttle\n};\n\n// Send the best action to the spacecraft\nbestAction;"
+  }
+}
+Exception: Expecting value: line 1 column 1 (char 0)
+[0, 0, 0, 0.1]
+get_action called, prompting ChatGPT...
+Distance: 1839.23
+Velocity: 29.96
+Mission time: 66.68
+Fuel: 1169.35
+Completion took 1.821500539779663 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":0.5,\"rt\":0.2,\"dt\":-0.3}"
+  }
+}
+[0.5, 0.2, -0.3, 2.0]
+get_action called, prompting ChatGPT...
+Distance: 1781.40
+Velocity: 29.99
+Mission time: 68.62
+Fuel: 1169.33
+Completion took 1.3660011291503906 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":0.5,\"rt\":0.2,\"dt\":-0.3}"
+  }
+}
+[0.5, 0.2, -0.3, 2.0]
+get_action called, prompting ChatGPT...
+Distance: 1719.35
+Velocity: 31.20
+Mission time: 70.66
+Fuel: 1168.06
+Completion took 1.8419978618621826 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":0.5,\"rt\":0.2,\"dt\":-0.3}"
+  }
+}
+[0.5, 0.2, -0.3, 2.0]
+get_action called, prompting ChatGPT...
+Distance: 1654.76
+Velocity: 32.43
+Mission time: 72.70
+Fuel: 1166.78
+Completion took 9.95099949836731 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "// Based on the given state, calculate the best action to perform.\n\n// Constants\nconst G = 6.67430e-11; // gravitational constant\nconst M = 5.972e24; // mass of the Earth\n\n// State variables\nconst t = 72.70000000000267; // time in seconds\nconst m = 6552.10400390625; // mass in kg\nconst f = 1166.7760009765625; // thrust force in N\nconst px = 742459.555365847; // position x in meters\nconst py = -105327.40450194711; // position y in meters\nconst pz = 58.12256203238806; // position z in meters\nconst pvx = 307.97891127110665; // velocity x in m/s\nconst pvy = 2180.556082166221; // velocity y in m/s\nconst pvz = 1.4644322433940098; // velocity z in m/s\nconst ex = 742790.7467300196; // target position x in meters\nconst ey = -103707.17664691294; // target position y in meters\nconst ez = -0.1819243943245965; // target position z in meters\nconst evx = 299.9988916197285; // target velocity x in m/s\nconst evy = 2149.152610218567; // target velocity y in m/s\nconst evz = 0.0036890561718534443; // target velocity z in m/s\n\n// Calculate the best action\n// TODO: Implement the calculation of the best action based on the given state.\n\n// Placeholder action\nconst bestAction = {\n  ft: 0.5, // forward throttle\n  rt: 0.0, // right throttle\n  dt: 0.0, // down throttle\n};\n\nbestAction;"
+  }
+}
+Exception: Expecting value: line 1 column 1 (char 0)
+[0, 0, 0, 0.1]
+get_action called, prompting ChatGPT...
+Distance: 1296.35
+Velocity: 38.67
+Mission time: 82.82
+Fuel: 1160.34
+Completion took 4.01150107383728 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "// Calculate the best action based on the given state variables\n// These values are placeholders and should be replaced with actual calculations\n\n// Example action: Apply 50% forward throttle, 20% right throttle, and 10% down throttle\nconst ft = 0.5;\nconst rt = 0.2;\nconst dt = 0.1;\n\n// Send the calculated action to the spacecraft\nfunctions.perform_action({ ft, rt, dt });"
+  }
+}
+Exception: Expecting ':' delimiter: line 1 column 7 (char 6)
+[0, 0, 0, 0.1]
+get_action called, prompting ChatGPT...
+Distance: 1094.40
+Velocity: 38.74
+Mission time: 86.94
+Fuel: 1160.31
+Completion took 2.4911322593688965 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":0.5,\"rt\":0.2,\"dt\":-0.3}"
+  }
+}
+[0.5, 0.2, -0.3, 2.0]
+get_action called, prompting ChatGPT...
+Distance: 1039.53
+Velocity: 38.75
+Mission time: 89.48
+Fuel: 1160.31
+Completion took 1.3079993724822998 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":0.5,\"rt\":0.2,\"dt\":0.1}"
+  }
+}
+[0.5, 0.2, 0.1, 2.0]
+get_action called, prompting ChatGPT...
+Distance: 915.97
+Velocity: 39.99
+Mission time: 91.52
+Fuel: 1159.04
+Completion took 1.1454989910125732 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":0.5,\"rt\":0.2,\"dt\":-0.3}"
+  }
+}
+[0.5, 0.2, -0.3, 2.0]
+get_action called, prompting ChatGPT...
+Distance: 877.37
+Velocity: 41.27
+Mission time: 93.56
+Fuel: 1157.93
+Completion took 9.36150050163269 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "// Based on the given state, calculate the best action to perform.\n\n// Constants\nconst Kp = 0.1; // Proportional gain\nconst Kv = 0.1; // Velocity gain\n\n// Desired state\nconst desiredState = {\n  px: 0, // Target x position\n  py: 0, // Target y position\n  pz: 0, // Target z position\n  pvx: 0, // Target x velocity\n  pvy: 0, // Target y velocity\n  pvz: 0, // Target z velocity\n};\n\n// Current state\nconst currentState = {\n  px: 747515.0092110555,\n  py: -59569.539731077675,\n  pz: 82.17332482532149,\n  pvx: 176.8698421429474,\n  pvy: 2203.9869170370544,\n  pvz: 1.085841347069306,\n};\n\n// Calculate error\nconst ex = desiredState.px - currentState.px;\nconst ey = desiredState.py - currentState.py;\nconst ez = desiredState.pz - currentState.pz;\nconst evx = desiredState.pvx - currentState.pvx;\nconst evy = desiredState.pvy - currentState.pvy;\nconst evz = desiredState.pvz - currentState.pvz;\n\n// Calculate control inputs\nconst ft = Kp * ex + Kv * evx;\nconst rt = Kp * ey + Kv * evy;\nconst dt = Kp * ez + Kv * evz;\n\n// Send the calculated action to the spacecraft\nfunctions.perform_action({ ft, rt, dt });"
+  }
+}
+Exception: Expecting ':' delimiter: line 1 column 7 (char 6)
+[0, 0, 0, 0.1]
+get_action called, prompting ChatGPT...
+Distance: 434.38
+Velocity: 47.59
+Mission time: 103.68
+Fuel: 1151.49
+Completion took 1.6454975605010986 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":0.5,\"rt\":0.2,\"dt\":-0.3}"
+  }
+}
+[0.5, 0.2, -0.3, 2.0]
+get_action called, prompting ChatGPT...
+Distance: 314.94
+Velocity: 47.61
+Mission time: 105.38
+Fuel: 1151.45
+Completion took 1.4159984588623047 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":0.5,\"rt\":0.2,\"dt\":-0.3}"
+  }
+}
+[0.5, 0.2, -0.3, 2.0]
+get_action called, prompting ChatGPT...
+Distance: 225.49
+Velocity: 48.84
+Mission time: 107.42
+Fuel: 1150.14
+Completion took 1.9399986267089844 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":0.5,\"rt\":0.2,\"dt\":0.1}"
+  }
+}
+[0.5, 0.2, 0.1, 2.0]
+get_action called, prompting ChatGPT...
+Distance: 174.70
+Velocity: 49.99
+Mission time: 109.46
+Fuel: 1148.71
+Completion took 1.9329986572265625 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "// Performing the action with the given throttles\nperform_action({\n  ft: 0.5,\n  rt: -0.3,\n  dt: 0.2\n});"
+  }
+}
+[0.5, -0.3, 0.2, 2.0]
+get_action called, prompting ChatGPT...
+Distance: 102.23
+Velocity: 50.78
+Mission time: 111.50
+Fuel: 1147.55
+Completion took 8.876998662948608 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "// Calculate the best action based on the given state variables\n// and send the throttles to the spacecraft.\n\n// State variables\nconst t = 111.49999999999496; // Time [s]\nconst m = 6475.1923828125; // Mass [kg]\nconst f = 1147.548095703125; // Fuel [kg]\nconst px = 749674.1290127005; // Position x [m]\nconst py = -19829.365099175076; // Position y [m]\nconst pz = 84.1701279919478; // Position z [m]\nconst pvx = 64.4857439798418; // Velocity x [m/s]\nconst pvy = 2219.4870305594222; // Velocity y [m/s]\nconst pvz = -1.7833666312201524; // Velocity z [m/s]\nconst ex = 749730.6333966132; // Target position x [m]\nconst ey = -19842.298908710363; // Target position y [m]\nconst ez = -0.03897904941115371; // Target position z [m]\nconst evx = 57.35119000021268; // Target velocity x [m/s]\nconst evy = 2169.2387896374753; // Target velocity y [m/s]\nconst evz = 0.0036917657284689653; // Target velocity z [m/s]\n\n// Perform calculations to determine the best action\n// ...\n\n// Send the best action to the spacecraft\nfunctions.perform_action({\n  ft: 0.5, // Example forward throttle\n  rt: 0.2, // Example right throttle\n  dt: -0.3, // Example down throttle\n});"
+  }
+}
+Exception: Expecting property name enclosed in double quotes: line 2 column 14 (char 15)
+[0, 0, 0, 0.1]
+get_action called, prompting ChatGPT...
+Completion took 1.7104978561401367 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":0.5,\"rt\":0.2,\"dt\":-0.3}"
+  }
+}
+[0.5, 0.2, -0.3, 2.0]
+get_action called, prompting ChatGPT...
+Completion took 1.6520004272460938 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":-0.1,\"rt\":0.2,\"dt\":0.3}"
+  }
+}
+[-0.1, 0.2, 0.3, 2.0]
+get_action called, prompting ChatGPT...
+Completion took 1.3015005588531494 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":-0.5,\"rt\":0.2,\"dt\":0.1}"
+  }
+}
+[-0.5, 0.2, 0.1, 2.0]
+get_action called, prompting ChatGPT...
+Completion took 1.352998971939087 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":-0.2,\"rt\":0.1,\"dt\":0.3}"
+  }
+}
+[-0.2, 0.1, 0.3, 2.0]
+get_action called, prompting ChatGPT...
+Completion took 1.0609989166259766 seconds
+{
+  "role": "assistant",
+  "content": null,
+  "function_call": {
+    "name": "perform_action",
+    "arguments": "{\"ft\":-0.5,\"rt\":0.2,\"dt\":0.1}"
+  }
+}
+[-0.5, 0.2, 0.1, 2.0]

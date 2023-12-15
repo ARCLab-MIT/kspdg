@@ -14,6 +14,9 @@ import numpy as np
 
 import kspdg.utils.constants as C
 from kspdg.pe1.e1_envs import PE1_E1_I3_Env
+from kspdg.pe1.e2_envs import PE1_E2_I3_Env
+from kspdg.pe1.e3_envs import PE1_E3_I3_Env
+from kspdg.pe1.e4_envs import PE1_E4_I3_Env
 
 @pytest.fixture
 def pe1_e1_i3_env():
@@ -22,6 +25,46 @@ def pe1_e1_i3_env():
     env.reset()
     yield env
     env.close()
+
+@pytest.fixture
+def pe1_e2_i3_env():
+    '''setup and teardown of the pursuit-evade env object connected to kRPC server'''
+    env = PE1_E2_I3_Env()
+    env.reset()
+    yield env
+    env.close()
+
+@pytest.fixture
+def pe1_e3_i3_env():
+    '''setup and teardown of the pursuit-evade env object connected to kRPC server'''
+    env = PE1_E3_I3_Env()
+    env.reset()
+    yield env
+    env.close()
+
+@pytest.fixture
+def pe1_e4_i3_env():
+    '''setup and teardown of the pursuit-evade env object connected to kRPC server'''
+    env = PE1_E4_I3_Env()
+    env.reset()
+    yield env
+    env.close()
+
+def test_smoketest_e1(pe1_e1_i3_env):
+    """Ensure no errors are thrown from starting E1 environment"""
+    pass
+
+def test_smoketest_e2(pe1_e2_i3_env):
+    """Ensure no errors are thrown from starting E2 environment"""
+    pass
+
+def test_smoketest_e3(pe1_e3_i3_env):
+    """Ensure no errors are thrown from starting E3 environment"""
+    pass
+
+def test_smoketest_e4(pe1_e4_i3_env):
+    """Ensure no errors are thrown from starting E4 environment"""
+    pass
 
 def test_observation_dict_list_convert_0(pe1_e1_i3_env):
     '''check that converting between lists and dict to not alter observation'''
@@ -381,6 +424,52 @@ def test_step_action_ref_frame_2(pe1_e1_i3_env):
         # ~~ ASSERT ~~
         assert np.isclose(r0, r1)
         assert np.isclose(v0, v1)
+
+def test_physics_range_extender_1(pe1_e1_i3_env):
+    '''Check that PRE is installed properly
+    '''
+    # ~~ ARRANGE ~~
+
+    if pe1_e1_i3_env is None:
+        env = PE1_E1_I3_Env()
+        env.reset()
+    else:
+        env = pe1_e1_i3_env
+
+
+    # ~~ ACT ~~
+
+    rf = env.vesPursue.orbital_reference_frame
+
+    # get initial speed of evader wrt pursuer
+    ve0 = np.linalg.norm(env.vesEvade.velocity(rf))
+
+    # Set and engage evader auto-pilot reference frame so 
+    # that it points in it's own prograde direction
+    env.vesEvade.auto_pilot.reference_frame = env.vesEvade.orbital_reference_frame
+    env.vesEvade.auto_pilot.target_pitch = 0.0
+    env.vesEvade.auto_pilot.target_heading = 0.0
+    env.vesEvade.auto_pilot.target_roll = 0.0
+    env.vesEvade.auto_pilot.engage()
+
+    # turn on low-thrust maneuver for evader for fixed amount of time
+    env.vesEvade.control.rcs = True
+    env.vesEvade.control.forward = 1.0
+    time.sleep(5.0)
+
+    # terminate throttle
+    env.vesEvade.control.forward = 0.0
+    env.vesEvade.control.right = 0.0
+    env.vesEvade.control.up = 0.0
+    env.vesEvade.auto_pilot.disengage()
+
+    # get final speed of evader wrt pursuer
+    ve1 = np.linalg.norm(env.vesEvade.velocity(rf))
+
+    # ~~ ASSERT ~~
+    assert not np.isclose(ve0, ve1)
+    dv = ve1 - ve0
+    assert dv > 1.0
 
 if __name__ == "__main__":
     # test_get_info_0(None)

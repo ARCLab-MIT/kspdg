@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.5.0] - 2023.12.15
+
+_KSPDG Challenge @ SciTech 2024 - Semi-Finals Codebase_
+
+### Added
+
+- New Lady-Bandit-Guard scenarios with active Lady spacecraft (LG2)
+
+### Fixed
+
+### Changed
+
+- updating test file names and adding additional scenarios to the test files (e.g. `test_lbg1_lg0_i2.py` -> `test_lbg1_i2.py` so we can test lg1_i2 and lg2_i2 in the same file)
+- Updating print statements to logger statements in pe1 e3_envs
+
+### Removed
+
+## [v0.4.4] - 2023-12-11
+
+### Added
+
+- [iss2](https://github.com/mit-ll/spacegym-kspdg/issues/2) Unit test to check for PhysicsRangeExtender (PRE) proper installation
+
+### Fixed
+
+- PRE installed instructions in README
+
+### Changed
+
+### Removed
+
 ## [v0.4.3] - 2023-11-29
 
 ### Added

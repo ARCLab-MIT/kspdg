@@ -32,8 +32,7 @@ from scipy.spatial import distance
 dotenv_path = join(dirname(__file__), ".env")
 load_dotenv(dotenv_path)
 
-# openai.api_key = os.environ["OPENAI_API_KEY"]
-openai.api_key = "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"
+openai.api_key = os.environ["OPENAI_API_KEY"]
 
 
 class LLMAgent(KSPDGBaseAgent):

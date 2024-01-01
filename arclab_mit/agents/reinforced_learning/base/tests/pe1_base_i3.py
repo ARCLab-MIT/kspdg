@@ -26,30 +26,27 @@ class PoliastroAgent(KSPDGBaseAgent):
             "target_velocity": target_velocity_m_per_s,
         }
 
-        # Solve Lambert's problem to get the transfer orbit
         r0, r, tof = (
             state_dict["position"],
             state_dict["target_position"],
             self.burn_time * u.s,
         )
 
-        k = 3.986004418e14 * u.m**3 / u.s**2  # Define k in m^3/s^2
-        # k = k.to(u.km**3 / u.s**2)  # Convert k to km^3/s^2
+        k = 3.986004418e14 * u.m**3 / u.s**2
 
-        # Now use k in the iod.lambert function
         v0, v = iod.lambert(k, r0, r, tof)
 
         commanded_velocity = v - state_dict["velocity"]
 
+        thrust_direction = commanded_velocity / np.linalg.norm(commanded_velocity)
+
         action = np.zeros(4)
-        if commanded_velocity[0] > 0:
-            action[0] = 1
-        elif commanded_velocity[0] < 0:
-            action[1] = 1
-        if commanded_velocity[1] > 0:
-            action[2] = 1
-        elif commanded_velocity[1] < 0:
-            action[3] = 1
+        action[0] = np.dot(thrust_direction, state_dict["position"])
+        action[1] = np.dot(
+            thrust_direction, np.cross([0, 0, 1], state_dict["position"])
+        )
+        action[2] = np.dot(thrust_direction, [0, 0, 1])
+        action[3] = tof
 
         return action
 

@@ -81,7 +81,7 @@ def translate_action(action):
 
     return result
 
-def csv_to_json_for_history(csv_file_path : str, problem_env : str, use_short_names: bool = False, use_relative_coordinates: bool = False, use_enum: bool = True, size: int = 4, stride: int = 1):
+def csv_to_json_for_history(csv_file_path : str, problem_env : str, use_short_names: bool = False, use_relative_coordinates: bool = False, use_enum: bool = False, size: int = 4, stride: int = 1):
 
     if problem_env.startswith('sb'):
         if use_short_names:
@@ -298,7 +298,10 @@ def csv_to_json_for_history(csv_file_path : str, problem_env : str, use_short_na
         """
 
         # Add message to json list
-        messages_in_window = [{"role": "system", "content": os.environ['SB_SYSTEM_PROMPT']}]
+        if problem_env.startswith('pe'):
+            messages_in_window = [{"role": "system", "content": os.environ['PE_SYSTEM_PROMPT']}]
+        else:
+            messages_in_window = [{"role": "system", "content": os.environ['SB_SYSTEM_PROMPT']}]
         start = -(sliding_window_size+1)
         if len(json_history) < -start:
             start = 0

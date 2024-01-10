@@ -491,7 +491,7 @@ class LLMAgent(KSPDGBaseAgent):
         messages = []
 
         # Adding system prompt for each sample is necessary
-        #messages.append({"role": "system", "content": self.system_prompt})
+        # messages.append({"role": "system", "content": self.system_prompt})
 
         # Add messages from the history
         if self.sliding_window_size > 0:

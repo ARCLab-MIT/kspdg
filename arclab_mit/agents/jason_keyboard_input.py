@@ -9,6 +9,7 @@ from kspdg.pe1.e3_envs import PE1_E3_I3_Env, PE1_E3_I2_Env
 from kspdg.pe1.e4_envs import PE1_E4_I2_Env
 from kspdg.sb1.e1_envs import SB1_E1_I5_Env
 from kspdg.sb1.e1_envs import SB1_E1_I1_Env
+from kspdg.lbg1.lg2_envs import LBG1_LG2_I2_Env
 
 from kspdg.agent_api.runner import AgentEnvRunner
 
@@ -31,11 +32,14 @@ def write_dict_to_csv(d, filename):
         d: dictionary to write
         filename: name of the file to write to
     """
+    max_length = max(len(lst) for lst in d.values())
+
     with open(filename, 'w', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=d.keys())
         writer.writeheader()
-        for i in range(len(next(iter(d.values())))):
-            row = {k: d[k][i] for k in d.keys()}
+        for i in range(max_length):
+            # Create a row with values at the ith index or None if index is out of range
+            row = {k: (d[k][i] if i < len(d[k]) else None) for k in d.keys()}
             writer.writerow(row)
 
 class State():
@@ -81,7 +85,33 @@ class KeyboardControlledAgent(KSPDGBaseAgent):
         self.forward_throttle = 0
         self.right_throttle = 0
         self.down_throttle = 0
-        self.actions_dict = {                   # Names for all the different columns to append data to, useful for the csv export.
+        if (self.scenario.startswith('LBG')):
+            self.actions_dict = {  # Names for all the different columns to append data to, useful for the csv export.
+                'throttles': [],
+                'time': [],
+                'bandit_mass': [],
+                'bandit_propellant': [],
+                'bandit_pos_x': [],
+                'bandit_pos_y': [],
+                'bandit_pos_z': [],
+                'bandit_vel_x': [],
+                'bandit_vel_y': [],
+                'bandit_vel_z': [],
+                'lady_pos_x': [],
+                'lady_pos_y': [],
+                'lady_pos_z': [],
+                'lady_vel_x': [],
+                'lady_vel_y': [],
+                'lady_vel_z': [],
+                'guard_pos_x': [],
+                'guard_pos_y': [],
+                'guard_pos_z': [],
+                'guard_vel_x': [],
+                'guard_vel_y': [],
+                'guard_vel_z': []
+            }
+        else:
+            self.actions_dict = {                   # Names for all the different columns to append data to, useful for the csv export.
             'throttles': [],
             'time': [],
             'vehicle_mass': [],
@@ -199,8 +229,8 @@ class KeyboardControlledAgent(KSPDGBaseAgent):
 
 if __name__ == "__main__":
     try:
-        scenario = 'SB1_E1_I5'
-        env = SB1_E1_I5_Env
+        scenario = 'LBG1_LG2_I2_V1'
+        env = LBG1_LG2_I2_Env
 
         keyboard_agent = KeyboardControlledAgent(scenario)
         runner = AgentEnvRunner(
@@ -216,7 +246,8 @@ if __name__ == "__main__":
         print("Something went wrong: " + str(e))
     finally:
         print("Saving data to csv...")
+        print(len(keyboard_agent.actions_dict['throttles']))
         if(len(keyboard_agent.actions_dict['throttles']) > 10):
-            write_dict_to_csv(keyboard_agent.actions_dict, '../agents_data/pe1_e3_i2_keyboard_agent_actions_' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.csv')
+            write_dict_to_csv(keyboard_agent.actions_dict, '../agents_data/lbg1_lg2_i2_keyboard_agent_actions_' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.csv')
             print("Success!" + '../agents_data/sb1_e1_i5_keyboard_agent_actions_' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + ".csv")
 

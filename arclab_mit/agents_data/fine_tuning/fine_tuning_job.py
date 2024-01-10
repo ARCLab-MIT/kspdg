@@ -77,8 +77,10 @@ def evaluate_predictions(datafile):
 
 def generate_predictions_from_jsonl(scenario, model, jsonl_file):
     print("Generating predictions from: " + jsonl_file)
-    if (scenario.lower().startswith('pe')):
+    if scenario.lower().startswith('pe'):
         pattern = os.environ['PE_USER_PROMPT']
+    elif scenario.lower().startswith('lbg'):
+        pattern = os.environ['LBG_USER_PROMPT']
     else:
         pattern = os.environ['SB_USER_PROMPT']
     pattern = pattern.replace("{obs}", "\{(.+?)\}")
@@ -390,6 +392,9 @@ if __name__ == '__main__':
                 tmp = input("generate predictions [y/n]: ")
                 generate_predictions = (tmp.lower() == "y")
                 log_job_results(scenario, job_id, experiment, generate_predictions )
+            elif option == "e":
+                datafile = input("datafile (csv): ")
+                evaluate_predictions(datafile)
             else:
                 print("Wrong option: " + option)
         except Exception as e:

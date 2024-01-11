@@ -1,3 +1,4 @@
+from threading import Thread
 from kspdg.agent_api.base_agent import KSPDGBaseAgent
 import openai
 import json
@@ -17,22 +18,26 @@ class LLMAgent(KSPDGBaseAgent):
         with open(os.path.join(os.path.dirname(__file__), self.system_prompt_path), 'r') as file:
             system_prompt = file.read()
         self.messages = [{"role": "system", "content": system_prompt}]
-        self.use_manual_response = True
+        self.prev_time = -100
+        self.saved_action = None
+        self.refresh_action_duration = 5
+        self.updating_action = False
     
     def get_message(self, observation):
         pass
-
+    
+    # return None if no manual response; otherwiwse return the response
     def get_manual_response(self, observation):
         pass
 
-    def get_action(self, observation):
+    def new_action(self, observation):
         print("=" * 60)
-        print(observation[0])
+        # print(observation[0])
         user_message = self.get_message(observation)
         self.messages.append({"role": "user", "content": user_message})
         
         print(user_message)
-        # print("=" * 30)
+        print("=" * 30)
         
         # repeatedly pop the first pair (index 1 and 2) to not exceed context length
         while True:
@@ -46,9 +51,10 @@ class LLMAgent(KSPDGBaseAgent):
 
         # print(self.messages)
 
-        if self.use_manual_response:
-            response_message = self.get_manual_response(observation)
-            self.use_manual_response = False
+        manual_response = self.get_manual_response(observation)
+        if manual_response:
+            response_message = manual_response
+            print("using manual response")
         else:
             start_time = time.time()
             response = openai.ChatCompletion.create(
@@ -85,10 +91,9 @@ class LLMAgent(KSPDGBaseAgent):
         
         # getting results of the function call and returning the response
         if response_message.get("function_call"):
-            duration = 5.0
             def get_action(throttle):
                 return {
-                    "burn_vec": throttle + [duration],
+                    "burn_vec": throttle + [0.4], # 0.4 doesn't really matter. the smaller the better, but too small might be buggy
                     "ref_frame": 1 # celestial ref frame
                 }
             available_functions = {
@@ -113,3 +118,14 @@ class LLMAgent(KSPDGBaseAgent):
         print("error: LLM did not call function")
         self.messages.append({"role": "user", "content": "Error: you did not call a function. Remember to use apply_throttle at the end of every response."})
         return [0,0,0,0.1]
+
+    def update_action(self, observation):
+        self.updating_action = True
+        self.saved_action = self.new_action(observation)
+        self.updating_action = False
+
+    def get_action(self, observation):
+        if observation[0] - self.prev_time >= self.refresh_action_duration and not self.updating_action:
+            self.prev_time = observation[0]
+            Thread(target=lambda: self.update_action(observation), daemon=True).start()
+        return self.saved_action

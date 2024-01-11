@@ -16,18 +16,21 @@ class LBGExtendedObsAgent(LLMAgent):
     system_prompt_path = "system_prompt_lbg.md"
     def __init__(self):
         super().__init__()
-        self.stop_tangential_response = True
-        self.start_adjusting_response = True
-        self.full_adjust_response = True
-        self.tangent_acc_time = 35
+        self.first_response = True
+        self.second_response = True
+        self.passed_guard_response = True
+        self.near_evader_response = True
 
     def get_manual_response(self, observation):
         state = obs_to_state(observation)
         pursuer_pos, pursuer_vel, lady_pos, lady_vel, guard_pos, guard_vel = state
-        pursuer_pos = np.array(pursuer_pos)
-        lady_pos = np.array(lady_pos)
-        guard_pos = np.array(guard_pos)
-        if observation[0] < self.tangent_acc_time:
+        if self.first_response or self.second_response:
+            if self.first_response: self.first_response = False
+            else: self.second_response = False
+            pursuer_pos = np.array(pursuer_pos)
+            lady_pos = np.array(lady_pos)
+            guard_pos = np.array(guard_pos)
+
             guard_relative_pos = pursuer_pos - guard_pos
             tangent_dir = np.array([0.0, 0.0, 1.0]) # hardcoded, true for I2
             guard_relative_pos = round_arr(guard_relative_pos, 2)
@@ -44,39 +47,47 @@ class LBGExtendedObsAgent(LLMAgent):
                     "arguments": "{\n  \"throttle\": [" + ", ".join(map(str, tangent_dir)) + "]\n}"
                 }
             }
-        
-        if self.stop_tangential_response and observation[0] >= self.tangent_acc_time:
-            self.stop_tangential_response = False
+
+            """
             lady_acc_dir = (lady_pos - pursuer_pos)/np.linalg.norm(pursuer_pos - lady_pos)
+            guard_escape_dir = (pursuer_pos - guard_pos)/np.linalg.norm(pursuer_pos - guard_pos)
+            lady_dir_weight = 0.8
+            guard_dir_weight = 0.2
+            final_acc_dir = lady_dir_weight*lady_acc_dir + guard_dir_weight*guard_escape_dir
             lady_acc_dir = round_arr(lady_acc_dir, 2)
+            guard_escape_dir = round_arr(guard_escape_dir, 2)
+            final_acc_dir = round_arr(final_acc_dir, 2)
             return {
                 "role": "assistant",
                 "content": 
                 " ".join([
-                    f"Now, let's stop accelerating tangetially and start accelerating towards the lady to close the distance.",
+                    f"Because of the large distance between us and the lady, we should accelerate towards the lady to close the distance." ,
+                    f"However, I will also accelerate away from the guard.",
+                    f"My final acceleration will be {lady_dir_weight}*{lady_acc_dir} + {guard_dir_weight}*{guard_escape_dir}, which is {final_acc_dir}.",
                 ]),
                 "function_call": {
                     "name": "apply_throttle",
-                    "arguments": "{\n  \"throttle\": [" + ", ".join(map(str, lady_acc_dir)) + "]\n}"
+                    "arguments": "{\n  \"throttle\": [" + ", ".join(map(str, final_acc_dir)) + "]\n}"
                 }
             }
+            """
         
         closest_state_lady, closest_time_lady = closest_approach((pursuer_pos, pursuer_vel, lady_pos, lady_vel), 300)
-        if self.start_adjusting_response and observation[0] >= 45:
-            self.start_adjusting_response = False
+        closest_state_guard, closest_time_guard = closest_approach((pursuer_pos, pursuer_vel, guard_pos, guard_vel), 300)
+        if self.passed_guard_response and observation[0] >= 20 and closest_time_guard <= 1.0:
+            self.passed_guard_response = False
             pos1, _, pos2, _ = closest_state_lady
-            lady_acc_dir = (lady_pos - pursuer_pos)/np.linalg.norm(pursuer_pos - lady_pos)
             closest_approach_dir = (pos2 - pos1)/np.linalg.norm(pos1 - pos2)
-            final_acc_dir = 0.5 * lady_acc_dir + 0.5 * closest_approach_dir
-            lady_acc_dir = round_arr(lady_acc_dir, 2)
+            final_acc_dir = 0.5 * closest_approach_dir
             closest_approach_dir = round_arr(closest_approach_dir, 2)
             final_acc_dir = round_arr(final_acc_dir, 2)
             return {
                 "role": "assistant",
                 "content":
                 " ".join([
-                    f"Let's start correcting our intercept by accelerating based on what the closest approach state tells us.",
-                    f"I will accelerate by 0.5 * {lady_acc_dir} + 0.5 * {closest_approach_dir} = {final_acc_dir}",
+                    f"We have just passed the guard's closest position, so we don't need to worry about the guard anymore.",
+                    f"We should intercept the lady by accelerating based on what the cloeset approach state tells us, which is {closest_approach_dir}.",
+                    f"To not over-adjust, I will set my final acceleration to be 0.6*{closest_approach_dir} = {final_acc_dir}.",
                 ]),
                 "function_call": {
                     "name": "apply_throttle",
@@ -84,16 +95,18 @@ class LBGExtendedObsAgent(LLMAgent):
                 }
             }
         
-        if self.full_adjust_response and observation[0] >= 55:
-            self.full_adjust_response = False
+        # [...]
+        # closest_time_lady bigger than 10 to avoid triggering at the start (when its 0)
+        if self.near_evader_response and 10 <= closest_time_lady <= 40 and observation[0] >= 40:
+            self.near_evader_response = False
             pos1, _, pos2, _ = closest_state_lady
-            closest_approach_dir = (pos2 - pos1)/np.linalg.norm(pos1 - pos2)
-            closest_approach_dir = round_arr(closest_approach_dir, 2)
+            closest_approach_dir = round_arr((pos2 - pos1)/np.linalg.norm(pos1 - pos2), 2)
             return {
                 "role": "assistant",
                 "content":
                 " ".join([
-                    f"We are approaching the lady fast enough, so let's adjust our intercept by accelerating based on what the closest approach state tells us.",
+                    f"We are approaching the lady." ,
+                    f"We should intercept the lady by accelerating based on what the cloeset approach state tells us, which is {closest_approach_dir}.",
                 ]),
                 "function_call": {
                     "name": "apply_throttle",

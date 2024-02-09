@@ -18,8 +18,7 @@ class LBGExtendedObsAgent(LLMAgent):
         super().__init__()
         self.stop_tangential_response = True
         self.start_adjusting_response = True
-        self.full_adjust_response = True
-        self.tangent_acc_time = 35
+        self.tangent_acc_time = 25
 
     def get_manual_response(self, observation):
         state = obs_to_state(observation)
@@ -48,35 +47,16 @@ class LBGExtendedObsAgent(LLMAgent):
         if self.stop_tangential_response and observation[0] >= self.tangent_acc_time:
             self.stop_tangential_response = False
             lady_acc_dir = (lady_pos - pursuer_pos)/np.linalg.norm(pursuer_pos - lady_pos)
+            final_acc_dir = lady_acc_dir
+            final_acc_dir[2] = -0.5
             lady_acc_dir = round_arr(lady_acc_dir, 2)
+            final_acc_dir = round_arr(final_acc_dir, 2)
             return {
                 "role": "assistant",
                 "content": 
                 " ".join([
                     f"Now, let's stop accelerating tangetially and start accelerating towards the lady to close the distance.",
-                ]),
-                "function_call": {
-                    "name": "apply_throttle",
-                    "arguments": "{\n  \"throttle\": [" + ", ".join(map(str, lady_acc_dir)) + "]\n}"
-                }
-            }
-        
-        closest_state_lady, closest_time_lady = closest_approach((pursuer_pos, pursuer_vel, lady_pos, lady_vel), 300)
-        if self.start_adjusting_response and observation[0] >= 45:
-            self.start_adjusting_response = False
-            pos1, _, pos2, _ = closest_state_lady
-            lady_acc_dir = (lady_pos - pursuer_pos)/np.linalg.norm(pursuer_pos - lady_pos)
-            closest_approach_dir = (pos2 - pos1)/np.linalg.norm(pos1 - pos2)
-            final_acc_dir = 0.5 * lady_acc_dir + 0.5 * closest_approach_dir
-            lady_acc_dir = round_arr(lady_acc_dir, 2)
-            closest_approach_dir = round_arr(closest_approach_dir, 2)
-            final_acc_dir = round_arr(final_acc_dir, 2)
-            return {
-                "role": "assistant",
-                "content":
-                " ".join([
-                    f"Let's start correcting our intercept by accelerating based on what the closest approach state tells us.",
-                    f"I will accelerate by 0.5 * {lady_acc_dir} + 0.5 * {closest_approach_dir} = {final_acc_dir}",
+                    f"However, we need to also set the z component acceleration to -0.5 to help cancel out the previous tangential acceleration."
                 ]),
                 "function_call": {
                     "name": "apply_throttle",
@@ -84,8 +64,10 @@ class LBGExtendedObsAgent(LLMAgent):
                 }
             }
         
-        if self.full_adjust_response and observation[0] >= 55:
-            self.full_adjust_response = False
+        closest_state_lady, closest_time_lady = closest_approach((pursuer_pos, pursuer_vel, lady_pos, lady_vel), 300)
+        
+        if self.start_adjusting_response and observation[0] >= 65:
+            self.start_adjusting_response = False
             pos1, _, pos2, _ = closest_state_lady
             closest_approach_dir = (pos2 - pos1)/np.linalg.norm(pos1 - pos2)
             closest_approach_dir = round_arr(closest_approach_dir, 2)
@@ -113,18 +95,20 @@ class LBGExtendedObsAgent(LLMAgent):
         return "\n".join([
             f"Elapsed Time: {observation[0]} [s]",
             "Current state:",
-            single_spacecraft_message(state[0], state[1], "pursuer", use_velocity=False),
-            single_spacecraft_message(state[2], state[3], "lady", use_velocity=False),
-            single_spacecraft_message(state[4], state[5], "guard", use_velocity=False),
+            single_spacecraft_message(state[0], state[1], "pursuer", use_altitude=False, use_velocity=False),
+            single_spacecraft_message(state[2], state[3], "lady", use_altitude=False, use_velocity=False),
+            single_spacecraft_message(state[4], state[5], "guard", use_altitude=False, use_velocity=False),
+            "Relative to lady:",
             compare_spacecraft_message(state[0:4], "pursuer", "lady", True, use_velocity=False),
+            "Relative to guard:",
             compare_spacecraft_message(state[0:2] + state[4:6], "pursuer", "guard", False, use_velocity=False),
             "",
 
-            f"The simulated closest approach between you and the guard will happen in {closest_time_guard}s). Here is some information when that happens:",
+            f"The simulated closest approach between you and the guard will happen in {closest_time_guard}s. Here is some information when that happens:",
             compare_spacecraft_message(closest_state_guard, "pursuer", "guard", False, use_velocity=False),
             "",
 
-            f"The simulated closest approach between you and the lady will happen in {closest_time_lady}s). Here is some information when that happens:",
+            f"The simulated closest approach between you and the lady will happen in {closest_time_lady}s. Here is some information when that happens:",
             compare_spacecraft_message(closest_state_lady, "pursuer", "lady", True, use_velocity=False),
         ])
 

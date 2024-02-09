@@ -125,6 +125,9 @@ class LLMAgent(KSPDGBaseAgent):
         self.updating_action = False
 
     def get_action(self, observation):
+        # log
+        
+
         if observation[0] - self.prev_time >= self.refresh_action_duration and not self.updating_action:
             self.prev_time = observation[0]
             Thread(target=lambda: self.update_action(observation), daemon=True).start()

@@ -26,7 +26,7 @@ class ExtendedObsAgent(LLMAgent):
         super().__init__()
         self.first_response = True
         self.near_evader_response = True
-        self.slow_down_response = True
+        self.slow_down_response = False
 
     def get_manual_response(self, observation):
         state = obs_to_state(observation)
@@ -114,6 +114,11 @@ if __name__ == "__main__":
         agent=my_agent,
         env_cls=PE1_E3_I3_Env, 
         env_kwargs=None,
-        runner_timeout=120,
+        runner_timeout=240,
         debug=False)
     runner.run()
+
+"""
+292, 284, 285, 19, 29
+804, 181, 125, 44, 38, 32
+"""

@@ -13,23 +13,22 @@ Instructions to Run:
 - In a terminal, run this script
 """
 
-import csv
-import datetime
-import json
 import os
-import sys
-import time
-from os.path import join, dirname
-
-import krpc
-import numpy as np
 import openai
-from dotenv import load_dotenv
+import json
+import time
+import numpy as np
+import sys
+import krpc
+import datetime
+import csv
+import math
 
-from arclab_mit.agents.agent_common import State, Action
-from arclab_mit.agents.sliding_window import SlidingWindow
+import random
+
 from kspdg.agent_api.base_agent import KSPDGBaseAgent
 from kspdg.agent_api.runner import AgentEnvRunner
+
 from kspdg.lbg1.lg2_envs import LBG1_LG2_I1_Env
 from kspdg.lbg1.lg2_envs import LBG1_LG2_I2_Env
 from kspdg.lbg1.lbg1_base import LadyBanditGuardGroup1Env
@@ -37,7 +36,11 @@ from kspdg.pe1.e1_envs import PE1_E1_I1_Env
 from kspdg.pe1.e1_envs import PE1_E1_I2_Env
 from kspdg.pe1.e1_envs import PE1_E1_I3_Env
 from kspdg.pe1.e1_envs import PE1_E1_I4_Env
+from kspdg.pe1.e3_envs import PE1_E3_I1_Env
+from kspdg.pe1.e3_envs import PE1_E3_I2_Env
 from kspdg.pe1.e3_envs import PE1_E3_I3_Env
+from kspdg.pe1.e3_envs import PE1_E3_I4_Env
+from kspdg.pe1.e4_envs import PE1_E4_I3_Env
 from kspdg.pe1.pe1_base import PursuitEvadeGroup1Env
 from kspdg.sb1.e1_envs import SB1_E1_I1_Env
 from kspdg.sb1.e1_envs import SB1_E1_I2_Env
@@ -45,6 +48,13 @@ from kspdg.sb1.e1_envs import SB1_E1_I3_Env
 from kspdg.sb1.e1_envs import SB1_E1_I4_Env
 from kspdg.sb1.e1_envs import SB1_E1_I5_Env
 from kspdg.sb1.sb1_base import SunBlockingGroup1Env
+
+
+from os.path import join, dirname
+from dotenv import load_dotenv
+
+from arclab_mit.agents.sliding_window import SlidingWindow
+from arclab_mit.agents.agent_common import State, Action
 
 """
 from arclab_mit.agents.extended_obs_agent.simulate import closest_approach, simulate
@@ -65,6 +75,10 @@ openai.api_key = os.environ["OPENAI_API_KEY"]
 dotenv_path = join(dirname(__file__), 'alex_prompts_v2.txt')
 load_dotenv(dotenv_path)
 
+APPROACH_SPEED = 40
+VESSEL_ACCELERATION = 0.1
+EVASION_DISTANCE = 0
+ROTATION_THRESHOLD = 0.03
 
 class LLMAgent(KSPDGBaseAgent):
     """An agent that uses ChatGPT to make decisions based on observations."""
@@ -131,7 +145,6 @@ class LLMAgent(KSPDGBaseAgent):
                 },
             }]
         self.use_prograde = (os.environ['USE_PROGRADE'].lower() == "true")
-        self.use_cot = (os.environ['USE_COT'].lower() == "true")
 
         self.sliding_window_size = int(os.environ["SLIDING_WINDOW_SIZE"])
         self.sliding_window_stride = int(os.environ["SLIDING_WINDOW_STRIDE"])
@@ -165,7 +178,7 @@ class LLMAgent(KSPDGBaseAgent):
             self.log = None
             self.log_jsonl = None
         else:
-            log_name = "./logs/fine_tune_agent_log_" + self.scenario + "_" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.csv'
+            log_name = "./logs/" + self.scenario + "_navball_log_" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.csv'
             self.log = open(log_name, mode='w', newline='')
             if self.scenario.lower().startswith("lbg"):
                 if self.use_prograde:
@@ -199,9 +212,6 @@ class LLMAgent(KSPDGBaseAgent):
 
         # Interval between actions
         self.duration = 0.5
-
-        # Threshold for prograde alignment
-        self.THRESHOLD = 0.1
 
         # Sliding window parameters
         self.sliding_window_size = int(os.environ["SLIDING_WINDOW_SIZE"])
@@ -237,6 +247,8 @@ class LLMAgent(KSPDGBaseAgent):
         self.lbg1Env = LadyBanditGuardGroup1Env("lbg1_i1_init")
         self.sb1Env = SunBlockingGroup1Env("sb1_i1_init")
 
+        self.debug = False
+
     # Return sun position in the celestial body orbital reference frame
     def get_sun_position(self):
         reference_frame = self.body.orbital_reference_frame
@@ -245,63 +257,44 @@ class LLMAgent(KSPDGBaseAgent):
         return sun_pos
 
     def get_action(self, observation, sun_position=None):
+        debug = self.debug
 
-        # NOTE: Observations are given in the celestial body celestial reference frame using right-handed coordinate system.
-        # See https://krpc.github.io/krpc/tutorials/reference-frames.html#tutorial-reference-frames for details about krpc reference frames.
-        # Vessel's reference frame in krpc is left-handed:
+        # NOTE: Observations are given in the celestial body non-rotating reference frame using right-handed coordinate system.
+        # To check it compute vessel position and velocity in the celestial body orbital frame as follows
         #
-        #   x is pointing to the right
-        #   y axis is pointing forward
-        #   z axis is pointing down
-        #
-        # To check it compute vessel position and velocity in the celestial body orbital reference frame as follows
-        #
-        #   celestial_body_frame = self.body.orbital_reference_frame
-        #   vessel_frame = self.vessel.reference_frame
-        #   vessel_orbital_frame = self.vessel.orbital_reference_frame
-        #
-        #   vessel_velocity_in_celestial_frame = self.conn.space_center.transform_velocity([0,0,0], [0,0,0], vessel_frame, celestial_body_frame)
-        #   vessel_position_in_celestial_frame = self.conn.space_center.transform_position([0,0,0], vessel_frame, celestial_body_frame)
+        # celestial_body_frame = self.body.orbital_reference_frame
+        # vessel_frame = self.vessel.reference_frame
+        # vessel_velocity_in_celestial_frame = self.conn.space_center.transform_velocity([0,0,0], [0,0,0], vessel_frame, celestial_body_frame)
+        # vessel_position_in_celestial_frame = self.conn.space_center.transform_position([0,0,0], vessel_frame, celestial_body_frame)
         #
         # and confirm that these values are close to pursuer position and velocity from observation considering that y-axis has opposite sign
         # due to the fact the kRPC uses left-handed coordinate system. Differences are due to the movement of the vessel reference frame.
         #
-        # The vessel velocity direction in the celestial body non-rotating reference frame, assuming non-accelerating vessel, is given by:
-        #
-        #   self.conn.space_center.transform_direction([0, 1, 0], vessel_orbital_frame, celestial_body_frame)
-        #
-        # Vessel's nose pointing direction is obtained as follows:
-        #
-        #   pointing_direction = np.array(self.conn.space_center.transform_direction([0, 1, 0], vessel_frame, celestial_body_frame))
-        #   pointing_direction[1] = -pointing_direction[1]
-        #
         # This direction should be the same as the direction of the evader's position relative to pursuer's since vessel is pointing at evader.
-        #
         # y-axis (forward) in vessel's reference frame is pointing at target and x-axis to the right. Thus
         # direction [0, 1, 0] is transformed to rel_position direction in celestial body reference frame:
         #
         # self.conn.space_center.transform_direction([0, 1, 0], vessel_frame, celestial_body_frame)
         #
-        # x-axis in vessel's reference frame is transformed to:
-        # x_axis = self.conn.space_center.transform_direction([1, 0, 0], vessel_frame, celestial_body_frame).
-        #
-        # Prograde marker in navball is given by relative velocity vector
 
         """ compute agent's action given observation """
         print("get_action called, prompting ChatGPT model ..." + self.model)
-
-        # Get vessel up direction in celestial body reference frame
-        vessel_up = None
-        if self.use_prograde:
-            vessel_up = self.conn.space_center.transform_direction((0, 0, 1),
-                                                                   self.vessel.reference_frame,
-                                                                   self.body.orbital_reference_frame)
 
         # Get the sun position in the given reference frame
         if sun_position is None:
             sun_position = self.get_sun_position()
 
+        # Obtain reference frames
+        surface_velocity_frame = self.vessel.surface_velocity_reference_frame
+        surface_frame = self.vessel.surface_reference_frame
+
+        vessel_frame = self.vessel.reference_frame
+        celestial_body_frame = self.body.orbital_reference_frame
+
         # Build state and show it
+        # Need to exchange vessel_up's y and z components since KSP uses left-handed coordinate system
+        vessel_up = np.array(self.conn.space_center.transform_direction((0, 0, 1), vessel_frame, celestial_body_frame))
+        vessel_up = State.lh_to_rh(vessel_up)
         state = State(observation, vessel_up, sun_position)
         if state.distance < self.closest_distance:
             self.closest_distance = state.distance
@@ -317,55 +310,243 @@ class LLMAgent(KSPDGBaseAgent):
             elif self.scenario.lower().startswith("sb"):
                 """ TODO: Implement weighted score for SB1  """
             self.weighted_score = weighted_score
+
+        print(f'Mission time: {state.mission_time:.2f}')
+        print(f'Velocity: {state.velocity:.2f}')
         print(f'Closest distance: {self.closest_distance:.2f}')
         print(f'Weighted score: {self.weighted_score:.2f}')
 
-        # Show navball agent action
-        if self.use_prograde:
-            prograde_dir = state.get_prograde()
-            prograde_dir = prograde_dir / np.linalg.norm(prograde_dir, ord=2)
+        if debug:
+            state.show()
+
+        # Surface reference frame: x-axis points in the zenith (e.g. from the center of the body towards the center
+        # of mass of the vessel; y-axis points north and tangential to the surface of the body (east); z-axis points
+        # eastwards and tangential to the surface of the body (north).
+        #
+        # Celestial body orbital reference frame: x-axis points in an arbitrary direction through the equator (zenith),
+        # y-axis points towards the north and z-axis points in an arbitrary direction through the equator.
+        #
+        # Rotation matrix from orbital to surface reference frame of the celestial body
+        rot_matrix = state.surface_rot_matrix
+
+        if debug:
+            print("rot_matrix: " + str(rot_matrix))
+
+            """ Check celestial to surface frame transformation
+            """
+            v = [1, 1, 1]
+            p = np.array(self.conn.space_center.transform_direction(v, celestial_body_frame, surface_frame))
+            q = np.matmul(v, rot_matrix)
+            print("celestial to surface frame transformation: " + str(
+                np.dot(p, q) / (np.linalg.norm(p) * np.linalg.norm(q))))
+
+            """ Check vessel position is given in celestial body orbital reference frame
+            """
+            reference_frame = self.body.reference_frame
+            p = np.array(self.conn.space_center.transform_position([0,0,0], vessel_frame, reference_frame))
+            p = State.lh_to_rh(p)
+            diff = (p - state.pursuer_position) / np.linalg.norm(state.pursuer_position)
+            print("check pursuer position in body reference frame:" + str(diff) + " / " + str(np.linalg.norm(diff)))
+
+            reference_frame = self.body.orbital_reference_frame
+            p = np.array(self.conn.space_center.transform_position([0,0,0], vessel_frame, reference_frame))
+            p = State.lh_to_rh(p)
+            diff = (p - state.pursuer_position) / np.linalg.norm(state.pursuer_position)
+            print("check pursuer position in orbital reference frame:" + str(diff) + " / " + str(np.linalg.norm(diff)))
+
+            reference_frame = self.body.non_rotating_reference_frame
+            p = np.array(self.conn.space_center.transform_position([0,0,0], vessel_frame, reference_frame))
+            p = State.lh_to_rh(p)
+            diff = (p - state.pursuer_position) / np.linalg.norm(state.pursuer_position)
+            print("check pursuer position in non-rotating reference frame:" + str(diff) + " / " + str(np.linalg.norm(diff)))
+
+            """ Check vessel velocity is given in celestial body orbital reference frame
+            """
+            reference_frame = self.body.reference_frame
+            v = self.conn.space_center.transform_velocity([0, 0, 0], [0, 0, 0], vessel_frame, reference_frame)
+            v = State.lh_to_rh(v)
+            diff = (v - state.pursuer_velocity) / np.linalg.norm(state.pursuer_velocity)
+            print("check pursuer velocity in body reference frame:" + str(diff) + " / " + str(np.linalg.norm(diff)))
+
+            reference_frame = self.body.orbital_reference_frame
+            v = self.conn.space_center.transform_velocity([0, 0, 0], [0, 0, 0], vessel_frame, reference_frame)
+            v = State.lh_to_rh(v)
+            diff = (v - state.pursuer_velocity) / np.linalg.norm(state.pursuer_velocity)
+            print("check pursuer velocity in orbital reference frame:" + str(diff) + " / " + str(np.linalg.norm(diff)))
+
+            reference_frame = self.body.non_rotating_reference_frame
+            v = self.conn.space_center.transform_velocity([0, 0, 0], [0, 0, 0], vessel_frame, reference_frame)
+            v = State.lh_to_rh(v)
+            diff = (v - state.pursuer_velocity) / np.linalg.norm(state.pursuer_velocity)
+            print("check pursuer velocity in non-rotating reference frame:" + str(diff) + " / " + str(np.linalg.norm(diff)))
+
+            """ Check vessel is pointing at target
+            """
+            v = np.array(self.vessel.direction(celestial_body_frame))
+            v = State.lh_to_rh(v)
+            print("v: " + str(v))
+            rel_position = state.rel_position
+            print("rel_position: " + str(rel_position/np.linalg.norm(rel_position)))
+            n = np.dot(v, rel_position) / (np.linalg.norm(v) * np.linalg.norm(state.rel_position))
+            print("n: " + str(n))
+            n = np.dot(v, state.vessel_up) / (np.linalg.norm(v) * np.linalg.norm(state.vessel_up))
+            print("n_up: " + str(n))
+
+            """ Obtain Euler angles of vessel's lever marker using these approaches:
+                1) transforming directions from vessel to surface frame
+                2) transforming directions from celestial body to surface frame using kprc
+                3) transforming directions from celestial body to surface frame using the rotation matrix
+            """
+            vessel_up = np.array(self.conn.space_center.transform_direction((0, 0, 1), vessel_frame, surface_frame))
+            v = np.array(self.vessel.direction(surface_frame))
+            l_pitch, l_heading, l_roll = State.get_pitch_heading_roll(v, vessel_up)
+            print(f"LEVER (using surface ref. frame) heading: {l_heading:.2f}, pitch: {l_pitch:.2f}, roll: {l_roll:.2f}")
+            print("v: " + str(v))
+            print('vessel_up: ' + str(vessel_up))
+
+            vessel_up = State.rh_to_lh(state.vessel_up)
+            vessel_up = np.array(self.conn.space_center.transform_direction(vessel_up, celestial_body_frame, surface_frame))
+            l_pitch, l_heading, l_roll = State.get_pitch_heading_roll(v, vessel_up)
+            print(f"LEVER (w/ stored vessel_up) heading: {l_heading:.2f}, pitch: {l_pitch:.2f}, roll: {l_roll:.2f}")
+            print("v: " + str(v))
+            print('vessel_up: ' + str(vessel_up))
+
+            """ Obtain euler angles of lever marker (vessel nose direction)
+            """
+            v = State.rh_to_lh(state.rel_position)
+            v = np.matmul(v, rot_matrix)
+            vessel_up = State.rh_to_lh(state.vessel_up)
+            vessel_up = np.matmul(vessel_up, rot_matrix)
+            l_pitch, l_heading, l_roll = State.get_pitch_heading_roll(v, vessel_up)
+            print(f"LEVER heading: {l_heading:.2f}, pitch: {l_pitch:.2f}, roll: {l_roll:.2f}")
+            print("v: " + str(v))
+            print('vessel_up: ' + str(vessel_up))
+
+        if debug:
+            """ Obtain angles of prograde's marker (direction of vessel velocity relative to target) using these approaches
+                1) transforming directions from celestial body to surface frame using krpc
+                2) transforming directions from celestial body to surface frame using rotation matrix
+            """
+            v = state.pursuer_velocity - state.evader_velocity
+            v = State.rh_to_lh(v)
+            v = self.conn.space_center.transform_direction(v, celestial_body_frame, surface_frame)
+            vessel_up = np.array(self.conn.space_center.transform_direction((0, 0, 1), vessel_frame, surface_frame))
+            p_pitch, p_heading, p_roll = State.get_pitch_heading_roll(v, vessel_up)
+            print(f"PROGRADE (using surface ref. frame) heading: {p_heading:.2f}, pitch: {p_pitch:.2f}, roll: {p_roll:.2f}")
+            print("v: " + str(v))
+            print("vessel_up: " + str(state.vessel_up))
+
+            """ Obtain euler angles of prograde marker (vessel's velocity relative to target)
+            """
+            p_pitch, p_heading, p_roll = state.get_prograde(ref_frame="surface", angles=True)
+            print(f"PROGRADE heading: {p_heading:.2f}, pitch: {p_pitch:.2f}, roll: {p_roll:.2f}")
+
+        if self.scenario.lower().startswith('pe'):
+            """ Obtain evader velocity relative to pursuer in vessel reference frame (retrograde marker)
+            """
+            retrograde = state.get_retrograde(ref_frame="vessel")
+            if debug:
+                print(f"Retrograde direction is {retrograde}")
+
+            print("retrograde: " + str(retrograde/np.linalg.norm(retrograde)))
+
             ft = 1
-            rt = 1 if prograde_dir[0] < 0 else -1
-            dt = 1 if prograde_dir[2] < 0 else -1
-            if state.distance < 1500:
+            v = retrograde / np.linalg.norm(retrograde)
+            if (abs(v[0]) > ROTATION_THRESHOLD) or  (abs(v[2]) > ROTATION_THRESHOLD):
+                rt = 1 if retrograde[0] > 0 else -1
+                dt = 1 if retrograde[2] > 0 else -1
+            else:
+                rt = 0
+                dt = 0
+#            if state.distance < 1500:
+            if (np.dot(state.rel_position, state.rel_velocity) < 0) and (state.time_to_intercept * VESSEL_ACCELERATION < state.velocity) and (state.distance > EVASION_DISTANCE):
+                # Target is approaching and intercept time is insufficient to stop
+                if state.velocity > APPROACH_SPEED:
+                    # Reduce speed
+                    ft = -1
+                else:
+                    ft = 0
+        elif self.scenario.lower.startswith('lbg'):
+            """ Obtain evader velocity relative to pursuer in vessel reference frame (retrograde marker)
+            """
+            retrograde = state.get_retrorade()
+            if debug:
+                print(f"Retrograde direction is {retrograde}")
+
+            """ Obtain guard marker in vessel reference frame
+            """
+            guard = State.rh_to_lh(state.guard_position)
+            guard = np.matmul(guard, self.vessel_rot_matrix)
+            if debug:
+                print(f"Guard direction is {guard}")
+
+            """ Forward acceleration """
+            dist = 1500
+            ft = 1
+            if state.distance < dist:
                 if state.velocity > 20:
                     ft = -1
                 else:
                     ft = 0
-            print(f"Prograde direction is v={prograde_dir}. Rotations: {rt} and {dt}")
-        state.show()
 
-        # Add state to sliding window. Action is none since it is unknow at this moment
+            """ Rotate toward target
+            """
+            rt = 1 if retrograde[0] > 0 else -1
+            dt = 1 if retrograde[2] > 0 else -1
+            if guard[1] > 0:
+                """ Evade guard """
+                grt = 1 if guard[0] > 0 else -1
+                gdt = 1 if guard[2] > 0 else -1
+                if rt * grt > 0:
+                    rt = -rt
+                if dt * gdt > 0:
+                    dt = -dt
+        else:
+            ft = 0
+            rt = 0
+            dt = 0
+
+        # Add state to sliding window. Action is none since it is unknown at this moment
         self.sliding_window.add(state, None)
 
-        # Create message structure
-        messages = self.sliding_window.get_messages()
 
-        print("Model: " + self.model)
-        action = self.check_response(response=self.get_completion(prompt=messages, model=self.model))
-        if action is None:
-            _ = self.sliding_window.pop()
-            action = [0, 0, 0, 0.1]
+        ref_frame = 0
+        if ref_frame == 0:
+            # Burn vector in vessel reference frame
+            burn_vec = [ft, rt, dt, self.duration]
+            ref_frame = 0
         else:
-            # Set action in last conversation
-            self.sliding_window.set_action(-1, action[0:3])
+            # Burn vector in celestial body orbital reference frame
+            rot_matrix = np.linalg.inv(state.vessel_rot_matrix)
+            v = [ft, rt, dt]
+            v = np.matmul(v, rot_matrix)
+            v = State.lh_to_rh(v)
+            burn_vec = [v[0], v[1], v[2], self.duration]
 
-            if rt != action[1] or dt != action[2]:
-                print("Error: Prograde direction is not aligned with action")
+            v = [0, 1, 0]
+            v = np.matmul(v, rot_matrix)
+            v = State.lh_to_rh(v)
+            print("v: " + str(v))
+            print("rel_position: " + str(state.rel_position/np.linalg.norm(state.rel_position, ord=2)))
+
+        action = {
+            "burn_vec": burn_vec,
+            "ref_frame": ref_frame
+        }
 
         """ Log result
         """
         if self.log is not None:
-            row = observation[0:15]
-            row.insert(0, action[3])
-            row.insert(0, action[0:3])
+            row = observation
+            row = list(row)
+            row.insert(0, action["burn_vec"][3])
+            row.insert(0, action["burn_vec"][0:3])
             if self.use_prograde:
                 vessel_up = state.vessel_up
                 row.append(list(vessel_up))
                 prograde = state.get_prograde()
                 row.append(prograde.tolist())
             row.append(self.weighted_score)
-            print("Row: " + str(row))
             csv.writer(self.log).writerow(row)
             self.log.flush()
 
@@ -388,9 +569,9 @@ class LLMAgent(KSPDGBaseAgent):
             if index != -1:
                 function_args = function_args[:index]
             # Surround arguments with quotes
-            function_args = function_args.replace("ft:", '"ft":')
-            function_args = function_args.replace("rt:", '"rt":')
-            function_args = function_args.replace("dt:", '"dt":')
+            function_args = function_args.replace("ft", '"ft"')
+            function_args = function_args.replace("rt", '"rt"')
+            function_args = function_args.replace("dt", '"dt"')
             function_args = function_args.replace(',\n}', '\n}')
         function_args = function_args.replace("]", '}')
         function_args = function_args.replace("[", '{')
@@ -439,11 +620,11 @@ class LLMAgent(KSPDGBaseAgent):
         if response is None:
             return None
         print("Response message: " + str(response))
-        duration = self.duration
-        available_functions = {
-            "perform_action": lambda ft, rt, dt: [ft, rt, dt, duration],
-        }
         if response.get("function_call"):
+            duration = self.duration
+            available_functions = {
+                "perform_action": lambda ft, rt, dt: [ft, rt, dt, duration],
+            }
             function_name = response["function_call"]["name"]
             if function_name not in available_functions:
                 print("error: LLM called wrong function, name:", function_name)
@@ -463,25 +644,8 @@ class LLMAgent(KSPDGBaseAgent):
                     print(function_args)
                     function_response = [0, 0, 0, 0.1]
         else:
-            function_name = "perform_action"
-            function_to_call = available_functions[function_name]
-            try:
-                content = response["content"]
-                index = content.find(function_name + "(")
-                if index != -1:
-                    # Get function args from content
-                    function_args = self.clean_response(content)
-                    function_args = json.loads(function_args)
-
-                    function_response = function_to_call(**function_args)
-                    if self.use_enum:
-                        function_response = Action.from_enum(function_response)
-                else:
-                    print("error: Response did not include call to perform_action")
-                    function_response = [0, 0, 0, 0.1]
-            except Exception as ex:
-                print(function_args)
-                function_response = [0, 0, 0, 0.1]
+            print("error: LLM did not call function")
+            function_response = [0, 0, 0, 0.1]
 
         return function_response
 
@@ -494,22 +658,13 @@ class LLMAgent(KSPDGBaseAgent):
         # Perform chat completion
         time_before = time.time()
         try:
-            if self.use_cot:
-                """ Cannot use function calling with CoT
-                """
-                response = openai.ChatCompletion.create(
-                    model=model,
-                    messages=prompt,
-                    temperature=0  # randomness, cool approach if we want to adjust some param with this
-                )
-            else:
-                response = openai.ChatCompletion.create(
-                    model=model,
-                    messages=prompt,
-                    functions=self.functions,
-                    max_tokens = 150, # limit output tokens (enough for valid responses)
-                    temperature=0  # randomness, cool approach if we want to adjust some param with this
-                )
+            response = openai.ChatCompletion.create(
+                model=model,
+                messages=prompt,
+                functions=self.functions,
+                max_tokens = 150, # limit output tokens (enough for valid responses)
+                temperature=0  # randomness, cool approach if we want to adjust some param with this
+            )
             status = "success"
             status_message = None
             result = response.choices[0].message
@@ -560,7 +715,14 @@ if __name__ == "__main__":
     scenarios["PE1_E1_I2"] = PE1_E1_I2_Env
     scenarios["PE1_E1_I3"] = PE1_E1_I3_Env
     scenarios["PE1_E1_I4"] = PE1_E1_I4_Env
+    scenarios["PE1_E3_I1"] = PE1_E3_I1_Env
+    scenarios["PE1_E3_I2"] = PE1_E3_I2_Env
     scenarios["PE1_E3_I3"] = PE1_E3_I3_Env
+    scenarios["PE1_E3_I4"] = PE1_E3_I4_Env
+    scenarios["PE1_E4_I3"] = PE1_E4_I3_Env
+
+    scenarios["LBG1_LG2_I1"] = LBG1_LG2_I1_Env
+    scenarios["LBG1_LG2_I2"] = LBG1_LG2_I2_Env
 
     scenarios["SB1_E1_I1"] = SB1_E1_I1_Env
     scenarios["SB1_E1_I2"] = SB1_E1_I2_Env

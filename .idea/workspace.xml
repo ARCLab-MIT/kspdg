@@ -4,10 +4,21 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2720ae2c-5b78-4671-ab69-13d2c2318108" name="Changes" comment="Changes for SB problem">
-      <change beforePath="$PROJECT_DIR$/arclab_mit/agents/fine_tuning_agent.py" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents/fine_tuning_agent.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/evaluation/configs/example_eval_cfg.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/evaluation/configs/example_eval_cfg.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/example_agent_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/example_agent_runner.py" afterDir="false" />
+    <list default="true" id="2720ae2c-5b78-4671-ab69-13d2c2318108" name="Changes" comment="Changes for LGB problem for my branch">
+      <change afterPath="$PROJECT_DIR$/arclab_mit/agents/agent_common.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/arclab_mit/agents/alex_prompts_v2.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/arclab_mit/agents/chatgpt.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/arclab_mit/agents/navball_agent.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/arclab_mit/agents/sliding_window_new.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/arclab_mit/agents_data/CSV_parsing_history.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/arclab_mit/agents_data/fine_tuning/wandb_files_wrapper.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/arclab_mit/agents/fine_tuning_agent_history.py" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents/fine_tuning_agent_history.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/arclab_mit/agents/jason_keyboard_input.py" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents/jason_keyboard_input.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/arclab_mit/agents/sliding_window.py" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents/sliding_window.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/arclab_mit/agents_data/fine_tuning/fine_tuning_job.py" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents_data/fine_tuning/fine_tuning_job.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -36,26 +47,26 @@
   &quot;keyToString&quot;: {
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/temp/a.out&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/MIT/kspdg/arclab_mit/agents&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\MIT\kspdg\arclab_mit\agents" />
+      <recent name="C:\Users\turnz\anaconda3\Lib\site-packages\wandb_utils\commands" />
+      <recent name="C:\MIT\kspdg\evaluation\configs" />
       <recent name="C:\MIT\kspdg\arclab_mit\agents_data" />
       <recent name="C:\MIT\kspdg\arclab_mit\agents_data\fine_tuning" />
-      <recent name="C:\MIT\kspdg\arclab_mit\agents" />
-      <recent name="C:\MIT\kspdg\evaluation\configs" />
-      <recent name="C:\MIT\kspdg" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\MIT\kspdg\arclab_mit\agents_data" />
       <recent name="C:\MIT\kspdg\arclab_mit\agents_data\fine_tuning" />
+      <recent name="C:\MIT\kspdg\arclab_mit\agents_data" />
       <recent name="C:\MIT\kspdg\arclab_mit\agents" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.fine_tuning_agent">
-    <configuration name="CSV_parsing" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python.fine_tuning_job (1)">
+    <configuration name="CSV_parsing_history" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="kspdg" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -67,7 +78,28 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/arclab_mit/agents_data/CSV_parsing.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/arclab_mit/agents_data/CSV_parsing_history.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="chatgpt" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="kspdg" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/arclab_mit/agents" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/arclab_mit/agents/chatgpt.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -107,7 +139,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="fine_tuning_agent" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="fine_tuning_agent_history" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="kspdg" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -119,17 +151,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="net.ashald.envfile">
-        <option name="IS_ENABLED" value="false" />
-        <option name="IS_SUBST" value="false" />
-        <option name="IS_PATH_MACRO_SUPPORTED" value="false" />
-        <option name="IS_IGNORE_MISSING_FILES" value="false" />
-        <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="false" />
-        <ENTRIES>
-          <ENTRY IS_ENABLED="true" PARSER="runconfig" />
-        </ENTRIES>
-      </EXTENSION>
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/arclab_mit/agents/fine_tuning_agent.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/arclab_mit/agents/fine_tuning_agent_history.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -138,59 +160,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="fine_tuning_agent" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="kspdg" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/arclab_mit/agents" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="net.ashald.envfile">
-        <option name="IS_ENABLED" value="false" />
-        <option name="IS_SUBST" value="false" />
-        <option name="IS_PATH_MACRO_SUPPORTED" value="false" />
-        <option name="IS_IGNORE_MISSING_FILES" value="false" />
-        <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="false" />
-        <ENTRIES>
-          <ENTRY IS_ENABLED="true" PARSER="runconfig" />
-        </ENTRIES>
-      </EXTENSION>
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/arclab_mit/agents/fine_tuning_agent.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="fine_tuning_agent_fix" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="kspdg" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/arclab_mit/agents" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/arclab_mit/agents/fine_tuning_agent_fix.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="fine_tuning_job (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="fine_tuning_job (1)" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="kspdg" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -213,7 +183,7 @@
         </ENTRIES>
       </EXTENSION>
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/arclab_mit/agents_data/fine_tuning/fine_tuning_job.py" />
-      <option name="PARAMETERS" value="sb1_i5_keyboard_agent_actions_20231203-013146_enum_relative.jsonl" />
+      <option name="PARAMETERS" value="pe1_i3_keyboard_agent_actions_20231102-124825_no_null_actions_training.jsonl" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -283,7 +253,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="jason_keyboard_input" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="navball_agent" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="kspdg" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -295,8 +265,39 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/arclab_mit/agents/jason_keyboard_input.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/arclab_mit/agents/navball_agent.py" />
       <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="pe1_paper_e3_i3_keyboard_agent_actions_20231203-222357_val" type="PythonConfigurationType" factoryName="Python">
+      <module name="kspdg" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/arclab_mit/agents_data" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="net.ashald.envfile">
+        <option name="IS_ENABLED" value="false" />
+        <option name="IS_SUBST" value="false" />
+        <option name="IS_PATH_MACRO_SUPPORTED" value="false" />
+        <option name="IS_IGNORE_MISSING_FILES" value="false" />
+        <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="false" />
+        <ENTRIES>
+          <ENTRY IS_ENABLED="true" PARSER="runconfig" />
+        </ENTRIES>
+      </EXTENSION>
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/arclab_mit/agents_data/evaluate_model.py" />
+      <option name="PARAMETERS" value="pe1_paper_i3_keyboard_agent_actions_20231125-142215_train.csv" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -366,24 +367,47 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="wandb_files_wrapper" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="kspdg" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/arclab_mit/agents_data/fine_tuning" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/arclab_mit/agents_data/fine_tuning/wandb_files_wrapper.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <list>
+      <item itemvalue="Python.pe1_paper_e3_i3_keyboard_agent_actions_20231203-222357_val" />
       <item itemvalue="Python.check_fine_tuning_job" />
       <item itemvalue="Python.fine_tuning_job" />
       <item itemvalue="Python.test.pyc" />
       <item itemvalue="Python.uncompile" />
-      <item itemvalue="Python.fine_tuning_agent_fix" />
       <item itemvalue="Python.fine_tuning_job (1)" />
-      <item itemvalue="Python.CSV_parsing" />
-      <item itemvalue="Python.fine_tuning_agent" />
-      <item itemvalue="Python.jason_keyboard_input" />
+      <item itemvalue="Python.CSV_parsing_history" />
+      <item itemvalue="Python.chatgpt" />
+      <item itemvalue="Python.wandb_files_wrapper" />
+      <item itemvalue="Python.navball_agent" />
+      <item itemvalue="Python.fine_tuning_agent_history" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.fine_tuning_agent" />
-        <item itemvalue="Python.fine_tuning_agent_fix" />
-        <item itemvalue="Python.jason_keyboard_input" />
-        <item itemvalue="Python.CSV_parsing" />
-        <item itemvalue="Python.fine_tuning_job (1)" />
+        <item itemvalue="Python.fine_tuning_agent_history" />
+        <item itemvalue="Python.chatgpt" />
+        <item itemvalue="Python.CSV_parsing_history" />
+        <item itemvalue="Python.navball_agent" />
+        <item itemvalue="Python.wandb_files_wrapper" />
       </list>
     </recent_temporary>
   </component>
@@ -480,7 +504,14 @@
       <option name="project" value="LOCAL" />
       <updated>1702311012521</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="Changes for LGB problem for my branch">
+      <created>1704920446488</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1704920446488</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -501,7 +532,8 @@
     <MESSAGE value="Making small changes for taking care of private keys and fine-tuned agent. Uploaded my prompts via txt. Changing keyboard input for different logs. Added a new script for sliding window for everyone's use." />
     <MESSAGE value="Minor patch" />
     <MESSAGE value="Changes for SB problem" />
-    <option name="LAST_COMMIT_MESSAGE" value="Changes for SB problem" />
+    <MESSAGE value="Changes for LGB problem for my branch" />
+    <option name="LAST_COMMIT_MESSAGE" value="Changes for LGB problem for my branch" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -513,33 +545,68 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/arclab_mit/agents/extended_obs_agent/extended_obs_agent.py</url>
-          <line>78</line>
+          <line>109</line>
           <option name="timeStamp" value="74" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/arclab_mit/agents/jason_keyboard_input.py</url>
-          <line>204</line>
-          <option name="timeStamp" value="127" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/arclab_mit/agents_data/CSV_parsing.py</url>
-          <line>323</line>
+          <line>326</line>
           <option name="timeStamp" value="186" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/arclab_mit/agents_data/CSV_parsing.py</url>
-          <line>249</line>
-          <option name="timeStamp" value="187" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/arclab_mit/agents/fine_tuning_agent.py</url>
-          <line>457</line>
-          <option name="timeStamp" value="197" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/arclab_mit/agents/fine_tuning_agent_fix.py</url>
           <line>569</line>
           <option name="timeStamp" value="202" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/arclab_mit/agents_data/CSV_parsing.py</url>
+          <line>85</line>
+          <option name="timeStamp" value="203" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/arclab_mit/agents/fine_tuning_agent.py</url>
+          <line>504</line>
+          <option name="timeStamp" value="222" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$USER_HOME$/anaconda3/Lib/site-packages/wandb_utils/commands/files.py</url>
+          <line>39</line>
+          <option name="timeStamp" value="257" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/arclab_mit/agents_data/fine_tuning/wandb_files_wrapper.py</url>
+          <line>368</line>
+          <option name="timeStamp" value="292" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/arclab_mit/agents_data/fine_tuning/wandb_files_wrapper.py</url>
+          <line>378</line>
+          <option name="timeStamp" value="295" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/arclab_mit/agents/navball_agent.py</url>
+          <line>521</line>
+          <option name="timeStamp" value="337" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/arclab_mit/agents/fine_tuning_agent_history.py</url>
+          <line>353</line>
+          <option name="timeStamp" value="342" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/arclab_mit/agents/fine_tuning_agent_history.py</url>
+          <line>363</line>
+          <option name="timeStamp" value="346" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/arclab_mit/agents/chatgpt.py</url>
+          <line>109</line>
+          <option name="timeStamp" value="349" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/arclab_mit/agents_data/fine_tuning/fine_tuning_job.py</url>
+          <line>158</line>
+          <option name="timeStamp" value="350" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -550,5 +617,10 @@
         </breakpoint>
       </default-breakpoints>
     </breakpoint-manager>
+    <watches-manager>
+      <configuration name="PythonConfigurationType">
+        <watch expression="e" />
+      </configuration>
+    </watches-manager>
   </component>
 </project>

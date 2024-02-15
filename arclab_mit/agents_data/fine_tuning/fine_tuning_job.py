@@ -83,8 +83,11 @@ def generate_predictions_from_jsonl(scenario, model, jsonl_file):
         pattern = os.environ['LBG_USER_PROMPT']
     else:
         pattern = os.environ['SB_USER_PROMPT']
+    pattern = pattern.replace("{CoT}", "")
+    pattern = pattern[pattern.find("{"):]
     pattern = pattern.replace("{obs}", "\{(.+?)\}")
-    pattern = pattern.replace("{CoT}", "(.*?)")
+    if "{calculations}" in pattern:
+        pattern = pattern.replace("{calculations}", "(.*?)")
     agent = LLMAgent()
 
     # Initiate the output dataframe
@@ -103,16 +106,21 @@ def generate_predictions_from_jsonl(scenario, model, jsonl_file):
                 'throttles': Action.from_enum([action_json['ft'], action_json['rt'], action_json['dt'], action_json['dt'], 0.5])[0:3]
             }
             try:
+                # Find last occurrence of "{"
+                str = messages[-1]['content']
+                p = str.rfind("{")
+                k = str[p:]
+
                 # Search for obs and CoT in the last message
-                match = re.search(pattern, messages[-1]['content'])
+                match = re.search(pattern, k)
                 if match:
                     # Extract values from the matched groups
                     obs = json.loads('{' + match.group(1) + '}')
-                    CoT = match.group(2)
 
                     # Extend output_data with observations
                     output_data.update(obs)
 
+                    messages[1]['content'] = os.environ['PE_CHAIN_OF_THOUGHT'] + messages[1]['content']
                     # Use LLM model to predict action
                     try:
                         action = agent.check_response(response=agent.get_completion(prompt=messages, model=model))
@@ -343,7 +351,7 @@ if __name__ == '__main__':
     wandb.login(key=wandb_api_key)
 
     while True:
-        option = input("\nChoose option:\nc: create fine-tune job\nr: retrieve fine-tune job\nl: log fine-tune job\nq: quit\n")
+        option = input("\nChoose option:\nc: create fine-tune job\nr: retrieve fine-tune job\nl: log fine-tune job\np: predict\nq: quit\n")
         option = option.lower()
 
         try:
@@ -375,7 +383,8 @@ if __name__ == '__main__':
                 print("\n")
                 print("base model: " + model)
                 print("train file: " + train)
-                print("validation file: " + validation)
+                if validation is not None:
+                    print("validation file: " + validation)
                 print("# epochs: " + n_epochs)
                 print("batch size: " + batch_size)
                 print("learning_rate_multiplier: " + learning_rate_multiplier)
@@ -395,6 +404,15 @@ if __name__ == '__main__':
             elif option == "e":
                 datafile = input("datafile (csv): ")
                 evaluate_predictions(datafile)
+            elif option == 'p':
+                model = os.environ['MODEL']
+                scenario = os.environ['SCENARIO']
+                data = input(f"scenario [{scenario}]: ")
+                if data != '':
+                    scenario = data
+                jsonl_file = input("jsonl file: ")
+                generate_predictions_from_jsonl(scenario, model, jsonl_file)
+                evaluate_predictions(jsonl_file.replace(".jsonl", ".csv"))
             else:
                 print("Wrong option: " + option)
         except Exception as e:

@@ -23,7 +23,10 @@ import math
 import csv
 import datetime
 
+from agent_common import State
+
 debug = False
+
 
 def write_dict_to_csv(d, filename):
     """
@@ -42,29 +45,6 @@ def write_dict_to_csv(d, filename):
             row = {k: (d[k][i] if i < len(d[k]) else None) for k in d.keys()}
             writer.writerow(row)
 
-class State():
-    def __init__(self, observation, sun_position):
-        self.mission_time = observation[0]
-        self.vehicle_mass = observation[1]
-        self.vehicle_propellant = observation[2]
-
-        self.pursuer_position = np.array([observation[3], observation[4], observation[5]])
-        self.pursuer_velocity = np.array([observation[6], observation[7], observation[8]])
-
-        self.evader_position = np.array([observation[9], observation[10], observation[11]])
-        self.evader_velocity = np.array([observation[12], observation[13], observation[14]])
-
-        self.rel_position = self.evader_position - self.pursuer_position
-        self.rel_velocity = self.evader_velocity - self.pursuer_velocity
-
-        self.distance = np.linalg.norm(self.rel_position, ord=2)
-        self.velocity = np.linalg.norm(self.rel_velocity, ord=2)
-
-        self.sun_position = sun_position
-        p_e_pos = self.evader_position - self.pursuer_position
-        p_s_pos = self.sun_position - self.pursuer_position
-        angle_cosine = np.dot(p_e_pos, p_s_pos) / (np.linalg.norm(p_e_pos) * np.linalg.norm(p_s_pos))
-        self.alignment_angle = math.degrees(np.arccos(angle_cosine))
 
 class KeyboardControlledAgent(KSPDGBaseAgent):
     """
@@ -85,7 +65,7 @@ class KeyboardControlledAgent(KSPDGBaseAgent):
         self.forward_throttle = 0
         self.right_throttle = 0
         self.down_throttle = 0
-        if (self.scenario.startswith('LBG')):
+        if self.scenario.startswith('LBG'):
             self.actions_dict = {  # Names for all the different columns to append data to, useful for the csv export.
                 'throttles': [],
                 'time': [],
@@ -108,30 +88,36 @@ class KeyboardControlledAgent(KSPDGBaseAgent):
                 'guard_pos_z': [],
                 'guard_vel_x': [],
                 'guard_vel_y': [],
-                'guard_vel_z': []
+                'guard_vel_z': [],
+                'vessel_up_x': [],
+                'vessel_up_y': [],
+                'vessel_up_z': []
             }
         else:
             self.actions_dict = {                   # Names for all the different columns to append data to, useful for the csv export.
-            'throttles': [],
-            'time': [],
-            'vehicle_mass': [],
-            'vehicle_propellant': [],
-            'pursuer_pos_x': [],
-            'pursuer_pos_y': [],
-            'pursuer_pos_z': [],
-            'pursuer_vel_x': [],
-            'pursuer_vel_y': [],
-            'pursuer_vel_z': [],
-            'evader_pos_x': [],
-            'evader_pos_y': [],
-            'evader_pos_z': [],
-            'evader_vel_x': [],
-            'evader_vel_y': [],
-            'evader_vel_z': [],
-            'sun_pos_x': [],
-            'sun_pos_y': [],
-            'sun_pos_z': [],
-        }
+                'throttles': [],
+                'time': [],
+                'vehicle_mass': [],
+                'vehicle_propellant': [],
+                'pursuer_pos_x': [],
+                'pursuer_pos_y': [],
+                'pursuer_pos_z': [],
+                'pursuer_vel_x': [],
+                'pursuer_vel_y': [],
+                'pursuer_vel_z': [],
+                'evader_pos_x': [],
+                'evader_pos_y': [],
+                'evader_pos_z': [],
+                'evader_vel_x': [],
+                'evader_vel_y': [],
+                'evader_vel_z': [],
+                'vessel_up_x': [],
+                'vessel_up_y': [],
+                'vessel_up_z': [],
+                'sun_pos_x': [],
+                'sun_pos_y': [],
+                'sun_pos_z': [],
+            }
 
         """ Connect to the KRPC server.
         """
@@ -141,6 +127,13 @@ class KeyboardControlledAgent(KSPDGBaseAgent):
         """
         self.vessel = self.conn.space_center.active_vessel
         self.body = self.vessel.orbit.body
+
+        """ Get reference frames
+        """
+        self.celestial_body_frame = self.body.orbital_reference_frame
+        self.vessel_frame = self.vessel.reference_frame
+        self.surface_velocity_frame = self.vessel.surface_velocity_reference_frame
+        self.surface_frame = self.vessel.surface_reference_frame
 
         listener = keyboard.Listener(on_press=self.on_key_press, on_release=self.on_key_release)
         listener.start()
@@ -212,25 +205,37 @@ class KeyboardControlledAgent(KSPDGBaseAgent):
         an abstract method
         """
 
+        """ Complete observations with vessel_up and sun_pos vectors
+            Note: Need to convert KSP left-handed coordinates to right-handed coordinates
+        """
+        vessel_up = np.array(self.conn.space_center.transform_direction((0, 0, 1), self.vessel_frame, self.celestial_body_frame))
+        vessel_up = State.lh_to_rh(vessel_up)
+        sun_pos = np.array(self.conn.space_center.bodies['Sun'].position(self.celestial_body_frame))
+        sun_pos = State.lh_to_rh(sun_pos)
+
+        """ Add vessel up vector
+        """
+        observation.append(vessel_up[0])
+        observation.append(vessel_up[1])
+        observation.append(vessel_up[2])
+
         """ add sun position for SB (sun-blocking) scenarios
         """
         if self.scenario.startswith('SB'):
-            reference_frame = self.body.orbital_reference_frame
-            sun_pos = self.conn.space_center.bodies['Sun'].position(reference_frame)
             observation.append(sun_pos[0])
             observation.append(sun_pos[1])
             observation.append(sun_pos[2])
-
 
         # Return action list
         print(self.forward_throttle, self.right_throttle, self.down_throttle)
         self.save_actions(observation)
         return [self.forward_throttle, self.right_throttle, self.down_throttle, 0.5]
 
+
 if __name__ == "__main__":
     try:
-        scenario = 'LBG1_LG2_I2_V1'
-        env = LBG1_LG2_I2_Env
+        scenario = 'PE1_E1_I3'
+        env = PE1_E1_I3_Env
 
         keyboard_agent = KeyboardControlledAgent(scenario)
         runner = AgentEnvRunner(
@@ -247,7 +252,6 @@ if __name__ == "__main__":
     finally:
         print("Saving data to csv...")
         print(len(keyboard_agent.actions_dict['throttles']))
-        if(len(keyboard_agent.actions_dict['throttles']) > 10):
+        if len(keyboard_agent.actions_dict['throttles'] > 10):
             write_dict_to_csv(keyboard_agent.actions_dict, '../agents_data/lbg1_lg2_i2_keyboard_agent_actions_' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.csv')
             print("Success!" + '../agents_data/sb1_e1_i5_keyboard_agent_actions_' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + ".csv")
-

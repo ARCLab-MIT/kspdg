@@ -617,6 +617,7 @@ if __name__ == '__main__':
 
     wandb_api_key = os.environ['WANDB_API_KEY']
     wandb.login(key=wandb_api_key)
+    wandb_api = wandb.Api()
 
     entity = os.environ['WANDB_ENTITY']
     entity = input(f"entity [{entity}]: ")
@@ -629,7 +630,7 @@ if __name__ == '__main__':
         project = os.environ['WANDB_PROJECT']
 
     while True:
-        option = input("\nChoose option\ne: export run\ni: import run\nu: upload files\ns: statistics\nv: view run\nq: quit\n")
+        option = input("\nChoose option\ne: export run\ni: import run\nu: upload files\ns: statistics\nv: view run\nd: delete run\nq: quit\n")
         option = option.lower()
 
         if option == 'q':
@@ -660,5 +661,11 @@ if __name__ == '__main__':
                 working_dir = os.getcwd()
             scenario = input("scenario: ")
             statistics = generate_statistics(working_dir, scenario)
+        elif option == "d":
+            run_id = input("run id: ")
+            confirmation = input("Delete run_id " + run_id + " [y/n]: ")
+            if confirmation.lower() == 'y':
+                run = wandb_api.run("carrusk/KSPDG Challenge (paper)/" + run_id)
+                run.delete()
         else:
             print("Wrong option: " + option)

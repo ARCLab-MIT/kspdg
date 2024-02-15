@@ -96,6 +96,9 @@ def generate_predictions_from_jsonl(scenario, model, jsonl_file):
     # Process jsonl file
     with open(jsonl_file, 'r') as file:
         for line in file:
+            if line == "" or line == "\n" or line == "\r\n" or line == "\r" or line == "\t" or line == " ":
+                # Skip empty lines
+                continue
             message_structure = json.loads(line)
 
             # Pop assistant message and initiate output_data with "throttles" (e.g. action in assistant)
@@ -120,7 +123,7 @@ def generate_predictions_from_jsonl(scenario, model, jsonl_file):
                     # Extend output_data with observations
                     output_data.update(obs)
 
-                    messages[1]['content'] = os.environ['PE_CHAIN_OF_THOUGHT'] + messages[1]['content']
+                    messages[-1]['content'] = os.environ['PE_CHAIN_OF_THOUGHT'] + messages[-1]['content']
                     # Use LLM model to predict action
                     try:
                         action = agent.check_response(response=agent.get_completion(prompt=messages, model=model))
@@ -294,11 +297,11 @@ def log_job_results(scenario, job_id, experiment, generate_predictions):
         result_files = openai.File.download(result_files[0]).decode()
         with open(join(dataset_dir, 'training.jsonl'), 'w') as file:
             for line in training.split('\n'):
-                file.write(line)
+                file.write(line + '\n')
         print("Downloaded training file: " + join(dataset_dir, 'training.jsonl'))
         with open(join(dataset_dir, 'validation.jsonl'), 'w') as file:
             for line in validation.split('\n'):
-                file.write(line)
+                file.write(line + '\n')
         print("Downloaded validation file: " + join(dataset_dir, 'validation.jsonl'))
         with open(join(dataset_dir, 'result_files.csv'), 'w') as file:
             for line in result_files.split('\n'):

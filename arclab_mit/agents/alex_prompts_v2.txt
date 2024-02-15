@@ -11,6 +11,11 @@ in your vessel reference frame wherein the x axes points to the right, the y axe
 the z axes points upwards. The maximum throttle is 1. As a hint you should accelerate.
 Show reasoning."
 
+PE_SYSTEM_PROMPT="You operate as an autonomous agent controlling a pursuit spacecraft. Your goal is to apply throttles
+to capture the evader given the positions and velocities of the pursuer and evader and considering that maximum throttle is 1.
+As a hint you should accelerate in the direction of the relative position to the evader. Do not show neither reasoning
+nor calculations. After reasoning call the perform_action function."
+
 # Original system prompt w/o prograde
 #
 PE_SYSTEM_PROMPT_orig="You operate as an autonomous agent controlling a pursuit spacecraft. Your goal is to apply throttles
@@ -48,6 +53,8 @@ This means we should apply
 throttles to move left, forward and up. Therefore we should call
 perform_action({\"ft\": \"forward\", \"rt\": \"left\", \"dt\": \"up\"}).
 Now answer the following question:\n"
+
+PE_CHAIN_OF_THOUGHT=""
 
 # This CoT prompt only works for gpt-3.5-turbo-0125
 #

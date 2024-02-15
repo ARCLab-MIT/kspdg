@@ -4,21 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2720ae2c-5b78-4671-ab69-13d2c2318108" name="Changes" comment="Changes for LGB problem for my branch">
-      <change afterPath="$PROJECT_DIR$/arclab_mit/agents/agent_common.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/arclab_mit/agents/alex_prompts_v2.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/arclab_mit/agents/chatgpt.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/arclab_mit/agents/navball_agent.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/arclab_mit/agents/sliding_window_new.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/arclab_mit/agents_data/CSV_parsing_history.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/arclab_mit/agents_data/fine_tuning/wandb_files_wrapper.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="2720ae2c-5b78-4671-ab69-13d2c2318108" name="Changes" comment="Navball bot and CoT for PE problem">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/arclab_mit/agents/fine_tuning_agent_history.py" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents/fine_tuning_agent_history.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/arclab_mit/agents/jason_keyboard_input.py" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents/jason_keyboard_input.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/arclab_mit/agents/sliding_window.py" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents/sliding_window.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/arclab_mit/agents/alex_prompts_v2.txt" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents/alex_prompts_v2.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/arclab_mit/agents_data/fine_tuning/fine_tuning_job.py" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents_data/fine_tuning/fine_tuning_job.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -511,7 +500,14 @@
       <option name="project" value="LOCAL" />
       <updated>1704920446488</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="Navball bot and CoT for PE problem">
+      <created>1708005360406</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1708005360406</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -533,7 +529,8 @@
     <MESSAGE value="Minor patch" />
     <MESSAGE value="Changes for SB problem" />
     <MESSAGE value="Changes for LGB problem for my branch" />
-    <option name="LAST_COMMIT_MESSAGE" value="Changes for LGB problem for my branch" />
+    <MESSAGE value="Navball bot and CoT for PE problem" />
+    <option name="LAST_COMMIT_MESSAGE" value="Navball bot and CoT for PE problem" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -605,8 +602,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/arclab_mit/agents_data/fine_tuning/fine_tuning_job.py</url>
-          <line>158</line>
+          <line>161</line>
           <option name="timeStamp" value="350" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/arclab_mit/agents_data/fine_tuning/fine_tuning_job.py</url>
+          <line>137</line>
+          <option name="timeStamp" value="356" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/arclab_mit/agents_data/fine_tuning/fine_tuning_job.py</url>
+          <line>130</line>
+          <option name="timeStamp" value="357" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

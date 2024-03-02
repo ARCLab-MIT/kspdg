@@ -40,7 +40,10 @@ class State:
     DEFAULT_USE_RELATIVE_COORDINATES = False
     DEFAULT_USE_SHORT_NAMES = False
     DEFAULT_USE_PROGRADE = False
+    DEFAULT_USE_COT = False
+    DEFAULT_USE_COT_SPEED_LIMIT = False
 
+    ROTATION_THRESHOLD = 0.0
     VESSEL_ACCELERATION = 0.2  # [m/s^2]
 
     def __init__(self, observation, vessel_up=None, sun_position=None):
@@ -101,6 +104,17 @@ class State:
             vessel_rot_matrix = np.array([x_axis, y_axis, z_axis])
             # Rotation from celestial to vessel
             self.vessel_rot_matrix = np.linalg.inv(vessel_rot_matrix)
+
+            """ Check celestial to vessel transformation
+            
+                The angle between the relative position and velocity vectors in the vessel frame should be the same as
+                the angle between vessel nose and the retrograde vector (as defined by Navball) in the celestial frame.
+            """
+            # Check vessel transformation
+            angle1 = State.angle_between_vectors(self.rel_position, self.rel_velocity)
+            angle2 = State.angle_between_vectors([0, 1, 0], self.get_retrograde())
+            if abs((angle1 - angle2)) > 1:
+                print(f"Warning: angles in celestial {angle1:.2f} and vessel {angle2:.2f} frame differ by {angle1 - angle2:.2f} degrees")
 
         self.sun_position = sun_position
         if sun_position is not None:
@@ -208,7 +222,9 @@ class State:
                 return v / np.linalg.norm(v)
         return None
 
-    """ Get pitch, heading and roll of prograde (orientation of vessel's velocity relative to target)
+    """ Get pitch, heading and roll of prograde (orientation of vessel's velocity relative to target as defined in KSP)
+
+        NOTE: It is more common to refer to prograde as the relative velocity of the target with respect to the vessel.
     """
     def get_prograde(self, ref_frame="vessel", angles=False):
         if self.vessel_up is not None:
@@ -272,7 +288,8 @@ class State:
         - Use of relative position / velocities
         - Use of short names for the keys
     """
-    def to_json(self, scenario, use_relative_coordinates=False, use_short_names=False):
+    def to_json(self, scenario, use_relative_coordinates=False, use_short_names=False, use_prograde=False,
+                use_cot=False, use_cot_speed_limit=False):
         scenario = scenario.lower()
         state_json = {
             "vehicle_mass": self.vehicle_mass,
@@ -414,9 +431,21 @@ class State:
             NOTE: need to revert direction since LLM considers prograde as the relative velocity of evader
             whereas KSP considers prograde as the relative velocity of pursuer.
         """
-        if self.vessel_up is not None:
+        if use_prograde:
             prograde = self.get_prograde()
+            rotation = max(abs(prograde[0]), abs(prograde[2]))
+            if rotation < State.ROTATION_THRESHOLD:
+                """ Discard x and z components of prograde """
+                prograde = np.array([0, 1, 0]) if prograde[1] > 0 else np.array([0, -1, 0])
             state_json["prograde"] = prograde.tolist()
+
+            """ Add relative velocity
+            """
+            if use_cot_speed_limit:
+                approach_velocity = self.velocity
+                if not self.approaching:
+                    approach_velocity = 0
+                state_json['approach_velocity'] = approach_velocity
 
         # Ensure sun_pos goes last in the dictionary
         if scenario.startswith('sb'):
@@ -473,6 +502,7 @@ class State:
         print(f'Fuel: {self.vehicle_propellant:.2f}')
         print('Sun location: ' + str(self.sun_position))
         print(f'Alignment angle: {self.alignment_angle:.4f}')
+        print(f'Is approaching: {self.approaching}')
 
 
 class Action:

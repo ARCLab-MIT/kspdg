@@ -38,6 +38,7 @@ from kspdg.pe1.e1_envs import PE1_E1_I2_Env
 from kspdg.pe1.e1_envs import PE1_E1_I3_Env
 from kspdg.pe1.e1_envs import PE1_E1_I4_Env
 from kspdg.pe1.e3_envs import PE1_E3_I3_Env
+from kspdg.pe1.e2_envs import PE1_E2_I3_Env
 from kspdg.pe1.pe1_base import PursuitEvadeGroup1Env
 from kspdg.sb1.e1_envs import SB1_E1_I1_Env
 from kspdg.sb1.e1_envs import SB1_E1_I2_Env
@@ -132,6 +133,7 @@ class LLMAgent(KSPDGBaseAgent):
             }]
         self.use_prograde = (os.environ['USE_PROGRADE'].lower() == "true")
         self.use_cot = (os.environ['USE_COT'].lower() == "true")
+        self.use_cot_speed_limit = (os.environ['USE_COT_SPEED_LIMIT'].lower() == "true")
 
         self.sliding_window_size = int(os.environ["SLIDING_WINDOW_SIZE"])
         self.sliding_window_stride = int(os.environ["SLIDING_WINDOW_STRIDE"])
@@ -213,6 +215,8 @@ class LLMAgent(KSPDGBaseAgent):
                                                 self.use_relative_coordinates,
                                                 self.use_short_names, self.use_enum,
                                                 self.use_prograde,
+                                                self.use_cot,
+                                                self.use_cot_speed_limit,
                                                 self.embed_history,
                                                 os.environ["PE_SYSTEM_PROMPT"],
                                                 os.environ["PE_USER_PROMPT"],
@@ -225,6 +229,8 @@ class LLMAgent(KSPDGBaseAgent):
                                                 self.use_relative_coordinates,
                                                 self.use_short_names, self.use_enum,
                                                 self.use_prograde,
+                                                self.use_cot,
+                                                self.use_cot_speed_limit,
                                                 self.embed_history,
                                                 os.environ["SB_SYSTEM_PROMPT"],
                                                 os.environ["SB_USER_PROMPT"],
@@ -288,14 +294,15 @@ class LLMAgent(KSPDGBaseAgent):
         # Prograde marker in navball is given by relative velocity vector
 
         """ compute agent's action given observation """
-        print("get_action called, prompting ChatGPT model ..." + self.model)
+        print("\nget_action called, prompting ChatGPT model ..." + self.model)
 
         # Get vessel up direction in celestial body reference frame
         vessel_up = None
-        if self.use_prograde:
-            vessel_up = self.conn.space_center.transform_direction((0, 0, 1),
-                                                                   self.vessel.reference_frame,
-                                                                   self.body.orbital_reference_frame)
+        vessel_up = self.conn.space_center.transform_direction((0, 0, 1),
+                                                               self.vessel.reference_frame,
+                                                               self.body.orbital_reference_frame)
+        # BE CAREFUL
+        vessel_up = State.lh_to_rh(vessel_up)
 
         # Get the sun position in the given reference frame
         if sun_position is None:
@@ -320,19 +327,6 @@ class LLMAgent(KSPDGBaseAgent):
         print(f'Closest distance: {self.closest_distance:.2f}')
         print(f'Weighted score: {self.weighted_score:.2f}')
 
-        # Show navball agent action
-        if self.use_prograde:
-            prograde_dir = state.get_prograde()
-            prograde_dir = prograde_dir / np.linalg.norm(prograde_dir, ord=2)
-            ft = 1
-            rt = 1 if prograde_dir[0] < 0 else -1
-            dt = 1 if prograde_dir[2] < 0 else -1
-            if state.distance < 1500:
-                if state.velocity > 20:
-                    ft = -1
-                else:
-                    ft = 0
-            print(f"Prograde direction is v={prograde_dir}. Rotations: {rt} and {dt}")
         state.show()
 
         # Add state to sliding window. Action is none since it is unknow at this moment
@@ -350,8 +344,25 @@ class LLMAgent(KSPDGBaseAgent):
             # Set action in last conversation
             self.sliding_window.set_action(-1, action[0:3])
 
+            # Check if prograde direction is aligned with action
+            #
+            # NOTE: Navball prograde is in fact the retrograde direction
+            #
+            prograde_dir = state.get_retrograde()
+            prograde_dir = prograde_dir / np.linalg.norm(prograde_dir, ord=2)
+            ft = 1
+            rt = 1 if prograde_dir[0] > 0 else -1
+            dt = 1 if prograde_dir[2] > 0 else -1
+            if state.distance < 1500:
+                if state.velocity > 20:
+                    ft = -1
+                else:
+                    ft = 0
             if rt != action[1] or dt != action[2]:
-                print("Error: Prograde direction is not aligned with action")
+                print(f"Warning: Action does not align prograde={prograde_dir}. Recommended rotations: {rt} and {dt}")
+            approaching = prograde_dir[1] < 0
+            if state.approaching != approaching:
+                print(f"Warning: Approaching is {state.approaching} but prograde is {prograde_dir}")
 
         """ Log result
         """
@@ -395,6 +406,26 @@ class LLMAgent(KSPDGBaseAgent):
         function_args = function_args.replace("]", '}')
         function_args = function_args.replace("[", '{')
 
+        index = function_args.find("Backward throttle(")
+        if index != -1:
+            print("Found Backward throttle")
+
+        # Replace argument names used by CoT prompt
+        #
+        function_args = function_args.replace("Forward throttle", "ft")
+        function_args = function_args.replace("Backward throttle", "ft")
+        function_args = function_args.replace("Right throttle", "rt")
+        function_args = function_args.replace("Up throttle", "dt")
+        function_args = function_args.replace("Down throttle", "dt")
+
+        # CoT prompt with speed limit returns the following ft values:
+        # - full
+        # - 0.5
+        # We map them to "forward"
+        #
+        function_args = function_args.replace("full", "forward")
+        function_args = function_args.replace("0.5", "forward")
+
         # Now function arguments should be of the form:
         #   "{\n  \"ft\": 1,\n  \"rt\": -1,\n  \"dt\": 1\n}"
         #   "ft: 1, rt: -1, dt: 1"
@@ -433,6 +464,8 @@ class LLMAgent(KSPDGBaseAgent):
                 function_args = function_args.replace("rt", comma + '"rt"' + colons)
                 function_args = function_args.replace("dt", comma + '"dt"' + colons)
 
+        if function_args[0] == "down":
+            function_args[0] = "forward"
         return function_args
 
     def check_response(self, response):
@@ -473,6 +506,20 @@ class LLMAgent(KSPDGBaseAgent):
                     function_args = self.clean_response(content)
                     function_args = json.loads(function_args)
 
+                    print ("Function args: " + str(function_args))
+                    # Add missing arguments
+                    if "ft" not in function_args.keys():
+                        function_args["ft"] = 0
+                    if "rt" not in function_args.keys():
+                        function_args["rt"] = 0
+                    if "dt" not in function_args.keys():
+                        function_args["dt"] = 0
+
+                    # Eliminate extra arguments
+                    for key in function_args.keys():
+                        if key not in ["ft", "rt", "dt"]:
+                            del function_args[key]
+
                     function_response = function_to_call(**function_args)
                     if self.use_enum:
                         function_response = Action.from_enum(function_response)
@@ -480,7 +527,7 @@ class LLMAgent(KSPDGBaseAgent):
                     print("error: Response did not include call to perform_action")
                     function_response = [0, 0, 0, 0.1]
             except Exception as ex:
-                print(function_args)
+                print("Exception processing function_args:" + str(function_args))
                 function_response = [0, 0, 0, 0.1]
 
         return function_response
@@ -500,6 +547,7 @@ class LLMAgent(KSPDGBaseAgent):
                 response = openai.ChatCompletion.create(
                     model=model,
                     messages=prompt,
+                    functions=self.functions,
                     temperature=0  # randomness, cool approach if we want to adjust some param with this
                 )
             else:
@@ -557,10 +605,11 @@ if __name__ == "__main__":
 
     scenarios = dict()
     scenarios["PE1_E1_I1"] = PE1_E1_I1_Env
-    scenarios["PE1_E1_I2"] = PE1_E1_I2_Env
     scenarios["PE1_E1_I3"] = PE1_E1_I3_Env
     scenarios["PE1_E1_I4"] = PE1_E1_I4_Env
     scenarios["PE1_E3_I3"] = PE1_E3_I3_Env
+
+    scenarios["PE1_E2_I3"] = PE1_E2_I3_Env
 
     scenarios["SB1_E1_I1"] = SB1_E1_I1_Env
     scenarios["SB1_E1_I2"] = SB1_E1_I2_Env

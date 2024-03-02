@@ -1,14 +1,11 @@
 """install pynput"""
 from pynput import keyboard
 from kspdg.agent_api.base_agent import KSPDGBaseAgent
-from kspdg.pe1.e1_envs import PE1_E1_I4_Env
-from kspdg.pe1.e1_envs import PE1_E1_I3_Env
-from kspdg.pe1.e1_envs import PE1_E1_I2_Env
-from kspdg.pe1.e1_envs import PE1_E1_I1_Env
-from kspdg.pe1.e3_envs import PE1_E3_I3_Env, PE1_E3_I2_Env
+from kspdg.pe1.e1_envs import PE1_E1_I4_Env, PE1_E1_I2_Env, PE1_E1_I3_Env, PE1_E1_I1_Env
+from kspdg.pe1.e2_envs import PE1_E2_I3_Env
+from kspdg.pe1.e3_envs import PE1_E3_I3_Env
 from kspdg.pe1.e4_envs import PE1_E4_I2_Env
-from kspdg.sb1.e1_envs import SB1_E1_I5_Env
-from kspdg.sb1.e1_envs import SB1_E1_I1_Env
+from kspdg.sb1.e1_envs import SB1_E1_I1_Env, SB1_E1_I5_Env
 from kspdg.lbg1.lg2_envs import LBG1_LG2_I2_Env
 
 from kspdg.agent_api.runner import AgentEnvRunner
@@ -234,8 +231,8 @@ class KeyboardControlledAgent(KSPDGBaseAgent):
 
 if __name__ == "__main__":
     try:
-        scenario = 'PE1_E1_I3'
-        env = PE1_E1_I3_Env
+        scenario = 'PE1_E3_I3'
+        env = PE1_E3_I3_Env
 
         keyboard_agent = KeyboardControlledAgent(scenario)
         runner = AgentEnvRunner(
@@ -251,7 +248,6 @@ if __name__ == "__main__":
         print("Something went wrong: " + str(e))
     finally:
         print("Saving data to csv...")
-        print(len(keyboard_agent.actions_dict['throttles']))
-        if len(keyboard_agent.actions_dict['throttles'] > 10):
-            write_dict_to_csv(keyboard_agent.actions_dict, '../agents_data/lbg1_lg2_i2_keyboard_agent_actions_' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.csv')
-            print("Success!" + '../agents_data/sb1_e1_i5_keyboard_agent_actions_' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + ".csv")
+        if len(keyboard_agent.actions_dict['throttles']) > 10:
+            write_dict_to_csv(keyboard_agent.actions_dict, '../agents_data/' + scenario + '_keyboard_agent_actions_' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.csv')
+            print("Success!" + '../agents_data/' + scenario + '_keyboard_agent_actions_' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + ".csv")

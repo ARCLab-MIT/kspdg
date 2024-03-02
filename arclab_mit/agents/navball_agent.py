@@ -178,32 +178,18 @@ class LLMAgent(KSPDGBaseAgent):
             self.log = None
             self.log_jsonl = None
         else:
-            log_name = "./logs/" + self.scenario + "_navball_log_" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.csv'
+            log_name = "./logs/navball_log_" + self.scenario + "_" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.csv'
             self.log = open(log_name, mode='w', newline='')
             if self.scenario.lower().startswith("lbg"):
                 if self.use_prograde:
-                    head = ['throttles', 'duration', 'time', 'vehicle_mass', 'vehicle_propellant', 'pursuer_pos_x',
-                            'pursuer_pos_y', 'pursuer_pos_z', 'pursuer_vel_x', 'pursuer_vel_y', 'pursuer_vel_z',
-                            'evader_pos_x', 'evader_pos_y', 'evader_pos_z', 'evader_vel_x', 'evader_vel_y',
-                            'evader_vel_z', 'guard_pos_x', 'guard_pos_y', 'guard_pos_z', 'guard_vel_x', 'guard_vel_y',
-                            'guard_vel_z', 'vessel_up', 'prograde', 'weighted_score']
+                    head = ['throttles', 'duration', 'time', 'vehicle_mass', 'vehicle_propellant', 'pursuer_pos_x', 'pursuer_pos_y', 'pursuer_pos_z', 'pursuer_vel_x', 'pursuer_vel_y', 'pursuer_vel_z', 'evader_pos_x', 'evader_pos_y', 'evader_pos_z', 'evader_vel_x', 'evader_vel_y', 'evader_vel_z', 'guard_pos_x', 'guard_pos_y', 'guard_pos_z', 'guard_vel_x', 'guard_vel_y', 'guard_vel_z', 'prograde', 'weighted_score']
                 else:
-                    head = ['throttles', 'duration', 'time', 'vehicle_mass', 'vehicle_propellant', 'pursuer_pos_x',
-                            'pursuer_pos_y', 'pursuer_pos_z', 'pursuer_vel_x', 'pursuer_vel_y', 'pursuer_vel_z',
-                            'evader_pos_x', 'evader_pos_y', 'evader_pos_z', 'evader_vel_x', 'evader_vel_y',
-                            'evader_vel_z', 'guard_pos_x', 'guard_pos_y', 'guard_pos_z', 'guard_vel_x', 'guard_vel_y',
-                            'guard_vel_z', 'weighted_score']
+                    head = ['throttles', 'duration', 'time', 'vehicle_mass', 'vehicle_propellant', 'pursuer_pos_x', 'pursuer_pos_y', 'pursuer_pos_z', 'pursuer_vel_x', 'pursuer_vel_y', 'pursuer_vel_z', 'evader_pos_x', 'evader_pos_y', 'evader_pos_z', 'evader_vel_x', 'evader_vel_y', 'evader_vel_z', 'guard_pos_x', 'guard_pos_y', 'guard_pos_z', 'guard_vel_x', 'guard_vel_y', 'guard_vel_z', 'weighted_score']
             else:
                 if self.use_prograde:
-                    head = ['throttles', 'duration', 'time', 'vehicle_mass', 'vehicle_propellant', 'pursuer_pos_x',
-                            'pursuer_pos_y', 'pursuer_pos_z', 'pursuer_vel_x', 'pursuer_vel_y', 'pursuer_vel_z',
-                            'evader_pos_x', 'evader_pos_y', 'evader_pos_z', 'evader_vel_x', 'evader_vel_y',
-                            'evader_vel_z', 'vessel_up', 'prograde', 'weighted_score']
+                    head = ['throttles', 'duration', 'time', 'vehicle_mass', 'vehicle_propellant', 'pursuer_pos_x', 'pursuer_pos_y', 'pursuer_pos_z', 'pursuer_vel_x', 'pursuer_vel_y', 'pursuer_vel_z', 'evader_pos_x', 'evader_pos_y', 'evader_pos_z', 'evader_vel_x', 'evader_vel_y', 'evader_vel_z', 'prograde', 'weighted_score']
                 else:
-                    head = ['throttles', 'duration', 'time', 'vehicle_mass', 'vehicle_propellant', 'pursuer_pos_x',
-                            'pursuer_pos_y', 'pursuer_pos_z', 'pursuer_vel_x', 'pursuer_vel_y', 'pursuer_vel_z',
-                            'evader_pos_x', 'evader_pos_y', 'evader_pos_z', 'evader_vel_x', 'evader_vel_y',
-                            'evader_vel_z', 'weighted_score']
+                    head = ['throttles', 'duration', 'time', 'vehicle_mass', 'vehicle_propellant', 'pursuer_pos_x', 'pursuer_pos_y', 'pursuer_pos_z', 'pursuer_vel_x', 'pursuer_vel_y', 'pursuer_vel_z', 'evader_pos_x', 'evader_pos_y', 'evader_pos_z', 'evader_vel_x', 'evader_vel_y', 'evader_vel_z', 'weighted_score']
 
             csv.writer(self.log).writerow(head)
 
@@ -422,6 +408,12 @@ class LLMAgent(KSPDGBaseAgent):
             print("v: " + str(v))
             print('vessel_up: ' + str(vessel_up))
 
+            """ Check vessel_up and rel_position are orthogonal
+            """
+            angle = State.angle_between_vectors(rel_position, state.vessel_up)
+            print(f"angle between relative position and vessel up vectors {angle:.2f}")
+            print(f"Determinant rotation matrix {np.linalg.det(state.vessel_rot_matrix):.5f}")
+
         if debug:
             """ Obtain angles of prograde's marker (direction of vessel velocity relative to target) using these approaches
                 1) transforming directions from celestial body to surface frame using krpc
@@ -452,7 +444,7 @@ class LLMAgent(KSPDGBaseAgent):
 
             ft = 1
             v = retrograde / np.linalg.norm(retrograde)
-            if (abs(v[0]) > ROTATION_THRESHOLD) or  (abs(v[2]) > ROTATION_THRESHOLD):
+            if (abs(v[0]) > ROTATION_THRESHOLD) or (abs(v[2]) > ROTATION_THRESHOLD):
                 rt = 1 if retrograde[0] > 0 else -1
                 dt = 1 if retrograde[2] > 0 else -1
             else:
@@ -509,7 +501,6 @@ class LLMAgent(KSPDGBaseAgent):
         # Add state to sliding window. Action is none since it is unknown at this moment
         self.sliding_window.add(state, None)
 
-
         ref_frame = 0
         if ref_frame == 0:
             # Burn vector in vessel reference frame
@@ -541,15 +532,11 @@ class LLMAgent(KSPDGBaseAgent):
             row = list(row)
             row.insert(0, action["burn_vec"][3])
             row.insert(0, action["burn_vec"][0:3])
-            if self.use_prograde:
-                vessel_up = state.vessel_up
-                row.append(list(vessel_up))
-                prograde = state.get_prograde()
-                row.append(prograde.tolist())
-            row.append(self.weighted_score)
             csv.writer(self.log).writerow(row)
             self.log.flush()
 
+        # Simulate latency of s seconds
+        time.sleep(2)
         print("Response action: " + str(action))
         return action
 

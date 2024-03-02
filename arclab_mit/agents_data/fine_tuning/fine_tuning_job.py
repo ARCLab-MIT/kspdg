@@ -88,6 +88,10 @@ def generate_predictions_from_jsonl(scenario, model, jsonl_file):
     pattern = pattern.replace("{obs}", "\{(.+?)\}")
     if "{calculations}" in pattern:
         pattern = pattern.replace("{calculations}", "(.*?)")
+    add_reasoning = False
+    if " Reason step-by-step." in pattern:
+        add_reasoning = True
+        pattern = pattern.replace(" Reason step-by-step.", "")
     agent = LLMAgent()
 
     # Initiate the output dataframe
@@ -124,6 +128,8 @@ def generate_predictions_from_jsonl(scenario, model, jsonl_file):
                     output_data.update(obs)
 
                     messages[-1]['content'] = os.environ['PE_CHAIN_OF_THOUGHT'] + messages[-1]['content']
+                    if add_reasoning:
+                        messages[-1]['content'] += " Reason step-by-step."
                     # Use LLM model to predict action
                     try:
                         action = agent.check_response(response=agent.get_completion(prompt=messages, model=model))
@@ -297,15 +303,18 @@ def log_job_results(scenario, job_id, experiment, generate_predictions):
         result_files = openai.File.download(result_files[0]).decode()
         with open(join(dataset_dir, 'training.jsonl'), 'w') as file:
             for line in training.split('\n'):
-                file.write(line + '\n')
+                file.write(line)
+#                file.write(line + '\n')
         print("Downloaded training file: " + join(dataset_dir, 'training.jsonl'))
         with open(join(dataset_dir, 'validation.jsonl'), 'w') as file:
             for line in validation.split('\n'):
-                file.write(line + '\n')
+                file.write(line)
+#                file.write(line + '\n')
         print("Downloaded validation file: " + join(dataset_dir, 'validation.jsonl'))
         with open(join(dataset_dir, 'result_files.csv'), 'w') as file:
             for line in result_files.split('\n'):
-                file.write(line + '\n')
+                file.write(line)
+#                file.write(line + '\n')
         print("Downloaded result file: " + join(dataset_dir, 'result_files.csv'))
 
         if generate_predictions:
@@ -361,7 +370,9 @@ if __name__ == '__main__':
             if option == 'q':
                 break
             elif option == 'c':
-                model = "gpt-3.5-turbo-1106"
+                model = "gpt-3.5-turbo-0125"
+                if os.environ['BASE_MODEL'] != '':
+                    model = os.environ['BASE_MODEL']
                 data = input(f"base model [{model}]: ")
                 if data != '':
                     model = data

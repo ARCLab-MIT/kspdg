@@ -26,7 +26,7 @@ class SlidingWindow:
 
     def __init__(self, size: int = DEFAULT_SLIDING_WINDOW_SIZE, scenario="PE",
                  use_relative_coordinates=False, use_short_names=False, use_enum=True,
-                 use_prograde_marker=False,
+                 use_prograde_marker=False, use_cot=False, use_cot_speed_limit=False,
                  embed_history=False,
                  system_prompt="", user_prompt="", cot_prompt=None, assistant_content="",
                  history_prompt="", history_item_prompt=""):
@@ -42,6 +42,8 @@ class SlidingWindow:
         self.use_short_names = use_short_names
         self.use_enum = use_enum
         self.use_prograde_marker = use_prograde_marker
+        self.use_cot = use_cot
+        self.use_cot_speed_limit = use_cot_speed_limit
 
         # Sliding window configuration parameters
         self.embed_history = embed_history
@@ -110,7 +112,10 @@ class SlidingWindow:
 
         user_prompt = self.user_prompt.format(obs=json.dumps(state.to_json(self.scenario,
                                                                            self.use_relative_coordinates,
-                                                                           self.use_short_names)),
+                                                                           self.use_short_names,
+                                                                           self.use_prograde_marker,
+                                                                           self.use_cot,
+                                                                           self.use_cot_speed_limit)),
                                               distance_to_stop=state.distance_to_stop,
                                               calculations=calculations,
                                               CoT=chain_of_thought)
@@ -159,13 +164,15 @@ class SlidingWindow:
                         history_msg.append(self.history_item_prompt
                                            .format(obs=json.dumps(state.to_json(self.scenario,
                                                                                 self.use_relative_coordinates,
-                                                                                self.use_short_names))))
+                                                                                self.use_short_names,
+                                                                                self.use_prograde_marker))))
                     else:
                         angle_gauge, distance_gauge = state.evaluate_angle_distance()
                         history_msg.append(self.history_item_prompt
                                            .format(obs=json.dumps(state.to_json(self.scenario,
                                                                                 self.use_relative_coordinates,
-                                                                                self.use_short_names)),
+                                                                                self.use_short_names,
+                                                                                self.use_prograde_marker)),
                                                    angle_gauge=angle_gauge, angle=state.alignment_angle,
                                                    distance_gauge=distance_gauge, distance=state.distance,
                                                    action=json.dumps(action.to_json(self.use_enum))))

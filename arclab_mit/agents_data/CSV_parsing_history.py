@@ -1,6 +1,7 @@
 import pandas as pd
 import json
 import os
+import numpy as np
 
 import ast
 
@@ -40,6 +41,8 @@ def csv_to_json_for_history(csv_file_path: str, problem_env: str,
                             use_relative_coordinates: bool = State.DEFAULT_USE_RELATIVE_COORDINATES,
                             use_enum: bool = Action.DEFAULT_USE_ENUM,
                             use_prograde: bool = State.DEFAULT_USE_PROGRADE,
+                            use_cot: bool = State.DEFAULT_USE_COT,
+                            use_cot_speed_limit: bool = State.DEFAULT_USE_COT_SPEED_LIMIT,
                             size: int = SlidingWindow.DEFAULT_SLIDING_WINDOW_SIZE,
                             stride: int = DEFAULT_SLIDING_WINDOW_STRIDE,
                             embed_history: bool = SlidingWindow.DEFAULT_EMBED_HISTORY,
@@ -51,7 +54,7 @@ def csv_to_json_for_history(csv_file_path: str, problem_env: str,
     if problem_env.lower().startswith('pe'):
         sliding_window = SlidingWindow(size, 'PE',
                                        use_relative_coordinates, use_short_names, use_enum,
-                                       use_prograde, embed_history,
+                                       use_prograde, use_cot, use_cot_speed_limit, embed_history,
                                        os.environ["PE_SYSTEM_PROMPT"],
                                        os.environ["PE_USER_PROMPT"],
                                        os.environ["PE_CHAIN_OF_THOUGHT"],
@@ -61,7 +64,7 @@ def csv_to_json_for_history(csv_file_path: str, problem_env: str,
     elif problem_env.lower().startswith('sb'):
         sliding_window = SlidingWindow(size, 'SB',
                                        use_relative_coordinates, use_short_names, use_enum,
-                                       embed_history,
+                                       use_prograde, use_cot, use_cot_speed_limit, embed_history,
                                        os.environ["SB_SYSTEM_PROMPT"],
                                        os.environ["SB_USER_PROMPT"],
                                        os.environ["SB_CHAIN_OF_THOUGHT"],
@@ -71,7 +74,7 @@ def csv_to_json_for_history(csv_file_path: str, problem_env: str,
     elif problem_env.lower().startswith('lbg'):
         sliding_window = SlidingWindow(size, 'LBG',
                                        use_relative_coordinates, use_short_names, use_enum,
-                                       embed_history,
+                                       use_prograde, use_cot, embed_history,
                                        os.environ["LBG_SYSTEM_PROMPT"],
                                        os.environ["LBG_USER_PROMPT"],
                                        os.environ["LBG_CHAIN_OF_THOUGHT"],
@@ -149,8 +152,8 @@ def csv_to_json_for_history(csv_file_path: str, problem_env: str,
                 sun_position = [input_data['sun_pos_x'], input_data['sun_pos_y'], input_data['sun_pos_z']]
 
         vessel_up = None
-        if "vessel_up" in input_data:
-            vessel_up =  ast.literal_eval(row['vessel_up'])
+        if "vessel_up_x" in input_data:
+            vessel_up = np.array([input_data['vessel_up_x'], input_data['vessel_up_y'], input_data['vessel_up_z']])
 
         state = State(observation, vessel_up, sun_position)
         action = Action(ast.literal_eval(row['throttles']))
@@ -171,7 +174,8 @@ def csv_to_json_for_history(csv_file_path: str, problem_env: str,
                 """
                 if skip_null_actions:
                     continue
-                skip_null_actions = True
+                # Uncomment this line to skip all null actions after the first one in a sequence of consecutive null actions
+                # skip_null_actions = True
         else:
             skip_null_actions = False
 
@@ -211,7 +215,15 @@ if __name__ == '__main__':
 
     use_prograde = State.DEFAULT_USE_PROGRADE
     if 'USE_PROGRADE' in os.environ:
-        use_enum = (os.environ['USE_PROGRADE'].lower() == "true")
+        use_prograde = (os.environ['USE_PROGRADE'].lower() == "true")
+
+    use_cot = State.DEFAULT_USE_COT
+    if 'USE_COT' in os.environ:
+        use_cot = (os.environ['USE_COT'].lower() == "true")
+
+    use_cot_speed_limit = State.DEFAULT_USE_COT_SPEED_LIMIT
+    if 'USE_COT_SPEED_LIMIT' in os.environ:
+        use_cot_speed_limit = (os.environ['USE_COT_SPEED_LIMIT'].lower() == "true")
 
     sliding_window_size = SlidingWindow.DEFAULT_SLIDING_WINDOW_SIZE
     if 'SLIDING_WINDOW_SIZE' in os.environ:
@@ -238,6 +250,9 @@ if __name__ == '__main__':
                                     use_relative_coordinates=use_relative_coordinates,
                                     use_short_names=use_short_names,
                                     use_enum=use_enum,
+                                    use_prograde=use_prograde,
+                                    use_cot=use_cot,
+                                    use_cot_speed_limit=use_cot_speed_limit,
                                     size=sliding_window_size,
                                     stride=sliding_window_stride,
                                     embed_history=embed_history,

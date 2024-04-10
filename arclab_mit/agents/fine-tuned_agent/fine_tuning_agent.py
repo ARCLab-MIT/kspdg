@@ -55,7 +55,7 @@ from astropy import units as u
 
 # Load configuration from .env
 #dotenv_path = join(dirname(__file__), 'arclib_mit', 'agents', '.env')
-dotenv_path = join(dirname(__file__), '.env')
+dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
 load_dotenv(dotenv_path)
 
 # Set OpenAI API key
@@ -63,7 +63,7 @@ openai.api_key = os.environ["OPENAI_API_KEY"]
 
 # Load configuration from alex_prompts.txt
 #dotenv_path = join(dirname(__file__), 'arclib_mit', 'agents', 'alex_prompts.txt')
-dotenv_path = join(dirname(__file__), 'alex_prompts.txt')
+dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'alex_prompts.txt')
 load_dotenv(dotenv_path)
 
 DEFAULT_TARGET_VIEWING_DISTANCE = 100.0 # [m]

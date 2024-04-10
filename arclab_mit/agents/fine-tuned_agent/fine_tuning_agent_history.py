@@ -30,11 +30,8 @@ from arclab_mit.agents.agent_common import State, Action
 from arclab_mit.agents.sliding_window import SlidingWindow
 from kspdg.agent_api.base_agent import KSPDGBaseAgent
 from kspdg.agent_api.runner import AgentEnvRunner
-from kspdg.lbg1.lg2_envs import LBG1_LG2_I1_Env
-from kspdg.lbg1.lg2_envs import LBG1_LG2_I2_Env
 from kspdg.lbg1.lbg1_base import LadyBanditGuardGroup1Env
 from kspdg.pe1.e1_envs import PE1_E1_I1_Env
-from kspdg.pe1.e1_envs import PE1_E1_I2_Env
 from kspdg.pe1.e1_envs import PE1_E1_I3_Env
 from kspdg.pe1.e1_envs import PE1_E1_I4_Env
 from kspdg.pe1.e3_envs import PE1_E3_I3_Env

@@ -22,9 +22,6 @@ import sys
 import krpc
 import datetime
 import csv
-import math
-
-import random
 
 from kspdg.agent_api.base_agent import KSPDGBaseAgent
 from kspdg.agent_api.runner import AgentEnvRunner

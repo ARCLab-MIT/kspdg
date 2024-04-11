@@ -284,13 +284,14 @@ All these agents depend on GPT models as well as some parameters, these paramete
 | `SYSTEM_PROMPTS` | All of the different system prompts for each strategy or scenario. |
 | `CHAIN_OF_THOUGHT` | If you want the model to reason with Chain of Thought, this would be added in the system prompt. |
 
+
+Once all the parameters are set, the agent runs as any other agent via kRPC. Select the desired mission in the game and run the script having the kRPC server open.
+
 ```bash
 conda activate kspdg
 cd arclab_mit/agents/fine-tuned_agent
 python3 fine_tuning_agent.py
 ```
-
-Once all the parameters are set, the agent runs as any other agent via kRPC. Select the desired mission in the game and run the script having the kRPC server open.
 
 ---
 

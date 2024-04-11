@@ -23,8 +23,6 @@ KSPDG is collection of orbital challenge problems defined within different scena
 - Multi-agent target guarding, referred to as a [Lady-Bandit-Guard problem](https://github.com/mit-ll/spacegym-kspdg/tree/main/src/kspdg/lbg1)
 - 1-v-1 [Sun-blocking problem](https://github.com/mit-ll/spacegym-kspdg/tree/main/src/kspdg/sb1)
 
-In future development plans include scenarios with features like partial observability, multi-agent inspection problems with vision-based observation spaces, and head-to-head scenarios that leaverage the [Luna Multiplayer mod](http://lunamultiplayer.com/) that allow direct competition between two different AI players (current scenarios involve testing AI against pre-scipted bot adversaries)
-
 ---
 
 ## Agents Overview
@@ -33,13 +31,37 @@ MIT-ArcLab has developed a diverse range of agents during this research, categor
 
 - **Few-Shot Prompting Agents**: These agents are designed to perform tasks with zero training data. They are adept at understanding and executing instructions with only a few examples, showcasing the efficiency and adaptability of LLM models.
 
-- **Fine-Tuning Agents**: These agents have been extensively trained and fine-tuned for specific tasks. They tend to be more consistent and reliable, but harder to lead them to high quality results.
+- **Fine-Tuning Agents**: These agents will use the fine-tuned models. They tend to be more consistent and reliable, but harder to lead them to high quality results.
+
+- **Training Agent**: This agent called 'jason_keyboard_input' will collect the data of your gameplay in real time while the player accomplishes the mission.
 
 You can explore and learn more about these agents in our [agents folder](https://github.com/ARCLab-MIT/kspdg/tree/main/arclab_mit/agents).
 
 Feel free to delve into the folder for detailed information on each agent, including their design, capabilities, and examples.
 
 ---
+
+## Data overview
+
+The data associated with our research is organized into three main sections, each serving a unique purpose in the development and evaluation of our agents. Find all the scripts and folders [here](https://github.com/ARCLab-MIT/kspdg/tree/Alejandro/arclab_mit/agents_data).
+
+### Weights & Biases (wandb) Integration
+
+- **Purpose**: This section focuses on integrating with Weights & Biases (wandb) for managing training files. It provides tools and documentation for setting up and utilizing wandb to track and visualize the training process of our agents.
+- **Contents**: Includes setup guides, configuration files, and examples of wandb dashboards and reports.
+
+### Human Gameplay Data
+
+- **Purpose**: This section houses all the data generated from human gameplay. It is crucial for understanding human strategies and behaviors, which aids in developing more human-like agents.
+- **Contents**: Features raw gameplay data, processed datasets, and analysis scripts to glean insights from human play patterns.
+
+### Evaluation Results
+
+- **Purpose**: Dedicated to storing and presenting the evaluation results of our agents. This section is essential for assessing the performance and effectiveness of different agent strategies.
+- **Contents**: Contains comprehensive evaluation reports, performance metrics, and comparison charts between different agents and scenarios.
+
+Explore each section for detailed information, including methodologies, data formats, and access instructions.
+
 
 ## Citation
 Direct link to arXiv preprint and BibTex citation.
@@ -245,6 +267,24 @@ pytest tests/ksp_ingame_tests/test_sb1_e1_i5.py
 
 ## Example: Fine-Tuned Agent Example
 
+There is a specific folder for the fine-tuned agents that you can find in [here](https://github.com/ARCLab-MIT/kspdg/tree/Alejandro/arclab_mit/agents/fine-tuned_agent).
+
+All these agents depend on GPT models as well as some parameters, these parameters are:
+
+| Parameter | Description |
+|-----------|-------------|
+| `USE_RELATIVE_COORDINATES` | This parameter will be used to calculate relative velocity and position. |
+| `USE_SHORT_ARGUMENT_NAMES` | This parameter will be used to save or communicate the observations data using abbreviated names for time, fuel usage, etc. |
+| `OPENAI_API_KEY` | This parameter is mandatory for establishing a connection with OpenAI API. |
+| `SCENARIO` | This will determine the scenario you will be running the agent in. |
+| `MODEL` | Given the user's API key there can be multiple models with their unique ID; this parameter represents this ID. |
+| `IGNORE_TIME` | If you don't want to keep the time in the logs and prompts. |
+| `SLIDING_WINDOW_SIZE` | The size of the sliding window that will be used by the model. |
+| `SLIDING_WINDOW_STRIDE` | The stride of the sliding window (skips) for each call. |
+| `SYSTEM_PROMPTS` | All of the different system prompts for each strategy or scenario. |
+| `CHAIN_OF_THOUGHT` | If you want the model to reason with Chain of Thought, this would be added in the system prompt. |
+
+Once all the parameters are set, the agent runs as any other agent via kRPC. Select the desired mission in the game and run the script having the kRPC server open.
 
 ---
 
@@ -327,26 +367,3 @@ Throughout the documentation and code comments we refer to aerospace literature 
   - short hands: "BMW", "Bate, Mueller, White"
 
 ---
-
-## Code Notation
-
-Coordinate transforms are used throughout this code base. Without a rigorous notation it can become very difficult to determine the meaning of any particular variable. for example and ambiguous variable name like `pursuer_pos` seems to imply the position of a "pursuer" spacecraft, but position relative to what? Relative to a planet or relative to another spacecraft? Furthermore it says nothing of what coordinate frame that variable is expressed within. The pursuer position relative to the planet can be expressed in earth-centered inertial (ECI), perifocal, or even within another satellite's RSW frame (see Vallado, 3rd Edition, Sec 3.3 for frame descriptions). Each of these expressions lead to different numerical values for vector representations of the same physical vector
-
-To make matters worse, kRPC---the crucial library that provides a python interface for controlling Kerbal Space Program---uses [left-handed coordinate systems](https://krpc.github.io/krpc/tutorials/reference-frames.html#introduction)!! This will lead to much confusion if not pedantically handled.
-
-To reduce the confusion we will strive to use the following notation for vector variables: `w_x_y__z`
-
-- `w` is a description of the vector. For example `pos`, `vel` may be using in the `w` position to represent position and velocity vectors, respectively
-- `x_y` is read as "x with respect to y". For example, if we want a vector for the position of satellite A with respect to satellite B we would have the partial variable name: `pos_satA_satB`
-- `__z` is read as "expressed in z". We need not only describe what the physical represents (i.e. `w_x_y`), we need to also described what coordinate frame the physcial vector is being expressed within; this is the purpose of `__z`. Therefore if we want a variable for the position of satellite A with respect to satellite B expressing in the right-handed earth-centered inertial coordinates we would write: `pos_satA_satB__rheci`
-
-Here are some abbreviations and acronyms used throughout the code
-
-- `lhntw` = left-handed NTW coordinate frame (y-axis parallel to velocity vector, x-axis in orbital plane along---but not necessarily parallel to---radial in direction, z-axis perpendicular to complete left-handed system) based on [kRPC's Vessel `orbital_reference_frame`](https://krpc.github.io/krpc/python/api/space-center/vessel.html#SpaceCenter.Vessel.orbital_reference_frame)
-- `rhntw` = right-handed NTW coordinate frame (y-axis parallel to velocity vector, x-axis in orbital plane along---but not necessarily parallel to---radial out direction, z-axis perpendicular to complete right-handed system) as described in Vallado 3rd ed. sec. 3.3.3
-- `rhrsw` = right-handed RSW (radial, along-track, normal) coordinate frame described in Vallado 3rd Edition, Sec 3.3.3
-- `lhrsw` = left-handed variant RSW coordinate frame (anti-radial, along-track, normal). Note that kRPC does not have a default lhrsw frame; the `orbital_reference_frame` is in fact an NTW frame
-- `rhcbci` = right-handed celestial-body-centered inertial coordinate frame. This is a right-handed version of kRPC's [Celestial Body `non_rotating_reference_frame`](https://krpc.github.io/krpc/python/api/space-center/celestial-body.html#SpaceCenter.CelestialBody.non_rotating_reference_frame). In the real-world this would be approximately equivalent to earth centered inertial (ECI)) coords (see Vallado 3rd ed, sec 3.3.2 on Geocentric Equitorial Coordinate System IJK) except in kerbal you aren't necessarily orbiting the earth and their is often no axial tilt to the celestial body
-- `lhcbci` = left-handed celestial-body-centered inertial coordinate frame based on kRPC's [Celestial Body `non_rotating_reference_frame`](https://krpc.github.io/krpc/python/api/space-center/celestial-body.html#SpaceCenter.CelestialBody.non_rotating_reference_frame)
-- `lhvbody` = left-handel vessel-centered, vessel-fixed body coordinates that align with [kRPC's `Vessel.reference_frame`](https://krpc.github.io/krpc/tutorials/reference-frames.html#vessel-surface-reference-frame). x-axis points out right side of vessel, y-axis points forward on vessel, z-axis points down. Vessel-fixed implies tha the reference frame rotates with the vessel. Note that `v` is often omitted or replaced with some identifier abbreviation of the particular vessel; e.g. `lhpbody` could be left-handed _pursuer_ vessel body coords
-- `rhvbody` = right-handed vessel-centered, vessel-fixed body coordinates. x-axis points out forward of vessel, y-axis points out right side on vessel, z-axis points down

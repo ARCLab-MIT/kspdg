@@ -4,28 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2720ae2c-5b78-4671-ab69-13d2c2318108" name="Changes" comment="Add option to delete a run_id">
-      <change afterPath="$PROJECT_DIR$/arclab_mit/agents/env" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/arclab_mit/agents_data/mission_generator/orbit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/arclab_mit/agents/agent_common.py" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents/agent_common.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/arclab_mit/agents/alex_prompts.txt" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents/alex_prompts.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/arclab_mit/agents/alex_prompts_v2.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/arclab_mit/agents/chatgpt.py" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents/chatgpt.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/arclab_mit/agents/claude_alejandro.py" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents/claude_alejandro.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/arclab_mit/agents/fine-tuned_agent/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents_data/mission_generator/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/arclab_mit/agents/fine-tuned_agent/fine_tuning_agent.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/arclab_mit/agents/fine-tuned_agent/fine_tuning_agent_fix.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/arclab_mit/agents/fine-tuned_agent/fine_tuning_agent_history.py" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents/fine_tuning_agent.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/arclab_mit/agents/fine-tuned_agent/sliding_window.py" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents/sliding_window.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/arclab_mit/agents/logging_agent/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents_data/mission_generator/idle_player.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/arclab_mit/agents/logging_agent/logging_agent.py" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents/logging_agent.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/arclab_mit/agents/logging_agent/logging_agent_wrapper.py" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents/logging_agent_wrapper.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/arclab_mit/agents/navball_agent.py" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents/navball_agent.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/arclab_mit/agents_data/CSV_parsing.py" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents_data/CSV_parsing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/arclab_mit/agents_data/CSV_parsing_history.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/arclab_mit/agents_data/mission_generator/generator.py" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents_data/mission_generator/generator.py" afterDir="false" />
-    </list>
+    <list default="true" id="2720ae2c-5b78-4671-ab69-13d2c2318108" name="Changes" comment="Add option to delete a run_id" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -482,7 +461,7 @@
       <workItem from="1712594078376" duration="20281000" />
       <workItem from="1712917908257" duration="1354000" />
       <workItem from="1712919292194" duration="18152000" />
-      <workItem from="1713345424458" duration="4650000" />
+      <workItem from="1713345424458" duration="5349000" />
     </task>
     <task id="LOCAL-00001" summary="Fixing absolute to relative path">
       <created>1699962256231</created>
@@ -596,7 +575,15 @@
       <option name="project" value="LOCAL" />
       <updated>1708025387558</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="Add option to delete a run_id">
+      <option name="closed" value="true" />
+      <created>1713365375531</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1713365375531</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

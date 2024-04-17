@@ -19,15 +19,13 @@ import json
 import os
 import sys
 import time
-from os.path import join, dirname
 
 import krpc
 import numpy as np
 import openai
 from dotenv import load_dotenv
 
-from arclab_mit.agents.agent_common import State, Action
-from arclab_mit.agents.sliding_window import SlidingWindow
+from arclab_mit.agents.agent_common import State, Action, setup_scenarios, set_env_paths
 from kspdg.agent_api.base_agent import KSPDGBaseAgent
 from kspdg.agent_api.runner import AgentEnvRunner
 from kspdg.lbg1.lbg1_base import LadyBanditGuardGroup1Env
@@ -44,24 +42,15 @@ from kspdg.sb1.e1_envs import SB1_E1_I4_Env
 from kspdg.sb1.e1_envs import SB1_E1_I5_Env
 from kspdg.sb1.sb1_base import SunBlockingGroup1Env
 
+from arclab_mit.agents.sliding_window import SlidingWindow
+
+set_env_paths()
+
 """
 from arclab_mit.agents.extended_obs_agent.simulate import closest_approach, simulate
 from arclab_mit.agents.common import obs_to_state, state_to_message
 from astropy import units as u
 """
-
-# Load configuration from .env
-# dotenv_path = join(dirname(__file__), 'arclib_mit', 'agents', '.env')
-dotenv_path = join(dirname(__file__), '.env')
-load_dotenv(dotenv_path)
-
-# Set OpenAI API key
-openai.api_key = os.environ["OPENAI_API_KEY"]
-
-# Load configuration from alex_prompts.txt
-# dotenv_path = join(dirname(__file__), 'arclib_mit', 'agents', 'alex_prompts.txt')
-dotenv_path = join(dirname(__file__), 'alex_prompts_v2.txt')
-load_dotenv(dotenv_path)
 
 
 class LLMAgent(KSPDGBaseAgent):
@@ -307,6 +296,7 @@ class LLMAgent(KSPDGBaseAgent):
 
         # Build state and show it
         state = State(observation, vessel_up, sun_position)
+
         if state.distance < self.closest_distance:
             self.closest_distance = state.distance
             if self.init_mass is None:
@@ -600,19 +590,7 @@ if __name__ == "__main__":
 
     scenario = os.environ['SCENARIO']
 
-    scenarios = dict()
-    scenarios["PE1_E1_I1"] = PE1_E1_I1_Env
-    scenarios["PE1_E1_I3"] = PE1_E1_I3_Env
-    scenarios["PE1_E1_I4"] = PE1_E1_I4_Env
-    scenarios["PE1_E3_I3"] = PE1_E3_I3_Env
-
-    scenarios["PE1_E2_I3"] = PE1_E2_I3_Env
-
-    scenarios["SB1_E1_I1"] = SB1_E1_I1_Env
-    scenarios["SB1_E1_I2"] = SB1_E1_I2_Env
-    scenarios["SB1_E1_I3"] = SB1_E1_I3_Env
-    scenarios["SB1_E1_I4"] = SB1_E1_I4_Env
-    scenarios["SB1_E1_I5"] = SB1_E1_I5_Env
+    scenarios = setup_scenarios()
 
     if scenario not in scenarios:
         print("Invalid scenario: " + scenario + " not in " + str(scenarios.keys()))

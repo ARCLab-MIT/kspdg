@@ -7,13 +7,13 @@ import numpy as np
 import openai
 from dotenv import load_dotenv
 
-from arclab_mit.agents.fine_tuning_agent_history import LLMAgent
+from arclab_mit.agents.fine_tuning_agent import LLMAgent
 
 # dotenv_path = join(dirname(__file__), 'arclib_mit', 'agents', '.env')
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 
-dotenv_path = join(dirname(__file__), 'alex_prompts_v2.txt')
+dotenv_path = join(dirname(__file__), 'alex_prompts.txt')
 load_dotenv(dotenv_path)
 
 if __name__ == "__main__":

@@ -1,3 +1,25 @@
+import random
+
+
+class OrbitPool:
+    def __init__(self):
+        # Define the min and max values for each orbital parameter
+        self.ranges = {
+            'SMA': (724999.9, 754500.1875),
+            'ECC': (0, 0.034483000636100769),
+            'INC': (0, 1),
+            'LPE': (0, 355),
+            'LAN': (0, 350),
+            'MNA': (5.93062879827673231, 6.1959188445798699),
+            'EPH': (0, 0),  # Adjusted to a realistic max for example purposes
+            'REF': (1, 1)
+        }
+
+    def generate_random_orbit(self):
+        # Generate random values for each orbital parameter within its range
+        orbit_values = tuple(random.uniform(min_val, max_val) for param, (min_val, max_val) in self.ranges.items())
+        return orbit_values
+
 class Generator:
     def __init__(self):
         self.kerbal_path = r'C:\Kerbal Space Program\saves\missions\pe1_i3\pe1_i3_init.sfs'
@@ -5,6 +27,7 @@ class Generator:
         self.color_info_2 = '\033[94m'
         self.color_info_3 = '\033[95m'
         self.color_end = '\033[0m'
+        self.orbit_pool = OrbitPool()
 
     def generate_orbit(self, sma, ecc, inc, lpe, lan, mna, eph, ref):
         # Generating orbit parameters based on inputs
@@ -17,35 +40,21 @@ class Generator:
                 LPE = {lpe}
                 LAN = {lan}
                 MNA = {mna}
-                EPH = {eph}
-                REF = {ref}
+                EPH = {int(eph)}
+                REF = {int(ref)}
             }}
         '''
         return orbit_params.strip()
 
-    def replace_orbit(self):
-        # Example values for the orbital elements
-        # You can modify these values or pass them as parameters
-        sma = 750000
-        ecc = 0
-        inc = 0
-        lpe = 0
-        lan = 0
-        mna = 5.95
-        eph = 0
-        ref = 1
-
-        new_orbit = self.generate_orbit(sma, ecc, inc, lpe, lan, mna, eph, ref)
-
-        return new_orbit
-
     def modify_evader_orbit(self):
-        # Define the specific orbit parameters for the pursuer
-        return self.generate_orbit(750000, 0, 0, 0, 0, 5.95, 0, 1)
+        # Generate random orbit parameters for the evader
+        orbit_params = self.orbit_pool.generate_random_orbit()
+        return self.generate_orbit(*orbit_params)
 
     def modify_pursuer_orbit(self):
-        # Define the specific orbit parameters for the evader
-        return self.generate_orbit(850000, 0.1, 5, 10, 20, 3.75, 100, 2)
+        # Generate random orbit parameters for the pursuer
+        orbit_params = self.orbit_pool.generate_random_orbit()
+        return self.generate_orbit(*orbit_params)
 
     def parse_and_rewrite_mission_file(self):
         with open(self.kerbal_path, 'r') as file:

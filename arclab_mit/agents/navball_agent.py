@@ -51,7 +51,7 @@ from os.path import join, dirname
 from dotenv import load_dotenv
 
 from arclab_mit.agents.sliding_window import SlidingWindow
-from arclab_mit.agents.agent_common import State, Action
+from arclab_mit.agents.agent_common import State, Action, set_env_paths, setup_scenarios
 
 """
 from arclab_mit.agents.extended_obs_agent.simulate import closest_approach, simulate
@@ -59,18 +59,7 @@ from arclab_mit.agents.common import obs_to_state, state_to_message
 from astropy import units as u
 """
 
-# Load configuration from .env
-# dotenv_path = join(dirname(__file__), 'arclib_mit', 'agents', '.env')
-dotenv_path = join(dirname(__file__), '.env')
-load_dotenv(dotenv_path)
-
-# Set OpenAI API key
-openai.api_key = os.environ["OPENAI_API_KEY"]
-
-# Load configuration from alex_prompts.txt
-# dotenv_path = join(dirname(__file__), 'arclib_mit', 'agents', 'alex_prompts.txt')
-dotenv_path = join(dirname(__file__), 'alex_prompts_v2.txt')
-load_dotenv(dotenv_path)
+set_env_paths()
 
 APPROACH_SPEED = 40
 VESSEL_ACCELERATION = 0.1
@@ -694,25 +683,7 @@ if __name__ == "__main__":
 
     scenario = os.environ['SCENARIO']
 
-    scenarios = dict()
-    scenarios["PE1_E1_I1"] = PE1_E1_I1_Env
-    scenarios["PE1_E1_I2"] = PE1_E1_I2_Env
-    scenarios["PE1_E1_I3"] = PE1_E1_I3_Env
-    scenarios["PE1_E1_I4"] = PE1_E1_I4_Env
-    scenarios["PE1_E3_I1"] = PE1_E3_I1_Env
-    scenarios["PE1_E3_I2"] = PE1_E3_I2_Env
-    scenarios["PE1_E3_I3"] = PE1_E3_I3_Env
-    scenarios["PE1_E3_I4"] = PE1_E3_I4_Env
-    scenarios["PE1_E4_I3"] = PE1_E4_I3_Env
-
-    scenarios["LBG1_LG2_I1"] = LBG1_LG2_I1_Env
-    scenarios["LBG1_LG2_I2"] = LBG1_LG2_I2_Env
-
-    scenarios["SB1_E1_I1"] = SB1_E1_I1_Env
-    scenarios["SB1_E1_I2"] = SB1_E1_I2_Env
-    scenarios["SB1_E1_I3"] = SB1_E1_I3_Env
-    scenarios["SB1_E1_I4"] = SB1_E1_I4_Env
-    scenarios["SB1_E1_I5"] = SB1_E1_I5_Env
+    scenarios = setup_scenarios()
 
     if scenario not in scenarios:
         print("Invalid scenario: " + scenario + " not in " + str(scenarios.keys()))

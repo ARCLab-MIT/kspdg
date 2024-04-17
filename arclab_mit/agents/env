@@ -1,0 +1,159 @@
+#OPENAI_API_KEY="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" # MITM's key
+#OPENAI_API_KEY="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" # Alex's first key
+OPENAI_API_KEY="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" # Alex's second key
+
+ANTHROPIC_API_KEY="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" # MITM's key
+
+CLAUDE_MODEL = "claude-3-opus-20240229"
+
+
+#MODEL="gpt-3.5-turbo-1106"
+
+#MODEL="ft:gpt-3.5-turbo-1106:personal:kspgpt:8NMUS0kq" # First model
+#MODEL="ft:gpt-3.5-turbo-1106:personal::8OpiTR5F" # Fine tuning with all scenarios
+#MODEL="ft:gpt-3.5-turbo-1106:personal:kspgpt:8NMUS0kq" # Fine tuning with I3 scenario and without [0,0,0] actions (not working - wrong key)
+#MODEL="ft:gpt-3.5-turbo-1106:personal:kspgpt:8Nd7OJkC" # Fine tuning with I3 scenario and without [0,0,0] actions
+#MODEL="ft:gpt-3.5-turbo-1106:personal::8OuFJSBJ" # Fine tuning with I2 scenario and without [0,0,0] actions
+#MODEL="ft:gpt-3.5-turbo-1106:personal::8P6jHmTx" # Fine tuning with I2 scenario and without [0,0,0] actions and relative position and velocity
+#MODEL="ft:gpt-3.5-turbo-1106:personal::8PDBBEoB" # Fine tuning with I2 + I3 scenarios and without [0,0,0] actions and relative position and velocity
+#MODEL="ft:gpt-3.5-turbo-1106:personal::8PEaOHdo" # Fine tuning with I2 + I3 scenarios and without [0,0,0] actions
+#MODEL="ft:gpt-3.5-turbo-1106:personal::8PFyTkOk" # Fine tuning with I4 scenario and without [0,0,0] actions
+#MODEL="ft:gpt-3.5-turbo-1106:personal::8PJabc5v" # Fine tuning with I3 scenario and without [0,0,0] actions
+#MODEL="ft:gpt-3.5-turbo-1106:personal::8PYCVRnc" # Fine tuning with I4 scenario and without [0,0,0] actions and prompts asking for best throttle
+#MODEL="ft:gpt-3.5-turbo-1106:personal::8PnN0goL" # Fine tuning with I4 scenario and without [0,0,0] actions and prompts asking for best throttle using sliding window (80-20 train/valid separatiopn rule) and discarding time, mass and fuel
+#MODEL="ft:gpt-3.5-turbo-1106:personal:kspgpt:8Pu06hA2" # Fine tuning with I4 scenario and without [0,0,0] actions and prompts asking for best throttle using sliding window (80-20 train/valid separatiopn rule) and discarding time
+#MODEL="ft:gpt-3.5-turbo-1106:personal:kspgpt:8QxkUlt6" # Fine tuning with I4 scenario including [0,0,0] actions and discarding time
+
+#MODEL="ft:gpt-3.5-turbo-1106:personal:kspgpt:8Rqlj5tT" # Fine tuning with all tactics for I2 ignoring [0,0,0] actions and discarding time
+
+#MODEL="ft:gpt-3.5-turbo-1106:personal:kspgpt:8R5JJksR" # Fine tuning with SB1_I5 scenario including [0,0,0] actions and discarding time (using PE prompts)
+#MODEL="ft:gpt-3.5-turbo-1106:personal:kspgpt:8Ro3xjuB" # Fine tuning with SB1_i5 scenarios ignoring [0,0,0] actions and discarding time (using SB prompts)
+
+#MODEL="ft:gpt-3.5-turbo-1106:arclab:kspgpt:8SWbKrUK" # Fine tuning with SB1_E1_I1 scenario including one [0,0,0] actions in a run of consecutive [0,0,0] and discarding time (using SB prompts)
+#MODEL="ft:gpt-3.5-turbo-1106:arclab:kspgpt:8SYzq6KA" # Fine tuning with SB1_E1_I5 scenario including one [0,0,0] actions in a run of consecutive [0,0,0] and discarding time (using SB prompts). CoT in assistant content
+#MODEL="ft:gpt-3.5-turbo-1106:arclab:kspgpt:8SsOzDGb" # Fine tuning with SB1_E1_I5 scenario including one [0,0,0] actions in a run of consecutive [0,0,0] and discarding time (using SB prompts). CoT in user prompt
+
+#MODEL="ft:gpt-3.5-turbo-1106:arclab:kspgpt:8T78M85D" # Fine tuning with PE1_E3_I3 scenario excluding [0,0,0] actions (except first one) and window 0
+
+#MODEL="ft:gpt-3.5-turbo-1106:arclab:kspgpt:8TAve0hQ" # Fine tuning with PE1_E3_I3 scenario excluding [0,0,0] actions (except first one) and window 0 (file 124825)
+#MODEL="ft:gpt-3.5-turbo-1106:arclab:kspgpt:8TCr52Iz" # Fine tuning with PE1_E3_I3 scenario excluding [0,0,0] actions (except first one) and window 0 (file 131404)
+
+#MODEL="ft:gpt-3.5-turbo-1106:arclab:kspgpt:8TIhczWp" # Fine tuning with PE1_E3_I3 scenario excluding [0,0,0] actions (except first one) and window 0 (file test) with 10 first samples of 131404)
+
+#MODEL="ft:gpt-3.5-turbo-1106:arclab:kspgpt:8ToY28sf" # Fine tuning with SB1_E1_I5 scenario excluding ALL [0,0,0] actions and system + window 0 (file 13146)
+#MODEL="ft:gpt-3.5-turbo-1106:arclab:kspgpt:8Tx1vCSK" # Fine tuning with SB1_E1_I5 scenario excluding ALL [0,0,0] actions and system + window 0 (file 13146) + relative coordinates
+
+#MODEL="ft:gpt-3.5-turbo-1106:arclab:kspgpt:8TQcXYUK" # Fine tuning with SB1_E1_I5 scenario excluding [0,0,0] actions (except first one) and window 0 (file 13146)
+#MODEL="ft:gpt-3.5-turbo-1106:arclab:kspgpt:8To6IpQ4" # Fine tuning with SB1_E1_I5 scenario excluding ALL [0,0,0] actions and window 0 (file 13146)
+#MODEL="ft:gpt-3.5-turbo-1106:arclab:kspgpt:8UDfdECP" # Fine tuning with SB1_E1_I5 scenario excluding ALL [0,0,0] actions and window 0 (file 20231210-013840)
+#MODEL="ft:gpt-3.5-turbo-1106:arclab:kspgpt:8UGIGAOc" # Fine tuning with SB1_E1_I5 scenario excluding ALL [0,0,0] actions and window 4 (file 13840 and 13430)
+
+#MODEL="ft:gpt-3.5-turbo-1106:arclab:kspgpt:8W8SOioE" # Fine tuning with PE1_E3_I3 scenario excluding ALL [0,0,0] actions and window 0 (file 124825)
+
+# Fine tunings for paper
+#MODEL="ft:gpt-3.5-turbo-1106:personal:kspgpt:8aRq6vek" # Fine tuning with PE1_I3 scenario excluding excluding [0,0,0] actions (except first one) and window 0 (file 20231125-142215) - lrm = 2 w/o system prompt
+#MODEL="ft:gpt-3.5-turbo-1106:personal:kspgpt:8b9DvqNk" # Fine tuning with PE1_I3 scenario excluding excluding [0,0,0] actions (except first one) and window 0 (file 20231125-142215) - lrm = 0.2 w/o system prompt
+#MODEL="ft:gpt-3.5-turbo-1106:personal:kspgpt:8bD1GGkU" # Fine tuning with PE1_I3 scenario excluding excluding [0,0,0] actions (except first one) and window 0 (file 20231125-142215) - lrm = 0.2 w system prompt
+#MODEL="ft:gpt-3.5-turbo-1106:personal:kspgpt:8bQ1HPCR" # Fine tuning with PE1_I3 scenario excluding excluding [0,0,0] actions (except first one) and window 0 (file 20231125-142215) - lrm = 0.2 w system prompt & cot
+#MODEL="ft:gpt-3.5-turbo-1106:personal:kspgpt:8bRSA713" # Fine tuning with PE1_I3 scenario excluding excluding [0,0,0] actions (except first one) and window 0 (file 20231125-142215) - lrm = 0.05 w system prompt
+#MODEL="ft:gpt-3.5-turbo-1106:personal:kspgpt:8bTzAWwP" # Fine tuning with PE1_I3 scenario excluding excluding [0,0,0] actions (except first one) and window 0 (file 20231125-142215 and 12202315-141128) - lrm = 0.2 w system prompt
+#MODEL="ft:gpt-3.5-turbo-1106:personal:kspgpt:8bXQO1XA" # Fine tuning with PE1_I3 scenario excluding excluding [0,0,0] actions (except first one) and window 0 (file 20231125-142215 augmented with 12202315-141128) - lrm = 0.2 w system prompt
+#MODEL="ft:gpt-3.5-turbo-1106:personal:kspgpt:8bYSmMBu" # Fine tuning with PE1_I3 scenario excluding excluding [0,0,0] actions (except first one) and window 0 (file 20231125-141128) - lrm = 0.2 w system prompt
+#MODEL="ft:gpt-3.5-turbo-1106:arclab:kspgpt:8fYBVZQn" # Fine tuning with LBG1_LG2 scenario excluding excluding [0,0,0] actions (except first one) and window 0 (file 20240110-012016 and 20240110-012918) - lrm = 0.2 w system prompt
+#MODEL="ft:gpt-3.5-turbo-1106:arclab:kspgpt:8fcRrtX5" # Fine tuning with LBG1_LG2 scenario excluding excluding [0,0,0] actions (except first one) and window 0 (file ? and ?) - lrm = 0.2 w system prompt
+#MODEL="ft:gpt-3.5-turbo-1106:personal:kspgpt:8g7TSiaS" # Fine tuning with PE1_I3 scenario excluding excluding [0,0,0] actions (except first one) and window 0 (file 20231125-141128) - lrm = 0.2 w system prompt and CoT in assistant
+
+#MODEL="ft:gpt-3.5-turbo-1106:personal:kspgpt:8gdnPIY6" # Fine tuning with PE1_I3 scenario excluding excluding [0,0,0] actions (except first one) and window 0 (file 20231125-142215) - lrm = 0.2 w system prompt and CoT w/ distance in user prompt
+
+# BEST: ft:gpt-3.5-turbo-1106:personal:kspgpt:8bTzAWwP
+# 2nd BEST: ft:gpt-3.5-turbo-1106:personal:kspgpt:8bD1GGkU
+
+# PAPER MODELS
+
+#MODEL="gpt-3.5-turbo-1106"
+
+# Alex's account (2nd key)
+#MODEL="ft:gpt-3.5-turbo-1106:personal:kspgpt:8aRq6vek" # PE1_w_o_system_prompt_lrm_2
+#MODEL="ft:gpt-3.5-turbo-1106:personal:kspgpt:8b9DvqNk" # PE1_w_o_system_prompt_lrm_0.2
+#MODEL="ft:gpt-3.5-turbo-1106:personal:kspgpt:8bD1GGkU" # PE1_w_system_prompt_lrm_0.2
+MODEL="ft:gpt-3.5-turbo-1106:personal:kspgpt:8bTzAWwP" # PE1_w_system_prompt_multfiles_lrm_0.2
+
+# MIT's account
+#MODEL="ft:gpt-3.5-turbo-1106:arclab:kspgpt:8sXBoPJM" # PE1_w_o_system_prompt_lrm_2
+#MODEL="ft:gpt-3.5-turbo-1106:arclab:kspgpt:8sXNHvqL" # PE1_w_o_system_prompt_lrm_0.2
+#MODEL="ft:gpt-3.5-turbo-1106:arclab:kspgpt:8sXPUBps" # PE1_w_system_prompt_lrm_0.2
+#MODEL="ft:gpt-3.5-turbo-1106:arclab:kspgpt:8sY9Selx" # PE1_w_system_prompt_multfiles_lrm_0.2
+#MODEL = "ft:gpt-3.5-turbo-1106:arclab:kspgpt:8tHHc3CL" # PE2_W_THREE_FILES
+#MODEL = "ft:gpt-3.5-turbo-1106:arclab:kspgpt:8tK45GFw" # PE2_W_THREE_FILES_2PE2_1PE1
+#MODEL = "ft:gpt-3.5-turbo-1106:arclab:kspgpt:8tM5Epgj" # PE2_W_THREE_FILES_2PE2_1PE1 and ALL null actions
+#MODEL = "ft:gpt-3.5-turbo-1106:arclab:kspgpt:8tR09ZDm" # PE2_W_THREE_FILES_2PE2_1PE1 with hint "accelerate forward"
+#MODEL = "ft:gpt-3.5-turbo-1106:arclab:kspgpt:8tRaaIAo" # PE2_W_THREE_FILES_2PE2_1PE1 w/o hint
+#MODEL = "ft:gpt-3.5-turbo-1106:arclab:kspgpt:8uJOMHc2" # PE2_W_THREE_FILES_2PE2_1PE1 & hint 'accelerate forward'
+
+#MODEL = "ft:gpt-3.5-turbo-0125:arclab:kspgpt:8y1KTsfy" # PE1_w_system_prompt_cot_lrm_0.2
+#MODEL = "ft:gpt-3.5-turbo-0125:arclab:kspgpt:8y2egwC7" # PE1_w_system_prompt_cot_lrm_0.2
+
+#MODEL = "ft:gpt-3.5-turbo-0125:arclab:kspgpt:8yHqWRCr" # PE1_E3_I3_LLM_0125_CoT_Navball_lrm_0.2 single train file 20240217-134445
+
+# This model is not working correctly due to the use of "Reason step-by-Step" in the user prompt of the training file.
+#MODEL = "ft:gpt-3.5-turbo-0125:arclab:kspgpt:8yMQUyAG" # PE1_E3_I3_LLM_0125_CoT_Navball_multiple_lrm_0.2 multiple train file 20240217-134445-131722-130008
+
+# LLM baseline models
+#
+# Note:
+# Before 16-Feb-2024 gpt-3.5-turbo points to gpt-3.5-turbo-0613
+# After  16-Feb-2024 gpt-3.5-turbo points to gpt-3.5-turbo-0125
+
+#MODEL="gpt-3.5-turbo"
+#MODEL="gpt-3.5-turbo-1106"
+#MODEL="gpt-3.5-turbo-0125"
+#MODEL="ft:gpt-3.5-turbo-1106:personal:kspgpt:8bD1GGkU" # Fine tuning with PE1_I3 scenario excluding excluding [0,0,0] actions (except first one) and window 0 (file 20231125-142215) - lrm = 0.2 w system prompt
+#MODEL="gpt-3.5-turbo-0613"
+#MODEL="gpt-4"
+#MODEL="gpt-4-0613"
+
+# LLM base models for fine-tuning
+
+#BASE_MODEL="gpt-4-1106-preview"
+BASE_MODEL="gpt-3.5-turbo-1106"
+#BASE_MODEL="gpt-3.5-turbo-0125"
+
+#BASE_MODEL="ft:gpt-3.5-turbo-1106:arclab:kspgpt:8To6IpQ4"
+
+#SCENARIO="PE1_E3_I3"
+SCENARIO="PE1_E3_I3"
+#SCENARIO="PE1_E2_I3"
+#SCENARIO="LBG1_LG1_I2"
+#SCENARIO="LBG1_LG2_I2"
+#SCENARIO="SB1_E1_I1"
+#SCENARIO="SB1_E1_I2"
+#SCENARIO="SB1_E1_I3"
+#SCENARIO="SB1_E1_I4"
+#SCENARIO="SB1_E1_I5"
+
+IGNORE_TIME="True"
+USE_RELATIVE_COORDINATES=False
+USE_SHORT_ARGUMENT_NAMES=False
+USE_ENUM="True"
+USE_VESSEL_UP="False"
+EMBED_HISTORY="False"
+
+USE_PROGRADE="True"
+USE_COT="True"
+USE_COT_SPEED_LIMIT="False"
+
+SKIP_ALL_NULL_ACTIONS="False"
+
+SLIDING_WINDOW_SIZE=0
+SLIDING_WINDOW_STRIDE=1
+
+# WANDB Variables
+WANDB_API_KEY="aec04ce3251938925167fba781d00b91e2201642"
+WANDB_ENTITY="fjcl"
+WANDB_PROJECT="KSPDG Challenge"
+
+# WANDB Variables (Alex)
+# WANDB_API_KEY="14aad170091fe78c6f1d4c75fddd1d232f1fd42a"
+# WANDB_ENTITY="carrusk"
+# WANDB_PROJECT="KSPDG Challenge"
+# WANDB_PROJECT="KSPDG Challenge (paper)"

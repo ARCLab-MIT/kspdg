@@ -1,6 +1,13 @@
 import math
+import os
 
 import numpy as np
+from dotenv import load_dotenv
+
+from kspdg.pe1.e1_envs import PE1_E1_I1_Env, PE1_E1_I3_Env, PE1_E1_I4_Env
+from kspdg.pe1.e2_envs import PE1_E2_I3_Env
+from kspdg.pe1.e3_envs import PE1_E3_I3_Env
+from kspdg.sb1.e1_envs import SB1_E1_I1_Env, SB1_E1_I2_Env, SB1_E1_I3_Env, SB1_E1_I4_Env, SB1_E1_I5_Env
 
 DEFAULT_TARGET_VIEWING_DISTANCE = 100.0  # [m]
 DEFAULT_REWARD_DECAY_COEF = 1e-5  # [1/m^2]
@@ -581,3 +588,31 @@ class Action:
             "dt": action[2]
         }
         return action_json
+
+def set_env_paths():
+    base_directory = os.path.dirname(__file__)
+
+    env_path = os.path.join(base_directory, 'env')
+    load_dotenv(env_path)
+
+    # Load configuration from alex_prompt.txt
+    prompts_path = os.path.join(base_directory, 'alex_prompts.txt')
+    load_dotenv(prompts_path)
+
+def setup_scenarios() -> dict:
+    scenarios = dict()
+
+    scenarios["PE1_E1_I1"] = PE1_E1_I1_Env
+    scenarios["PE1_E1_I3"] = PE1_E1_I3_Env
+    scenarios["PE1_E1_I4"] = PE1_E1_I4_Env
+    scenarios["PE1_E3_I3"] = PE1_E3_I3_Env
+
+    scenarios["PE1_E2_I3"] = PE1_E2_I3_Env
+
+    scenarios["SB1_E1_I1"] = SB1_E1_I1_Env
+    scenarios["SB1_E1_I2"] = SB1_E1_I2_Env
+    scenarios["SB1_E1_I3"] = SB1_E1_I3_Env
+    scenarios["SB1_E1_I4"] = SB1_E1_I4_Env
+    scenarios["SB1_E1_I5"] = SB1_E1_I5_Env
+
+    return scenarios

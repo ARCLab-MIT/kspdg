@@ -2099,7 +2099,7 @@ GAME
 										}
 										ORBIT
 										{
-											SMA = 750000
+											SMA = 900000
 											ECC = 0
 											INC = 0
 											LPE = 0

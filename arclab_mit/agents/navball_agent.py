@@ -46,7 +46,6 @@ from kspdg.sb1.e1_envs import SB1_E1_I4_Env
 from kspdg.sb1.e1_envs import SB1_E1_I5_Env
 from kspdg.sb1.sb1_base import SunBlockingGroup1Env
 
-
 from os.path import join, dirname
 from dotenv import load_dotenv
 
@@ -65,6 +64,7 @@ APPROACH_SPEED = 40
 VESSEL_ACCELERATION = 0.1
 EVASION_DISTANCE = 0
 ROTATION_THRESHOLD = 0.03
+
 
 class LLMAgent(KSPDGBaseAgent):
     """An agent that uses ChatGPT to make decisions based on observations."""
@@ -149,7 +149,7 @@ class LLMAgent(KSPDGBaseAgent):
             # Get the celestial body
             self.body = self.vessel.orbit.body
         except Exception as e:
-            print ("Exception: " + str(e))
+            print("Exception: " + str(e))
             self.conn = None
             self.vessel = None
             self.body = None
@@ -159,28 +159,55 @@ class LLMAgent(KSPDGBaseAgent):
         # scenario
         self.scenario = os.environ['SCENARIO']
 
+        # Define the root folder for training data
+        root_folder = 'training_data'
+
         # Create streams to log actions
-        if not os.path.exists('logs'):
-            self.log = None
-            self.log_jsonl = None
-        else:
-            log_name = "./logs/navball_log_" + self.scenario + "_" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.csv'
-            self.log = open(log_name, mode='w', newline='')
-            if self.scenario.lower().startswith("lbg"):
-                if self.use_prograde:
-                    head = ['throttles', 'duration', 'time', 'vehicle_mass', 'vehicle_propellant', 'pursuer_pos_x', 'pursuer_pos_y', 'pursuer_pos_z', 'pursuer_vel_x', 'pursuer_vel_y', 'pursuer_vel_z', 'evader_pos_x', 'evader_pos_y', 'evader_pos_z', 'evader_vel_x', 'evader_vel_y', 'evader_vel_z', 'guard_pos_x', 'guard_pos_y', 'guard_pos_z', 'guard_vel_x', 'guard_vel_y', 'guard_vel_z', 'prograde', 'weighted_score']
-                else:
-                    head = ['throttles', 'duration', 'time', 'vehicle_mass', 'vehicle_propellant', 'pursuer_pos_x', 'pursuer_pos_y', 'pursuer_pos_z', 'pursuer_vel_x', 'pursuer_vel_y', 'pursuer_vel_z', 'evader_pos_x', 'evader_pos_y', 'evader_pos_z', 'evader_vel_x', 'evader_vel_y', 'evader_vel_z', 'guard_pos_x', 'guard_pos_y', 'guard_pos_z', 'guard_vel_x', 'guard_vel_y', 'guard_vel_z', 'weighted_score']
+        if not os.path.exists(root_folder):
+            os.makedirs(root_folder)
+
+        # Get the current date in the format 'MM-DD-YYYY'
+        today_date = datetime.datetime.now().strftime("%m-%d-%Y")
+
+        # Define the logs directory within the training data folder
+        logs_folder = os.path.join(root_folder, f"logs_{today_date}")
+
+        # Check if the logs directory exists, create if not
+        if not os.path.exists(logs_folder):
+            os.makedirs(logs_folder)
+
+        log_name = f"./{logs_folder}/navball_log_" + self.scenario + "_" + datetime.datetime.now().strftime(
+            "%Y%m%d-%H%M%S") + '.csv'
+        self.log = open(log_name, mode='w', newline='')
+        if self.scenario.lower().startswith("lbg"):
+            if self.use_prograde:
+                head = ['throttles', 'duration', 'time', 'vehicle_mass', 'vehicle_propellant', 'pursuer_pos_x',
+                        'pursuer_pos_y', 'pursuer_pos_z', 'pursuer_vel_x', 'pursuer_vel_y', 'pursuer_vel_z',
+                        'evader_pos_x', 'evader_pos_y', 'evader_pos_z', 'evader_vel_x', 'evader_vel_y', 'evader_vel_z',
+                        'guard_pos_x', 'guard_pos_y', 'guard_pos_z', 'guard_vel_x', 'guard_vel_y', 'guard_vel_z',
+                        'prograde', 'weighted_score']
             else:
-                if self.use_prograde:
-                    head = ['throttles', 'duration', 'time', 'vehicle_mass', 'vehicle_propellant', 'pursuer_pos_x', 'pursuer_pos_y', 'pursuer_pos_z', 'pursuer_vel_x', 'pursuer_vel_y', 'pursuer_vel_z', 'evader_pos_x', 'evader_pos_y', 'evader_pos_z', 'evader_vel_x', 'evader_vel_y', 'evader_vel_z', 'prograde', 'weighted_score']
-                else:
-                    head = ['throttles', 'duration', 'time', 'vehicle_mass', 'vehicle_propellant', 'pursuer_pos_x', 'pursuer_pos_y', 'pursuer_pos_z', 'pursuer_vel_x', 'pursuer_vel_y', 'pursuer_vel_z', 'evader_pos_x', 'evader_pos_y', 'evader_pos_z', 'evader_vel_x', 'evader_vel_y', 'evader_vel_z', 'weighted_score']
+                head = ['throttles', 'duration', 'time', 'vehicle_mass', 'vehicle_propellant', 'pursuer_pos_x',
+                        'pursuer_pos_y', 'pursuer_pos_z', 'pursuer_vel_x', 'pursuer_vel_y', 'pursuer_vel_z',
+                        'evader_pos_x', 'evader_pos_y', 'evader_pos_z', 'evader_vel_x', 'evader_vel_y', 'evader_vel_z',
+                        'guard_pos_x', 'guard_pos_y', 'guard_pos_z', 'guard_vel_x', 'guard_vel_y', 'guard_vel_z',
+                        'weighted_score']
+        else:
+            if self.use_prograde:
+                head = ['throttles', 'duration', 'time', 'vehicle_mass', 'vehicle_propellant', 'pursuer_pos_x',
+                        'pursuer_pos_y', 'pursuer_pos_z', 'pursuer_vel_x', 'pursuer_vel_y', 'pursuer_vel_z',
+                        'evader_pos_x', 'evader_pos_y', 'evader_pos_z', 'evader_vel_x', 'evader_vel_y', 'evader_vel_z',
+                        'prograde', 'weighted_score']
+            else:
+                head = ['throttles', 'duration', 'time', 'vehicle_mass', 'vehicle_propellant', 'pursuer_pos_x',
+                        'pursuer_pos_y', 'pursuer_pos_z', 'pursuer_vel_x', 'pursuer_vel_y', 'pursuer_vel_z',
+                        'evader_pos_x', 'evader_pos_y', 'evader_pos_z', 'evader_vel_x', 'evader_vel_y', 'evader_vel_z',
+                        'weighted_score']
 
-            csv.writer(self.log).writerow(head)
+        csv.writer(self.log).writerow(head)
 
-            log_name = log_name.replace("csv", "jsonl")
-            self.log_jsonl = open(log_name, mode='w', newline='\n')
+        log_name = log_name.replace("csv", "jsonl")
+        self.log_jsonl = open(log_name, mode='w', newline='\n')
 
         # Interval between actions
         self.duration = 0.5
@@ -274,7 +301,8 @@ class LLMAgent(KSPDGBaseAgent):
                 self.init_mass = state.vehicle_mass
             weighted_score = 0.0
             if self.scenario.lower().startswith("pe"):
-                weighted_score = self.pe1Env.get_weighted_score(state.distance, state.velocity, state.mission_time, self.init_mass - state.vehicle_mass)
+                weighted_score = self.pe1Env.get_weighted_score(state.distance, state.velocity, state.mission_time,
+                                                                self.init_mass - state.vehicle_mass)
             elif self.scenario.lower().startswith("lbg"):
                 lb_dist = state.distance
                 lg_dist = np.linalg.norm(state.evader_position - state.guard_position, ord=2)
@@ -315,22 +343,23 @@ class LLMAgent(KSPDGBaseAgent):
             """ Check vessel position is given in celestial body orbital reference frame
             """
             reference_frame = self.body.reference_frame
-            p = np.array(self.conn.space_center.transform_position([0,0,0], vessel_frame, reference_frame))
+            p = np.array(self.conn.space_center.transform_position([0, 0, 0], vessel_frame, reference_frame))
             p = State.lh_to_rh(p)
             diff = (p - state.pursuer_position) / np.linalg.norm(state.pursuer_position)
             print("check pursuer position in body reference frame:" + str(diff) + " / " + str(np.linalg.norm(diff)))
 
             reference_frame = self.body.orbital_reference_frame
-            p = np.array(self.conn.space_center.transform_position([0,0,0], vessel_frame, reference_frame))
+            p = np.array(self.conn.space_center.transform_position([0, 0, 0], vessel_frame, reference_frame))
             p = State.lh_to_rh(p)
             diff = (p - state.pursuer_position) / np.linalg.norm(state.pursuer_position)
             print("check pursuer position in orbital reference frame:" + str(diff) + " / " + str(np.linalg.norm(diff)))
 
             reference_frame = self.body.non_rotating_reference_frame
-            p = np.array(self.conn.space_center.transform_position([0,0,0], vessel_frame, reference_frame))
+            p = np.array(self.conn.space_center.transform_position([0, 0, 0], vessel_frame, reference_frame))
             p = State.lh_to_rh(p)
             diff = (p - state.pursuer_position) / np.linalg.norm(state.pursuer_position)
-            print("check pursuer position in non-rotating reference frame:" + str(diff) + " / " + str(np.linalg.norm(diff)))
+            print("check pursuer position in non-rotating reference frame:" + str(diff) + " / " + str(
+                np.linalg.norm(diff)))
 
             """ Check vessel velocity is given in celestial body orbital reference frame
             """
@@ -350,7 +379,8 @@ class LLMAgent(KSPDGBaseAgent):
             v = self.conn.space_center.transform_velocity([0, 0, 0], [0, 0, 0], vessel_frame, reference_frame)
             v = State.lh_to_rh(v)
             diff = (v - state.pursuer_velocity) / np.linalg.norm(state.pursuer_velocity)
-            print("check pursuer velocity in non-rotating reference frame:" + str(diff) + " / " + str(np.linalg.norm(diff)))
+            print("check pursuer velocity in non-rotating reference frame:" + str(diff) + " / " + str(
+                np.linalg.norm(diff)))
 
             """ Check vessel is pointing at target
             """
@@ -358,7 +388,7 @@ class LLMAgent(KSPDGBaseAgent):
             v = State.lh_to_rh(v)
             print("v: " + str(v))
             rel_position = state.rel_position
-            print("rel_position: " + str(rel_position/np.linalg.norm(rel_position)))
+            print("rel_position: " + str(rel_position / np.linalg.norm(rel_position)))
             n = np.dot(v, rel_position) / (np.linalg.norm(v) * np.linalg.norm(state.rel_position))
             print("n: " + str(n))
             n = np.dot(v, state.vessel_up) / (np.linalg.norm(v) * np.linalg.norm(state.vessel_up))
@@ -372,12 +402,14 @@ class LLMAgent(KSPDGBaseAgent):
             vessel_up = np.array(self.conn.space_center.transform_direction((0, 0, 1), vessel_frame, surface_frame))
             v = np.array(self.vessel.direction(surface_frame))
             l_pitch, l_heading, l_roll = State.get_pitch_heading_roll(v, vessel_up)
-            print(f"LEVER (using surface ref. frame) heading: {l_heading:.2f}, pitch: {l_pitch:.2f}, roll: {l_roll:.2f}")
+            print(
+                f"LEVER (using surface ref. frame) heading: {l_heading:.2f}, pitch: {l_pitch:.2f}, roll: {l_roll:.2f}")
             print("v: " + str(v))
             print('vessel_up: ' + str(vessel_up))
 
             vessel_up = State.rh_to_lh(state.vessel_up)
-            vessel_up = np.array(self.conn.space_center.transform_direction(vessel_up, celestial_body_frame, surface_frame))
+            vessel_up = np.array(
+                self.conn.space_center.transform_direction(vessel_up, celestial_body_frame, surface_frame))
             l_pitch, l_heading, l_roll = State.get_pitch_heading_roll(v, vessel_up)
             print(f"LEVER (w/ stored vessel_up) heading: {l_heading:.2f}, pitch: {l_pitch:.2f}, roll: {l_roll:.2f}")
             print("v: " + str(v))
@@ -410,7 +442,8 @@ class LLMAgent(KSPDGBaseAgent):
             v = self.conn.space_center.transform_direction(v, celestial_body_frame, surface_frame)
             vessel_up = np.array(self.conn.space_center.transform_direction((0, 0, 1), vessel_frame, surface_frame))
             p_pitch, p_heading, p_roll = State.get_pitch_heading_roll(v, vessel_up)
-            print(f"PROGRADE (using surface ref. frame) heading: {p_heading:.2f}, pitch: {p_pitch:.2f}, roll: {p_roll:.2f}")
+            print(
+                f"PROGRADE (using surface ref. frame) heading: {p_heading:.2f}, pitch: {p_pitch:.2f}, roll: {p_roll:.2f}")
             print("v: " + str(v))
             print("vessel_up: " + str(state.vessel_up))
 
@@ -426,7 +459,7 @@ class LLMAgent(KSPDGBaseAgent):
             if debug:
                 print(f"Retrograde direction is {retrograde}")
 
-            print("retrograde: " + str(retrograde/np.linalg.norm(retrograde)))
+            print("retrograde: " + str(retrograde / np.linalg.norm(retrograde)))
 
             ft = 1
             v = retrograde / np.linalg.norm(retrograde)
@@ -436,8 +469,10 @@ class LLMAgent(KSPDGBaseAgent):
             else:
                 rt = 0
                 dt = 0
-#            if state.distance < 1500:
-            if (np.dot(state.rel_position, state.rel_velocity) < 0) and (state.time_to_intercept * VESSEL_ACCELERATION < state.velocity) and (state.distance > EVASION_DISTANCE):
+            #            if state.distance < 1500:
+            if (np.dot(state.rel_position, state.rel_velocity) < 0) and (
+                    state.time_to_intercept * VESSEL_ACCELERATION < state.velocity) and (
+                    state.distance > EVASION_DISTANCE):
                 # Target is approaching and intercept time is insufficient to stop
                 if state.velocity > APPROACH_SPEED:
                     # Reduce speed
@@ -504,7 +539,7 @@ class LLMAgent(KSPDGBaseAgent):
             v = np.matmul(v, rot_matrix)
             v = State.lh_to_rh(v)
             print("v: " + str(v))
-            print("rel_position: " + str(state.rel_position/np.linalg.norm(state.rel_position, ord=2)))
+            print("rel_position: " + str(state.rel_position / np.linalg.norm(state.rel_position, ord=2)))
 
         action = {
             "burn_vec": burn_vec,
@@ -560,7 +595,8 @@ class LLMAgent(KSPDGBaseAgent):
             # Case
             #   "1, 0 ,0"
             action = function_args.split(',')
-            function_args = "{\n  \"ft\": " + action[0] + ",\n  \"rt\": " + action[1] + ",\n  \"dt\": " + action[2] + "\n}"
+            function_args = "{\n  \"ft\": " + action[0] + ",\n  \"rt\": " + action[1] + ",\n  \"dt\": " + action[
+                2] + "\n}"
         else:
             index = function_args.find("{")
             if index == -1:
@@ -635,7 +671,7 @@ class LLMAgent(KSPDGBaseAgent):
                 model=model,
                 messages=prompt,
                 functions=self.functions,
-                max_tokens = 150, # limit output tokens (enough for valid responses)
+                max_tokens=150,  # limit output tokens (enough for valid responses)
                 temperature=0  # randomness, cool approach if we want to adjust some param with this
             )
             status = "success"
@@ -643,7 +679,7 @@ class LLMAgent(KSPDGBaseAgent):
             result = response.choices[0].message
             token_usage = response["usage"].to_dict()
         except Exception as e:
-            print ("Exception: " + str(e))
+            print("Exception: " + str(e))
             status = "error"
             status_message = str(e)
             response = None
@@ -679,8 +715,7 @@ class LLMAgent(KSPDGBaseAgent):
         return result
 
 
-if __name__ == "__main__":
-
+def execute_agent():
     scenario = os.environ['SCENARIO']
 
     scenarios = setup_scenarios()
@@ -697,6 +732,16 @@ if __name__ == "__main__":
         agent=my_agent,
         env_cls=scenarios[scenario],
         env_kwargs=None,
-        runner_timeout=240,
+        runner_timeout=240,  # 4 minutes default (240 seconds)
         debug=False)
     runner.run()
+
+    return runner
+
+
+def kill(runner: AgentEnvRunner):
+    runner.stop_agent()
+
+
+if __name__ == "__main__":
+    execute_agent()

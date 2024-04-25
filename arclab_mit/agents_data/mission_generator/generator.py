@@ -1,24 +1,38 @@
 import random
+from orbit import sample_n_orbits
 
 
 class OrbitPool:
     def __init__(self):
         # Define the min and max values for each orbital parameter
+        self.orbits = []
         self.ranges = {
-            'SMA': (724999.9, 754500.1875),
-            'ECC': (0, 0.034483000636100769),
-            'INC': (0, 1),
-            'LPE': (0, 355),
-            'LAN': (0, 350),
-            'MNA': (5.93062879827673231, 6.1959188445798699),
-            'EPH': (0, 0),  # Adjusted to a realistic max for example purposes
-            'REF': (1, 1)
+#            'n_orbits': 10,
+            'n_orbits': 10,
+            'dmin': [500, 1000],
+            'dmax': [5000, 10000],
+            'speed_percent_range': [0, 100]
         }
 
-    def generate_random_orbit(self):
+    def retrieve_random_orbit(self):
         # Generate random values for each orbital parameter within its range
-        orbit_values = tuple(random.uniform(min_val, max_val) for param, (min_val, max_val) in self.ranges.items())
-        return orbit_values
+        if len(self.orbits) == 0:
+            self.orbits = self.generate_orbit_pool()
+        return self.orbits.pop()
+
+    def generate_orbit_pool(self):
+        # Generate a pool of orbits using the provided sample_n_orbits function
+        n_orbits = self.ranges['n_orbits']
+        dmin = random.randint(*self.ranges['dmin'])
+        dmax = random.randint(*self.ranges['dmax'])
+        speed_percent_range = random.randint(*self.ranges['speed_percent_range'])
+
+        return sample_n_orbits(n_orbits, dmin, dmax, speed_percent_range)
+
+    def get_random_range_value(self, range_list):
+        # Helper function to get a random value from a range list
+        return random.randint(*range_list)
+
 
 class Generator:
     def __init__(self):
@@ -29,7 +43,7 @@ class Generator:
         self.color_end = '\033[0m'
         self.orbit_pool = OrbitPool()
 
-    def generate_orbit(self, sma, ecc, inc, lpe, lan, mna, eph, ref):
+    def generate_orbit(self, sma, ecc, inc, lpe, lan, mna, eph=0, ref=1):
         # Generating orbit parameters based on inputs
         orbit_params = f'''                 
             ORBIT
@@ -48,12 +62,22 @@ class Generator:
 
     def modify_evader_orbit(self):
         # Generate random orbit parameters for the evader
-        orbit_params = self.orbit_pool.generate_random_orbit()
+        orbit_params = [
+            750000,
+            0,
+            0.0001,
+            0,
+            0,
+            5.9341194567807207
+        ]
         return self.generate_orbit(*orbit_params)
 
     def modify_pursuer_orbit(self):
-        # Generate random orbit parameters for the pursuer
-        orbit_params = self.orbit_pool.generate_random_orbit()
+        # Retrieve the orbit instance, assuming it's stored or created somewhere in the class
+        my_orbit_instance = self.orbit_pool.retrieve_random_orbit()  # This method should return an instance of MyOrbit
+        orbit_params = my_orbit_instance.get_keplerian_elements()
+
+        # Pass all the keplerian elements
         return self.generate_orbit(*orbit_params)
 
     def parse_and_rewrite_mission_file(self):
@@ -62,6 +86,7 @@ class Generator:
 
         processed_lines = []
         inside_vessel = False
+        inside_orbit = False
         is_pursuer = False
         is_evader = False
         brace_count = 0
@@ -81,6 +106,9 @@ class Generator:
                     brace_count += 1
                 if '}' in line:
                     brace_count -= 1
+                    if inside_orbit:
+                        inside_orbit = False
+                        continue
 
             if brace_count == 0 and inside_vessel:
                 print(self.color_info_2 + "Outside Vessel" + self.color_end)
@@ -96,14 +124,21 @@ class Generator:
                     is_pursuer = True
                     is_evader = False
 
-            if inside_vessel and is_evader and 'ORBIT' in line:
+            if inside_orbit:
+                continue
+
+            if inside_vessel and is_evader and 'ORBIT' == line:
+                inside_orbit = True
                 modified_line = self.modify_evader_orbit()
+                print("EVADER")
                 print(self.color_info_3 + modified_line + self.color_end)
                 processed_lines.append(modified_line)
                 continue
 
-            if inside_vessel and is_pursuer and 'ORBIT' in line:
+            if inside_vessel and is_pursuer and 'ORBIT' == line:
+                inside_orbit = True
                 modified_line = self.modify_pursuer_orbit()
+                print("PURSUER")
                 print(self.color_info_3 + modified_line + self.color_end)
                 processed_lines.append(modified_line)
                 continue
@@ -116,8 +151,13 @@ class Generator:
                 file.write(line + '\n')
             file.close()
 
-if __name__ == '__main__':
+
+def main():
     gen = Generator()
     gen.parse_and_rewrite_mission_file()
 
     print("Mission file updated.")
+
+
+if __name__ == '__main__':
+    main()

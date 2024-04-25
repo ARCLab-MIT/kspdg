@@ -542,7 +542,7 @@ class ClaudeAgent(KSPDGBaseAgent):
                 "start_time_ms": time_before * 1000,
                 "end_time_ms": time_after * 1000,
                 "inputs": prompt,
-                "outputs": response,
+                "outputs": ' '.join(map(str, response)),
             }
             json.dump(log_entry, self.log_jsonl)
             self.log_jsonl.write('\n')

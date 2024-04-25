@@ -4,7 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2720ae2c-5b78-4671-ab69-13d2c2318108" name="Changes" comment="Add option to delete a run_id" />
+    <list default="true" id="2720ae2c-5b78-4671-ab69-13d2c2318108" name="Changes" comment="Adding HELLO for the main script that will execute the bot all day. Adding a package for generating orbits and gameplays.">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/arclab_mit/agents/claude_alejandro.py" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents/claude_alejandro.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/arclab_mit/agents/env" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents/env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/arclab_mit/agents/navball_agent.py" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents/navball_agent.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/arclab_mit/agents_data/mission_generator/generator.py" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents_data/mission_generator/generator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/arclab_mit/agents_data/mission_generator/idle_player.py" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents_data/mission_generator/idle_player.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/arclab_mit/agents_data/mission_generator/orbit.py" beforeDir="false" afterPath="$PROJECT_DIR$/arclab_mit/agents_data/mission_generator/orbit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ksp_files/saves/missions/pe1_i3/pe1_i3_init.sfs" beforeDir="false" afterPath="$PROJECT_DIR$/ksp_files/saves/missions/pe1_i3/pe1_i3_init.sfs" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -39,8 +48,10 @@
     "Python.fine_tuning_agent (1).executor": "Run",
     "Python.fine_tuning_agent_history.executor": "Run",
     "Python.generator.executor": "Run",
+    "Python.idle_player.executor": "Run",
+    "Python.navball_agent.executor": "Run",
     "Python.no_action_agent.executor": "Run",
-    "Python.orbit.executor": "Run",
+    "Python.orbit.executor": "Debug",
     "Python.sliding_window.executor": "Debug",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -71,30 +82,7 @@
       <recent name="C:\MIT\kspdg\arclab_mit\agents_data\fine_tuning" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.claude_alejandro">
-    <configuration name="chain_prompting_agent" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="kspdg" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/arclab_mit/agents" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/arclab_mit/agents/chain_prompting_agent.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
+  <component name="RunManager" selected="Python.navball_agent">
     <configuration name="check_fine_tuning_job" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="kspdg" />
       <option name="ENV_FILES" value="" />
@@ -143,29 +131,6 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/arclab_mit/agents/claude_alejandro.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="fine_tuning_agent (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="kspdg" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/arclab_mit/agents" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/arclab_mit/agents/fine_tuning_agent.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -286,6 +251,52 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/arclab_mit/agents_data/mission_generator/generator.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="idle_player" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="kspdg" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/arclab_mit/agents_data/mission_generator" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/arclab_mit/agents_data/mission_generator/idle_player.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="navball_agent" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="kspdg" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/arclab_mit/agents" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/arclab_mit/agents/navball_agent.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -423,19 +434,19 @@
       <item itemvalue="Python.pe1_paper_e3_i3_keyboard_agent_actions_20231203-222357_val" />
       <item itemvalue="Python.test.pyc" />
       <item itemvalue="Python.uncompile" />
-      <item itemvalue="Python.generator" />
-      <item itemvalue="Python.orbit" />
-      <item itemvalue="Python.chain_prompting_agent" />
-      <item itemvalue="Python.fine_tuning_agent (1)" />
       <item itemvalue="Python.claude_alejandro" />
+      <item itemvalue="Python.generator" />
+      <item itemvalue="Python.idle_player" />
+      <item itemvalue="Python.navball_agent" />
+      <item itemvalue="Python.orbit" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.navball_agent" />
+        <item itemvalue="Python.idle_player" />
         <item itemvalue="Python.claude_alejandro" />
-        <item itemvalue="Python.generator" />
         <item itemvalue="Python.orbit" />
-        <item itemvalue="Python.fine_tuning_agent (1)" />
-        <item itemvalue="Python.chain_prompting_agent" />
+        <item itemvalue="Python.generator" />
       </list>
     </recent_temporary>
   </component>
@@ -461,7 +472,20 @@
       <workItem from="1712594078376" duration="20281000" />
       <workItem from="1712917908257" duration="1354000" />
       <workItem from="1712919292194" duration="18152000" />
-      <workItem from="1713345424458" duration="5349000" />
+      <workItem from="1713345424458" duration="5578000" />
+      <workItem from="1713526013034" duration="10161000" />
+      <workItem from="1713613434303" duration="19910000" />
+      <workItem from="1713642281244" duration="913000" />
+      <workItem from="1713643220450" duration="16000" />
+      <workItem from="1713700098359" duration="1605000" />
+      <workItem from="1713701738173" duration="8765000" />
+      <workItem from="1713719506686" duration="5266000" />
+      <workItem from="1713783700210" duration="2373000" />
+      <workItem from="1713786620207" duration="12953000" />
+      <workItem from="1713820674220" duration="3456000" />
+      <workItem from="1713873565509" duration="5009000" />
+      <workItem from="1713885890360" duration="228000" />
+      <workItem from="1714040108400" duration="9208000" />
     </task>
     <task id="LOCAL-00001" summary="Fixing absolute to relative path">
       <created>1699962256231</created>
@@ -583,7 +607,23 @@
       <option name="project" value="LOCAL" />
       <updated>1713365375531</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="Changing for orbits">
+      <option name="closed" value="true" />
+      <created>1713365515501</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1713365515501</updated>
+    </task>
+    <task id="LOCAL-00019" summary="Adding HELLO for the main script that will execute the bot all day. Adding a package for generating orbits and gameplays.">
+      <option name="closed" value="true" />
+      <created>1713365563592</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1713365563592</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -611,7 +651,9 @@
     <MESSAGE value="Navball bot and CoT for PE problem" />
     <MESSAGE value="Fixes in predictions generation" />
     <MESSAGE value="Add option to delete a run_id" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add option to delete a run_id" />
+    <MESSAGE value="Changing for orbits" />
+    <MESSAGE value="Adding HELLO for the main script that will execute the bot all day. Adding a package for generating orbits and gameplays." />
+    <option name="LAST_COMMIT_MESSAGE" value="Adding HELLO for the main script that will execute the bot all day. Adding a package for generating orbits and gameplays." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -633,7 +675,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/arclab_mit/agents/navball_agent.py</url>
-          <line>498</line>
+          <line>533</line>
           <option name="timeStamp" value="337" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -657,29 +699,24 @@
           <option name="timeStamp" value="382" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/arclab_mit/agents/navball_agent.py</url>
-          <line>399</line>
-          <option name="timeStamp" value="383" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/arclab_mit/agents/navball_agent.py</url>
-          <line>270</line>
-          <option name="timeStamp" value="384" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/arclab_mit/agents/chatgpt.py</url>
           <line>104</line>
           <option name="timeStamp" value="391" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/arclab_mit/agents/claude_alejandro.py</url>
-          <line>574</line>
-          <option name="timeStamp" value="406" />
+          <url>file://$PROJECT_DIR$/arclab_mit/agents/navball_agent.py</url>
+          <line>279</line>
+          <option name="timeStamp" value="426" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/arclab_mit/agents/claude_alejandro.py</url>
-          <line>460</line>
-          <option name="timeStamp" value="408" />
+          <url>file://$PROJECT_DIR$/arclab_mit/agents_data/mission_generator/orbit.py</url>
+          <line>263</line>
+          <option name="timeStamp" value="438" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/arclab_mit/agents_data/mission_generator/orbit.py</url>
+          <line>261</line>
+          <option name="timeStamp" value="439" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -692,20 +729,29 @@
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
+        <watch expression="response" language="Python" />
+        <watch expression="self.conn.space_center.active_vessel.orbit.semi_major_axis" language="Python" />
+        <watch expression="aa" language="Python" />
+        <watch expression="e.unix" language="Python" />
+        <watch expression="e" language="Python" />
         <watch expression="type(response[1])" language="Python" />
         <watch expression="response" language="Python" />
+        <watch expression="self.vessel" language="Python" />
+        <watch expression="self.vessel" language="Python" />
       </configuration>
     </watches-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/kspdg$generator.coverage" NAME="generator Coverage Results" MODIFIED="1713349901455" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/arclab_mit/agents_data/mission_generator" />
+    <SUITE FILE_PATH="coverage/kspdg$generator.coverage" NAME="generator Coverage Results" MODIFIED="1713702405331" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/arclab_mit/agents_data/mission_generator" />
+    <SUITE FILE_PATH="coverage/kspdg$navball_agent.coverage" NAME="navball_agent Coverage Results" MODIFIED="1714067040338" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/arclab_mit/agents" />
     <SUITE FILE_PATH="coverage/kspdg$fine_tuning_agent_history.coverage" NAME="fine_tuning_agent_history Coverage Results" MODIFIED="1712922091182" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/arclab_mit/agents/fine-tuned_agent" />
     <SUITE FILE_PATH="coverage/kspdg$chain_prompting_agent.coverage" NAME="chain_prompting_agent Coverage Results" MODIFIED="1712942493224" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/arclab_mit/agents" />
-    <SUITE FILE_PATH="coverage/kspdg$orbit.coverage" NAME="orbit Coverage Results" MODIFIED="1713349560991" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/arclab_mit/agents_data/mission_generator" />
+    <SUITE FILE_PATH="coverage/kspdg$orbit.coverage" NAME="orbit Coverage Results" MODIFIED="1713822942140" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/arclab_mit/agents_data/mission_generator" />
+    <SUITE FILE_PATH="coverage/kspdg$idle_player.coverage" NAME="idle_player Coverage Results" MODIFIED="1714067017742" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/arclab_mit/agents_data/mission_generator" />
     <SUITE FILE_PATH="coverage/kspdg$no_action_agent.coverage" NAME="no_action_agent Coverage Results" MODIFIED="1712790949828" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/arclab_mit/agents" />
     <SUITE FILE_PATH="coverage/kspdg$sliding_window.coverage" NAME="sliding_window Coverage Results" MODIFIED="1712938203135" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/arclab_mit/agents" />
     <SUITE FILE_PATH="coverage/kspdg$agent_common.coverage" NAME="agent_common Coverage Results" MODIFIED="1712923624039" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/arclab_mit/agents" />
     <SUITE FILE_PATH="coverage/kspdg$fine_tuning_agent__1_.coverage" NAME="fine_tuning_agent (1) Coverage Results" MODIFIED="1713347536372" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/arclab_mit/agents" />
-    <SUITE FILE_PATH="coverage/kspdg$claude_alejandro.coverage" NAME="claude_alejandro Coverage Results" MODIFIED="1713349967723" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/arclab_mit/agents" />
+    <SUITE FILE_PATH="coverage/kspdg$claude_alejandro.coverage" NAME="claude_alejandro Coverage Results" MODIFIED="1714040605669" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/arclab_mit/agents" />
   </component>
 </project>

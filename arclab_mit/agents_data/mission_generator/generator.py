@@ -10,7 +10,7 @@ class OrbitPool:
 #            'n_orbits': 10,
             'n_orbits': 10,
             'dmin': [500, 1000],
-            'dmax': [5000, 10000],
+            'dmax': [3000, 5000],
             'speed_percent_range': [0, 100]
         }
 

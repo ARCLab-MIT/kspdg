@@ -15,7 +15,7 @@ Instructions to Run:
 """
 
 from kspdg.agent_api.base_agent import KSPDGBaseAgent
-from kspdg.pe1.e1_envs import PE1_E1_I3_Env
+from kspdg.pe1.e1_envs import PE1_E1_I3_Env, PE1_E1_I4_Env
 from kspdg.agent_api.runner import AgentEnvRunner
 
 class NaivePursuitAgent(KSPDGBaseAgent):
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     naive_agent = NaivePursuitAgent()    
     runner = AgentEnvRunner(
         agent=naive_agent, 
-        env_cls=PE1_E1_I3_Env, 
+        env_cls=PE1_E1_I4_Env,
         env_kwargs=None,
         runner_timeout=100,     # agent runner that will timeout after 100 seconds
         debug=True)

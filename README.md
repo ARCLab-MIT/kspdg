@@ -2,48 +2,18 @@
 
 See the information about the challenge in the [upstream repository](https://github.com/mit-ll/spacegym-kspdg/tree/main)
 
-# Resources
+## Resources
 
 See papers and software tools related to this project in the `resources` folder
-_Join us at [AIAA SciTech 2024](https://www.aiaa.org/SciTech) for a software design competition where participants develop autonomous agents for maneuvering satellites engaged in non-cooperative space operations._
 
-_Interested teams should sign up at https://www.surveymonkey.com/r/P2SQVF8, then they will be notified of upcoming meetings._
+### Contact
 
-- Participants will develop agents capable of solving several challenge problems related to non-cooperative space operations, e.g., pursuing an evasive satellite, multi-satellite proximity operations, etc.
-- Participants are encouraged to develop agents using a range of technologies, e.g., reinforcement learning, optimal control, game theoretical techniques, etc.
-- Participants’ agents will be evaluated on a range of metrics, such as time to completion of mission, fuel consumption, relative distances achieved, etc.
-- The participant pool will undergo a series of elimination events and teams with the best performing agents will be invited to present their agents via a live demonstration during a special session at AIAA SciTech in January 2024
-- Monthly meetings will be held in the lead up to SciTech to allow technical exchanges between participants, MIT Lincoln Laboratory developers, and AIAA SciTech organizers.
+Feel free to reach out if you have questions, feedback, or inquiries!
 
-There is no cost to participate and membership and/or SciTech registration is not required.
+- <img src="https://raw.githubusercontent.com/gauravghongde/social-icons/master/PNG/Color/Gmail.png" width="20" height="20"/> **Email**: [your-email@example.com](mailto:your-email@example.com)
+- <img src="https://raw.githubusercontent.com/gauravghongde/social-icons/master/PNG/Color/LinkedIN.png" width="20" height="20"/> **LinkedIn**: [Your LinkedIn Profile](https://www.linkedin.com/in/yourprofile)
+- <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/x-social-media-round-icon.png" width="20" height="20"/> **X**: [@YourTwitterHandle](https://twitter.com/YourTwitterHandle)
 
-**Getting Started?** See our [installation process](#installation) and examples for how to create agents ([here](#example-hello-kspdg) and [here](#example-agent-environment-runner)) and how to [evaluate agents for scoring purposes](#example-agent-environment-evaluator-for-scitech-challenge)
-
-Questions? Contact Ross Allen at: ross [DOT] allen [AT] ll [DOT] mit [DOT] edu
-
-## KSPDG Overview
-
-This library provides a suite of differential game (DG) challenge problems / environments set in the orbital domain built within the [Kerbal Space Program (KSP)](https://www.kerbalspaceprogram.com/) game engine. The intent of the KSPDG library is to provide benchmark challenge problems for evaluating autonomous control and AI algorithms applied to non-cooperative space operations.
-
-The KSP differential game environments are implemented using the [OpenAI Gym](https://github.com/openai/gym) (or more specifically [Gymnasium](https://gymnasium.farama.org/) which is the drop-in-replacement, maintained fork of Gym) and [PettingZoo](https://pettingzoo.farama.org/) standards. Non-GUI control of the KSP game engine is enabled by [kRPC](https://krpc.github.io/krpc/) and control of physically distant spacecraft is enabled by [PhysicsRangeExtender](https://github.com/jrodrigv/PhysicsRangeExtender).
-
-### Design Principles
-
-- Differential Games in the Orbital Domain
-  - First and foremost, KSPDG defines a set of differential games (e.g. pursuit-evasion) to be solved in the orbital domain.
-- Standardized API
-  - KSPDG uses the [OpenAI Gym](https://github.com/openai/gym) API for agent interactions to provide an industry-standard interface for control algorithms and agents
-- Open Source and Extensible
-  - KSPDG is made open source so that the broader community can create new scenarios/environments for benchmarking
-- Evaluation, Not Training
-  - KSPDG provides evaluations environments, _NOT_ training environments for reinforcement learning algorithms. There are several reasons for this.
-  - Practically speaking, KSP was not designed for the massively parallel, faster-than-real-time, headless execution typically needed for large-scale RL training.
-  - From a more principled perspective, it can be argued that non-trainable evaluation environments are of vital importance to the RL research community as they act as the true "test set" for which you cannot overfit your agents upon because they cannot be directly trained upon.
-  - Furthermore, trainable environments tend to imply that RL is the most effective solution method. We make no such assumption; indeed optimal control techniques and numerical differential game solvers may produce superior results in terms of development time, robustness, and optimality.
-- Environments, Not Agents
-  - Similar to other "gym" libraries, KSPDG only provides environments (aka scenarios, challenge problems), not the agents that solve those environments. Developing agents that best solve the KSPDG environments is work for the broader community.
-- Non-Blocking Step Function
-  - In KSPDG, game time does not pause while agents make decisions. This is a defining characteristic of KSPDG as best matches the real world and provides an inherent penalty to decision and control policies that take a long time to compute.
 
 ### Environments / Challenge Scenarios
 
@@ -53,42 +23,60 @@ KSPDG is collection of orbital challenge problems defined within different scena
 - Multi-agent target guarding, referred to as a [Lady-Bandit-Guard problem](https://github.com/mit-ll/spacegym-kspdg/tree/main/src/kspdg/lbg1)
 - 1-v-1 [Sun-blocking problem](https://github.com/mit-ll/spacegym-kspdg/tree/main/src/kspdg/sb1)
 
-In future development plans include scenarios with features like partial observability, multi-agent inspection problems with vision-based observation spaces, and head-to-head scenarios that leaverage the [Luna Multiplayer mod](http://lunamultiplayer.com/) that allow direct competition between two different AI players (current scenarios involve testing AI against pre-scipted bot adversaries)
+---
+
+## Agents Overview
+
+MIT-ArcLab has developed a diverse range of agents during this research, categorized mainly into two types: Few-Shot Prompting Agents and Fine-Tuning Agents. Each category represent a different strategy in addressing this challenge.
+
+- **Few-Shot Prompting Agents**: These agents are designed to perform tasks with zero training data. They are adept at understanding and executing instructions with only a few examples, showcasing the efficiency and adaptability of LLM models.
+
+- **Fine-Tuning Agents**: These agents will use the fine-tuned models. They tend to be more consistent and reliable, but harder to lead them to high quality results.
+
+- **Training Agent**: This agent called 'jason_keyboard_input' will collect the data of your gameplay in real time while the player accomplishes the mission.
+
+You can explore and learn more about these agents in our [agents folder](https://github.com/ARCLab-MIT/kspdg/tree/main/arclab_mit/agents).
+
+Feel free to delve into the folder for detailed information on each agent, including their design, capabilities, and examples.
 
 ---
 
-## Citation
+## Data overview
 
-[![DOI](https://zenodo.org/badge/572083084.svg)](https://zenodo.org/badge/latestdoi/572083084)
+The data associated with our research is organized into three main sections, each serving a unique purpose in the development and evaluation of our agents. Find all the scripts and folders [here](https://github.com/ARCLab-MIT/kspdg/tree/Alejandro/arclab_mit/agents_data).
+
+### Weights & Biases (wandb) Integration
+
+- **Purpose**: This section focuses on integrating with Weights & Biases (wandb) for managing training files. It provides tools and documentation for setting up and utilizing wandb to track and visualize the training process of our agents.
+- **Contents**: Includes setup guides, configuration files, and examples of wandb dashboards and reports.
+
+### Human Gameplay Data
+
+- **Purpose**: This section houses all the data generated from human gameplay. It is crucial for understanding human strategies and behaviors, which aids in developing more human-like agents.
+- **Contents**: Features raw gameplay data, processed datasets, and analysis scripts to glean insights from human play patterns.
+
+### Evaluation Results
+
+- **Purpose**: Dedicated to storing and presenting the evaluation results of our agents. This section is essential for assessing the performance and effectiveness of different agent strategies.
+- **Contents**: Contains comprehensive evaluation reports, performance metrics, and comparison charts between different agents and scenarios.
+
+Explore each section for detailed information, including methodologies, data formats, and access instructions.
+
+
+## Citation
+Direct link to arXiv preprint and BibTex citation.
+
+[![arXiv](https://img.shields.io/badge/arXiv-1234.56789-b31b1b.svg)](https://arxiv.org/abs/2404.00413)
 
 ```
-@inproceedings{allen2023spacegym,
-  title={SpaceGym: Discrete and Differential Games in Non-Cooperative Space Operations},
-  author={Allen, Ross E and Rachlin, Yaron and Ruprecht, Jessica and Loughran, Sean and Varey, Jacob and Viggh, Herbert},
-  booktitle={2023 IEEE Aerospace Conference},
-  pages={1--12},
-  year={2023},
-  organization={IEEE}
+@article{rodriguez2024language,
+title={Language Models are Spacecraft Operators},
+author={Victor Rodriguez-Fernandez, Alejandro Carrasco, Jason Cheng, Eli Scharf, Peng Mun Siew, Richard Linares},
+journal={arXiv preprint arXiv:2404.00413},
+year={2024}
 }
 ```
 
----
-
-## Disclaimer
-
-DISTRIBUTION STATEMENT A. Approved for public release. Distribution is unlimited.
-
-This material is based upon work supported by the Under Secretary of Defense for Research and Engineering under Air Force Contract No. FA8702-15-D-0001. Any opinions, findings, conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the Under Secretary of Defense for Research and Engineering.
-
-© 2022 Massachusetts Institute of Technology.
-
-Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
-
-SPDX-License-Identifier: MIT
-
-The software/firmware is provided to you on an As-Is basis
-
-Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, U.S. Government rights in this work are defined by DFARS 252.227-7013 or DFARS 252.227-7014 as detailed above. Use of this work other than as specifically authorized by the U.S. Government may violate any copyrights that exist in this work.
 
 ---
 
@@ -209,6 +197,7 @@ conda activate kspdg
 > :warning: **Troubleshooting**
 >
 > - Note that the `kspdg` library depends upon [astropy](https://www.astropy.org/), which in turn depends upon [pyerfa](https://github.com/liberfa/pyerfa)
+> - Note also that additionaly, our project includes extra dependencies beyond `kspdg`. One of them is [tiktoken](https://github.com/openai/tiktoken), which necessitates the [Rust compiler](https://www.rust-lang.org/tools/install).
 > - **FOR MAC USERS with M1 chipsets:** as of this writing, [pyerfa has not fully supported M1's arm64 architecture](https://github.com/liberfa/pyerfa/issues/83)
 > - This can lead to errors running `kspdg` such as
 >
@@ -229,7 +218,6 @@ conda activate kspdg
 > conda activate kspdg
 > pip install .
 > ```
-
 ### Install Luna Multiplayer (LMP)
 
 _Future Work_
@@ -273,66 +261,43 @@ pytest tests/ksp_ingame_tests/test_sb1_e1_i5.py
 
 ---
 
-## Example: Hello KSPDG
+## Example: Few-Shot Agent Example
 
-Here we provide a "hello world" example of implementing a pursuit agent in the simple Pursuit-Evade environment. This agent simply points at the pursuer and burns full throttle (Do you think that can interecept even a non-maneuvering evader? Try it and find out!)
+[TO BE DONE]
 
-1. Start KSP game application.
-2. Select `Start Game` > `Play Missions` > `Community Created` > `pe1_i3` > `Continue`
-3. In kRPC dialog box click `Add server`. Select `Show advanced settings` and select `Auto-accept new clients`. Then select `Start Server`
+## Example: Fine-Tuned Agent Example
 
-```python
-from kspdg.pe1.e1_envs import PE1_E1_I3_Env
+There is a specific folder for the fine-tuned agents that you can find in [here](https://github.com/ARCLab-MIT/kspdg/tree/Alejandro/arclab_mit/agents/fine-tuned_agent).
 
-# instantiate and reset the environment to populate game
-env = PE1_E1_I3_Env()
-env.reset()
+All these agents depend on GPT models as well as some parameters, these parameters are:
 
-# Environment automatically orients pursuer toward target
-# therefore a niave pusuit policy to to simply burn at full
-# thrust in pursuer's body-forward direction.
-# Do this until the episode 
-# (Do you think it can intercept even a non-maneuvering evader??)
-is_done = False
-act = {
-    "burn_vec": [1.0, 0, 0, 1.0], # burn vector in x, y, z, and duration [s]
-    "vec_type": 0,  # burn vector as throttle values (if =1, burn vector represents thrust in [N])
-    "ref_frame": 0  # burn_vec expressed in agent vessel's right-handed body frame. 
-                    # i.e. forward throttle, right throttle, down throttle, 
-                    # Can also use rhcbci (1) and rhntw (2) ref frames
-}
-while not is_done:
-    obs, rew, is_done, info = env.step(act)
+| Parameter | Description |
+|-----------|-------------|
+| `USE_RELATIVE_COORDINATES` | This parameter will be used to calculate relative velocity and position. |
+| `USE_SHORT_ARGUMENT_NAMES` | This parameter will be used to save or communicate the observations data using abbreviated names for time, fuel usage, etc. |
+| `OPENAI_API_KEY` | This parameter is mandatory for establishing a connection with OpenAI API. |
+| `SCENARIO` | This will determine the scenario you will be running the agent in. |
+| `MODEL` | Given the user's API key there can be multiple models with their unique ID; this parameter represents this ID. |
+| `IGNORE_TIME` | If you don't want to keep the time in the logs and prompts. |
+| `SLIDING_WINDOW_SIZE` | The size of the sliding window that will be used by the model. |
+| `SLIDING_WINDOW_STRIDE` | The stride of the sliding window (skips) for each call. |
+| `SYSTEM_PROMPTS` | All of the different system prompts for each strategy or scenario. |
+| `CHAIN_OF_THOUGHT` | If you want the model to reason with Chain of Thought, this would be added in the system prompt. |
 
-# printout info to see evaluation metrics of episode
-print(info)
 
-# close the environments to cleanup any processes
-env.close()
+Once all the parameters are set, the agent runs as any other agent via kRPC. Select the desired mission in the game and run the script having the kRPC server open.
+
+```bash
+conda activate kspdg
+cd arclab_mit/agents/fine-tuned_agent
+python3 fine_tuning_agent.py
 ```
 
-See [`scripts/example_hello_kspdg.py`](scripts/example_hello_kspdg.py) for more details
-
 ---
 
-## Example: Agent-Environment Runner
+## Example: Agent-Environment Evaluator
 
-Even though KSPDG environments are Gym (Gymnasium) environments, they require special handling because they must manage server connections to the KSP game engine, as well as handle the non-blocking nature of KSPDG environments (i.e. simulation time continues during and between calls to `env.step()`) which requires parallel processes for the environment interactions and agent's policy computation.
-
-Therefore we have defined a Agent-Environment Runner class that helps manage these interactions. Users can define agents by extending the `BaseAgentEnvRunner` and execute their agents as follows
-
-1. Start KSP game application.
-2. Select `Start Game` > `Play Missions` > `Community Created` > `pe1_i3` > `Continue`
-3. In kRPC dialog box click `Add server`. Select `Show advanced settings` and select `Auto-accept new clients`. Then select `Start Server`
-4. In a terminal, run `python scripts/example_agent_runner.py`
-
-See [`scripts/example_agent_runner.py`](scripts/example_agent_runner.py) for more details
-
----
-
-## Example: Agent-Environment Evaluator for SciTech Challenge
-
-This example walks through how to evaluate agents for scoring purpose in the AIAA SciTech 2024 Challenge. Due to the GUI-based interface of KSP that requires manual interaction, there is not a straight-forward process for hosting a centralized evaluation server upon which participants can submit agents. Instead we have adopted a decentralized process where agents are evaluated locally on particapants' own computers. Participants will then upload their evaluation results to a centralized scoreboard where they will be authenticated and ranked against other participants.
+This example walks through how to evaluate agents for scoring purpose. Due to the GUI-based interface of KSP that requires manual interaction, there is not a straight-forward process for hosting a centralized evaluation server upon which participants can submit agents. Instead there is a decentralized process where agents are evaluated locally on particapants' own computers. Participants will then upload their evaluation results to a centralized scoreboard where they will be authenticated and ranked against other participants.
 
 > :warning: **Honor System**
 > While we have taken some steps to prevent falsification of results, there is still potential for cheating.
@@ -409,26 +374,3 @@ Throughout the documentation and code comments we refer to aerospace literature 
   - short hands: "BMW", "Bate, Mueller, White"
 
 ---
-
-## Code Notation
-
-Coordinate transforms are used throughout this code base. Without a rigorous notation it can become very difficult to determine the meaning of any particular variable. for example and ambiguous variable name like `pursuer_pos` seems to imply the position of a "pursuer" spacecraft, but position relative to what? Relative to a planet or relative to another spacecraft? Furthermore it says nothing of what coordinate frame that variable is expressed within. The pursuer position relative to the planet can be expressed in earth-centered inertial (ECI), perifocal, or even within another satellite's RSW frame (see Vallado, 3rd Edition, Sec 3.3 for frame descriptions). Each of these expressions lead to different numerical values for vector representations of the same physical vector
-
-To make matters worse, kRPC---the crucial library that provides a python interface for controlling Kerbal Space Program---uses [left-handed coordinate systems](https://krpc.github.io/krpc/tutorials/reference-frames.html#introduction)!! This will lead to much confusion if not pedantically handled.
-
-To reduce the confusion we will strive to use the following notation for vector variables: `w_x_y__z`
-
-- `w` is a description of the vector. For example `pos`, `vel` may be using in the `w` position to represent position and velocity vectors, respectively
-- `x_y` is read as "x with respect to y". For example, if we want a vector for the position of satellite A with respect to satellite B we would have the partial variable name: `pos_satA_satB`
-- `__z` is read as "expressed in z". We need not only describe what the physical represents (i.e. `w_x_y`), we need to also described what coordinate frame the physcial vector is being expressed within; this is the purpose of `__z`. Therefore if we want a variable for the position of satellite A with respect to satellite B expressing in the right-handed earth-centered inertial coordinates we would write: `pos_satA_satB__rheci`
-
-Here are some abbreviations and acronyms used throughout the code
-
-- `lhntw` = left-handed NTW coordinate frame (y-axis parallel to velocity vector, x-axis in orbital plane along---but not necessarily parallel to---radial in direction, z-axis perpendicular to complete left-handed system) based on [kRPC's Vessel `orbital_reference_frame`](https://krpc.github.io/krpc/python/api/space-center/vessel.html#SpaceCenter.Vessel.orbital_reference_frame)
-- `rhntw` = right-handed NTW coordinate frame (y-axis parallel to velocity vector, x-axis in orbital plane along---but not necessarily parallel to---radial out direction, z-axis perpendicular to complete right-handed system) as described in Vallado 3rd ed. sec. 3.3.3
-- `rhrsw` = right-handed RSW (radial, along-track, normal) coordinate frame described in Vallado 3rd Edition, Sec 3.3.3
-- `lhrsw` = left-handed variant RSW coordinate frame (anti-radial, along-track, normal). Note that kRPC does not have a default lhrsw frame; the `orbital_reference_frame` is in fact an NTW frame
-- `rhcbci` = right-handed celestial-body-centered inertial coordinate frame. This is a right-handed version of kRPC's [Celestial Body `non_rotating_reference_frame`](https://krpc.github.io/krpc/python/api/space-center/celestial-body.html#SpaceCenter.CelestialBody.non_rotating_reference_frame). In the real-world this would be approximately equivalent to earth centered inertial (ECI)) coords (see Vallado 3rd ed, sec 3.3.2 on Geocentric Equitorial Coordinate System IJK) except in kerbal you aren't necessarily orbiting the earth and their is often no axial tilt to the celestial body
-- `lhcbci` = left-handed celestial-body-centered inertial coordinate frame based on kRPC's [Celestial Body `non_rotating_reference_frame`](https://krpc.github.io/krpc/python/api/space-center/celestial-body.html#SpaceCenter.CelestialBody.non_rotating_reference_frame)
-- `lhvbody` = left-handel vessel-centered, vessel-fixed body coordinates that align with [kRPC's `Vessel.reference_frame`](https://krpc.github.io/krpc/tutorials/reference-frames.html#vessel-surface-reference-frame). x-axis points out right side of vessel, y-axis points forward on vessel, z-axis points down. Vessel-fixed implies tha the reference frame rotates with the vessel. Note that `v` is often omitted or replaced with some identifier abbreviation of the particular vessel; e.g. `lhpbody` could be left-handed _pursuer_ vessel body coords
-- `rhvbody` = right-handed vessel-centered, vessel-fixed body coordinates. x-axis points out forward of vessel, y-axis points out right side on vessel, z-axis points down

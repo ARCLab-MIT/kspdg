@@ -3,7 +3,9 @@ krpc
 open-interpreter
 openai 
 brotli
-os
 fastcore
+matplotlib
+pandas
+seaborn
 
 

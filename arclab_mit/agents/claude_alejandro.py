@@ -1,62 +1,31 @@
-# Copyright (c) 2023, MASSACHUSETTS INSTITUTE OF TECHNOLOGY
-# Subject to FAR 52.227-11 – Patent Rights – Ownership by the Contractor (May 2014).
-# SPDX-License-Identifier: MIT
-
-"""
-This script is a "Hello World" for writing agents that can interact with
-a KSPDG environment.
-
-Instructions to Run:
-- Start KSP game application.
-- Select Start Game > Play Missions > Community Created > pe1_i3 > Continue
-- In kRPC dialog box click Add server. Select Show advanced settings and select Auto-accept new clients. Then select Start Server
-- In a terminal, run this script
-"""
-
 import csv
 import datetime
-import json
 import os
 import sys
 import time
 
 import krpc
+import json
+import csv
 import numpy as np
-import openai
-from dotenv import load_dotenv
 
-from arclab_mit.agents.agent_common import State, Action, setup_scenarios, set_env_paths
+from anthropic import Anthropic
+from anthropic.types.beta.tools import ToolUseBlock
+
 from kspdg.agent_api.base_agent import KSPDGBaseAgent
+from arclab_mit.agents.sliding_window import SlidingWindow
+
+from arclab_mit.agents.agent_common import State, Action, set_env_paths, setup_scenarios
 from kspdg.agent_api.runner import AgentEnvRunner
 from kspdg.lbg1.lbg1_base import LadyBanditGuardGroup1Env
-from kspdg.pe1.e1_envs import PE1_E1_I1_Env
-from kspdg.pe1.e1_envs import PE1_E1_I3_Env
-from kspdg.pe1.e1_envs import PE1_E1_I4_Env
-from kspdg.pe1.e3_envs import PE1_E3_I3_Env
-from kspdg.pe1.e2_envs import PE1_E2_I3_Env
 from kspdg.pe1.pe1_base import PursuitEvadeGroup1Env
-from kspdg.sb1.e1_envs import SB1_E1_I1_Env
-from kspdg.sb1.e1_envs import SB1_E1_I2_Env
-from kspdg.sb1.e1_envs import SB1_E1_I3_Env
-from kspdg.sb1.e1_envs import SB1_E1_I4_Env
-from kspdg.sb1.e1_envs import SB1_E1_I5_Env
 from kspdg.sb1.sb1_base import SunBlockingGroup1Env
-
-from arclab_mit.agents.sliding_window import SlidingWindow
 
 set_env_paths()
 
-"""
-from arclab_mit.agents.extended_obs_agent.simulate import closest_approach, simulate
-from arclab_mit.agents.common import obs_to_state, state_to_message
-from astropy import units as u
-"""
-
-
-class LLMAgent(KSPDGBaseAgent):
-    """An agent that uses ChatGPT to make decisions based on observations."""
-
-    def __init__(self, **kwargs):
+class ClaudeAgent(KSPDGBaseAgent):
+    def __init__(self, api_key=None, **kwargs):
+        self.client = Anthropic(api_key=api_key)
         super().__init__()
         self.scenario = os.environ['SCENARIO'].lower()
         self.use_relative_coordinates = (os.environ['USE_RELATIVE_COORDINATES'].lower() == "true")
@@ -66,7 +35,7 @@ class LLMAgent(KSPDGBaseAgent):
             self.functions = [{
                 "name": "perform_action",
                 "description": "Send the given throttles to the spacecraft.",
-                "parameters": {
+                "input_schema": {
                     "type": "object",
                     "properties": {
                         "ft": {
@@ -92,7 +61,7 @@ class LLMAgent(KSPDGBaseAgent):
             self.functions = [{
                 "name": "perform_action",
                 "description": "Send the given throttles to the spacecraft.",
-                "parameters": {
+                "input_schema": {
                     "type": "object",
                     "properties": {
                         "ft": {
@@ -138,13 +107,13 @@ class LLMAgent(KSPDGBaseAgent):
             # Get the celestial body
             self.body = self.vessel.orbit.body
         except Exception as e:
-            print ("Exception: " + str(e))
+            print("Exception: " + str(e))
             self.conn = None
             self.vessel = None
             self.body = None
 
         # Model
-        self.model = os.environ['MODEL']
+        self.model = os.environ['CLAUDE_MODEL']
         # scenario
         self.scenario = os.environ['SCENARIO']
 
@@ -153,20 +122,23 @@ class LLMAgent(KSPDGBaseAgent):
             self.log = None
             self.log_jsonl = None
         else:
-            log_name = "./logs/fine_tune_agent_log_" + self.scenario + "_" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.csv'
+            log_name = "./logs/fine_tune_agent_log_" + self.scenario + "_" + datetime.datetime.now().strftime(
+                "%Y%m%d-%H%M%S") + '.csv'
             self.log = open(log_name, mode='w', newline='')
             if self.scenario.lower().startswith("lbg"):
                 if self.use_prograde:
                     head = ['throttles', 'duration', 'time', 'vehicle_mass', 'vehicle_propellant', 'pursuer_pos_x',
                             'pursuer_pos_y', 'pursuer_pos_z', 'pursuer_vel_x', 'pursuer_vel_y', 'pursuer_vel_z',
                             'evader_pos_x', 'evader_pos_y', 'evader_pos_z', 'evader_vel_x', 'evader_vel_y',
-                            'evader_vel_z', 'guard_pos_x', 'guard_pos_y', 'guard_pos_z', 'guard_vel_x', 'guard_vel_y',
+                            'evader_vel_z', 'guard_pos_x', 'guard_pos_y', 'guard_pos_z', 'guard_vel_x',
+                            'guard_vel_y',
                             'guard_vel_z', 'vessel_up', 'prograde', 'weighted_score']
                 else:
                     head = ['throttles', 'duration', 'time', 'vehicle_mass', 'vehicle_propellant', 'pursuer_pos_x',
                             'pursuer_pos_y', 'pursuer_pos_z', 'pursuer_vel_x', 'pursuer_vel_y', 'pursuer_vel_z',
                             'evader_pos_x', 'evader_pos_y', 'evader_pos_z', 'evader_vel_x', 'evader_vel_y',
-                            'evader_vel_z', 'guard_pos_x', 'guard_pos_y', 'guard_pos_z', 'guard_vel_x', 'guard_vel_y',
+                            'evader_vel_z', 'guard_pos_x', 'guard_pos_y', 'guard_pos_z', 'guard_vel_x',
+                            'guard_vel_y',
                             'guard_vel_z', 'weighted_score']
             else:
                 if self.use_prograde:
@@ -229,7 +201,6 @@ class LLMAgent(KSPDGBaseAgent):
         self.lbg1Env = LadyBanditGuardGroup1Env("lbg1_i1_init")
         self.sb1Env = SunBlockingGroup1Env("sb1_i1_init")
 
-    # Return sun position in the celestial body orbital reference frame
     def get_sun_position(self):
         reference_frame = self.body.orbital_reference_frame
         # Get the sun position in the given reference frame
@@ -463,8 +434,14 @@ class LLMAgent(KSPDGBaseAgent):
         available_functions = {
             "perform_action": lambda ft, rt, dt: [ft, rt, dt, duration],
         }
-        if response.get("function_call"):
-            function_name = response["function_call"]["name"]
+        function_name = ""
+        function_args = ""
+        for i in range(0, len(response)):
+            if type(response[i]) is ToolUseBlock:
+                function_name = response[i].name
+                function_args = response[i].input
+                break
+        if function_name != "":
             if function_name not in available_functions:
                 print("error: LLM called wrong function, name:", function_name)
                 function_response = [0, 0, 0, 0.1]
@@ -472,10 +449,11 @@ class LLMAgent(KSPDGBaseAgent):
                 function_to_call = available_functions[function_name]
 
                 # Get function arguments
-                function_args = response["function_call"]["arguments"]
                 try:
+                    """
                     function_args = self.clean_response(function_args)
                     function_args = json.loads(function_args)
+                    """
                     function_response = function_to_call(**function_args)
                     if self.use_enum:
                         function_response = Action.from_enum(function_response)
@@ -486,7 +464,7 @@ class LLMAgent(KSPDGBaseAgent):
             function_name = "perform_action"
             function_to_call = available_functions[function_name]
             try:
-                content = response["content"]
+                content = response[0].content
                 index = content.find(function_name + "(")
                 if index != -1:
                     # Get function args from content
@@ -528,27 +506,17 @@ class LLMAgent(KSPDGBaseAgent):
         # Perform chat completion
         time_before = time.time()
         try:
-            if self.use_cot:
-                """ Cannot use function calling with CoT
-                """
-                response = openai.ChatCompletion.create(
-                    model=model,
-                    messages=prompt,
-                    functions=self.functions,
-                    temperature=0  # randomness, cool approach if we want to adjust some param with this
-                )
-            else:
-                response = openai.ChatCompletion.create(
-                    model=model,
-                    messages=prompt,
-                    functions=self.functions,
-                    max_tokens = 150, # limit output tokens (enough for valid responses)
-                    temperature=0  # randomness, cool approach if we want to adjust some param with this
-                )
+            """ Cannot use function calling with CoT
+            """
+
+            system = prompt.pop(0)
+
+            response = self.send_message(prompt, system)
+
             status = "success"
             status_message = None
-            result = response.choices[0].message
-            token_usage = response["usage"].to_dict()
+            result = response
+            token_usage = {}
         except Exception as e:
             print ("Exception: " + str(e))
             status = "error"
@@ -574,7 +542,7 @@ class LLMAgent(KSPDGBaseAgent):
                 "start_time_ms": time_before * 1000,
                 "end_time_ms": time_after * 1000,
                 "inputs": prompt,
-                "outputs": response,
+                "outputs": ' '.join(map(str, response)),
             }
             json.dump(log_entry, self.log_jsonl)
             self.log_jsonl.write('\n')
@@ -585,21 +553,38 @@ class LLMAgent(KSPDGBaseAgent):
 
         return result
 
+    def send_message(self, messages, system):
+        """
+        message = self.client.messages.create(
+            model=self.model,
+            max_tokens=1024,
+            tools=self.functions,
+            messages=messages,
+            temperature=0,
+            system= system['content'],
+        )
+        """
+        message = self.client.beta.tools.messages.create(
+            model=self.model,
+            max_tokens=1024,
+            tools=self.functions,
+            messages=messages,
+            temperature=0,
+            system= system['content'],
+        )
+        return message.content
 
 if __name__ == "__main__":
 
-    scenario = os.environ['SCENARIO']
+    scenario = os.getenv("SCENARIO")
 
     scenarios = setup_scenarios()
 
     if scenario not in scenarios:
-        print("Invalid scenario: " + scenario + " not in " + str(scenarios.keys()))
-        sys.exit(1)
+        print(f"Scenario {scenario} not found.")
+        exit(1)
 
-    print("Running scenario: " + scenario)
-    print("Model: " + os.environ['MODEL'])
-
-    my_agent = LLMAgent()
+    my_agent = ClaudeAgent(os.getenv("ANTHROPIC_API_KEY"))
     runner = AgentEnvRunner(
         agent=my_agent,
         env_cls=scenarios[scenario],

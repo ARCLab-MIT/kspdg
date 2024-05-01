@@ -1,8 +1,6 @@
 import json
-import numpy as np
 
 from arclab_mit.agents.agent_common import Action
-
 
 
 class SlidingWindow:
@@ -26,7 +24,6 @@ class SlidingWindow:
 
     def __init__(self, size: int = DEFAULT_SLIDING_WINDOW_SIZE, scenario="PE",
                  use_relative_coordinates=False, use_short_names=False, use_enum=True,
-                 use_prograde_marker=False, use_cot=False, use_cot_speed_limit=False,
                  embed_history=False,
                  system_prompt="", user_prompt="", cot_prompt=None, assistant_content="",
                  history_prompt="", history_item_prompt=""):
@@ -40,10 +37,9 @@ class SlidingWindow:
         # State configuration parameters
         self.use_relative_coordinates = use_relative_coordinates
         self.use_short_names = use_short_names
+
+        # State configuration parameters
         self.use_enum = use_enum
-        self.use_prograde_marker = use_prograde_marker
-        self.use_cot = use_cot
-        self.use_cot_speed_limit = use_cot_speed_limit
 
         # Sliding window configuration parameters
         self.embed_history = embed_history
@@ -97,46 +93,33 @@ class SlidingWindow:
 
         """ Generate Chain-of-Thought if necessary
         """
-        chain_of_thought = ""
-        calculations = ""
         if self.cot_prompt is not None:
             if self.scenario.lower().startswith('pe'):
-                chain_of_thought = self.cot_prompt
-                calculations = f", where relative position is {state.distance:.2f}[m] and relative velocity is {state.velocity:.2f}[m/s]"
-            elif self.scenario.lower().startswith('sb'):
+                hint = "approaching" if state.approaching else "moving away"
+                chain_of_thought = self.cot_prompt.format(movement_direction=hint)
+            else:
                 angle_gauge, distance_gauge = state.evaluate_angle_distance()
                 chain_of_thought = self.cot_prompt.format(angle_gauge=angle_gauge,
                                                           angle=state.alignment_angle,
                                                           distance_gauge=distance_gauge,
                                                           distance=state.distance)
+        else:
+            chain_of_thought = ""
 
         user_prompt = self.user_prompt.format(obs=json.dumps(state.to_json(self.scenario,
                                                                            self.use_relative_coordinates,
-                                                                           self.use_short_names,
-                                                                           self.use_prograde_marker,
-                                                                           self.use_cot,
-                                                                           self.use_cot_speed_limit)),
-                                              distance_to_stop=state.distance_to_stop,
-                                              calculations=calculations,
+                                                                           self.use_short_names)),
                                               CoT=chain_of_thought)
         message_structure = {
             "messages": [{"role": "user", "content": user_prompt}]
         }
 
         if action is not None:
-            action_str = "perform_action(" + json.dumps(action.to_json(self.use_enum)) + ")"
-            if self.scenario.lower().startswith('pe'):
-                message_structure["messages"] \
-                    .append({"role": "assistant",
-                             "content": self.assistant_content.format(action=action_str),
-                             "function_call": {"name": "perform_action",
-                                               "arguments": json.dumps(action.to_json(self.use_enum))}})
-            else:
-                message_structure["messages"] \
-                    .append({"role": "assistant",
-                             "content": self.assistant_content.format(action=action_str),
-                             "function_call": {"name": "perform_action",
-                                               "arguments": json.dumps(action.to_json(self.use_enum))}})
+            message_structure["messages"] \
+                .append({"role": "assistant",
+                         "content": self.assistant_content,
+                         "function_call": {"name": "perform_action",
+                                           "arguments": json.dumps(action.to_json(self.use_enum))}})
         return message_structure
 
     """
@@ -164,15 +147,13 @@ class SlidingWindow:
                         history_msg.append(self.history_item_prompt
                                            .format(obs=json.dumps(state.to_json(self.scenario,
                                                                                 self.use_relative_coordinates,
-                                                                                self.use_short_names,
-                                                                                self.use_prograde_marker))))
+                                                                                self.use_short_names))))
                     else:
                         angle_gauge, distance_gauge = state.evaluate_angle_distance()
                         history_msg.append(self.history_item_prompt
                                            .format(obs=json.dumps(state.to_json(self.scenario,
                                                                                 self.use_relative_coordinates,
-                                                                                self.use_short_names,
-                                                                                self.use_prograde_marker)),
+                                                                                self.use_short_names)),
                                                    angle_gauge=angle_gauge, angle=state.alignment_angle,
                                                    distance_gauge=distance_gauge, distance=state.distance,
                                                    action=json.dumps(action.to_json(self.use_enum))))
@@ -188,4 +169,5 @@ class SlidingWindow:
                 message_structure = self.get_message_structure(i)
                 messages += message_structure["messages"]
 
-        return messages
+        message_structure['messages'] = messages
+        return message_structure

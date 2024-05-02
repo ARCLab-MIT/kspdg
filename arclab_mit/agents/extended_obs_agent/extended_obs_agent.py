@@ -1,7 +1,11 @@
 from kspdg.pe1.e1_envs import PE1_E1_I3_Env
+from kspdg.pe1.e2_envs import PE1_E2_I3_Env
 from kspdg.pe1.e3_envs import PE1_E3_I3_Env
+from kspdg.pe1.e4_envs import PE1_E4_I3_Env
 from kspdg.agent_api.runner import AgentEnvRunner
 import numpy as np
+import time
+from datetime import datetime
 
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
@@ -22,8 +26,8 @@ def obs_to_state(obs):
 class ExtendedObsAgent(LLMAgent):
     system_prompt_path = "system_prompt.md"
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, log_metrics=False, log_metrics_filename=None, log_positions=False, log_positions_filename=None):
+        super().__init__(log_metrics, log_metrics_filename, log_positions, log_positions_filename)
         self.first_response = True
         self.near_evader_response = True
         self.slow_down_response = False
@@ -109,16 +113,52 @@ class ExtendedObsAgent(LLMAgent):
         ])
 
 if __name__ == "__main__":
-    my_agent = ExtendedObsAgent()    
+    """
+    for i in range(100):
+        # f"arclab_mit/agents/extended_obs_agent/score_logs/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+        my_agent = ExtendedObsAgent(True, f"arclab_mit/agents/extended_obs_agent/baseline_results/llm/e1_i3/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv")    
+        runner = AgentEnvRunner(
+            agent=my_agent,
+            env_cls=PE1_E1_I3_Env, 
+            env_kwargs=None,
+            runner_timeout=150,
+            debug=False)
+        runner.run()
+    """
+
+    """
+    for env, save_path in [
+        (PE1_E1_I3_Env, "arclab_mit/agents/extended_obs_agent/baseline_results/llm/e1_i3"),
+        (PE1_E2_I3_Env, "arclab_mit/agents/extended_obs_agent/baseline_results/llm/e2_i3"),
+        (PE1_E3_I3_Env, "arclab_mit/agents/extended_obs_agent/baseline_results/llm/e3_i3"),
+        (PE1_E4_I3_Env, "arclab_mit/agents/extended_obs_agent/baseline_results/llm/e4_i3"),
+        ]:
+        for i in range(10):
+            # f"arclab_mit/agents/extended_obs_agent/score_logs/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+            my_agent = ExtendedObsAgent(True, f"{save_path}/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv")    
+            runner = AgentEnvRunner(
+                agent=my_agent,
+                env_cls=env, 
+                env_kwargs=None,
+                runner_timeout=150,
+                debug=False)
+            runner.run()
+    """
+
+    my_agent = ExtendedObsAgent(log_positions=True, log_positions_filename=f"positions_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv")    
     runner = AgentEnvRunner(
         agent=my_agent,
         env_cls=PE1_E3_I3_Env, 
         env_kwargs=None,
-        runner_timeout=240,
+        runner_timeout=150,
         debug=False)
     runner.run()
 
 """
 292, 284, 285, 19, 29
-804, 181, 125, 44, 38, 32
+804, 181, 125, 44, 38, 32, 22, 13
+    not sure why these are decreasing, runs should be independent
+    22, 13 are from first 2 2/9 logs
 """
+
+# 46.34

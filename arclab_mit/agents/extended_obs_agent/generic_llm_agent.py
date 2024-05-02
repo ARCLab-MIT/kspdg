@@ -4,6 +4,10 @@ import openai
 import json
 import time
 
+import csv
+import math
+from datetime import datetime
+
 import os
 from dotenv import load_dotenv
 dotenv_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', '.env')
@@ -13,7 +17,7 @@ openai.api_key = os.environ.get('OPEN_API_KEY')
 class LLMAgent(KSPDGBaseAgent):
     system_prompt_path = None
 
-    def __init__(self):
+    def __init__(self, log_metrics=False, log_metrics_filename=None, log_positions=False, log_positions_filename=None):
         super().__init__()
         with open(os.path.join(os.path.dirname(__file__), self.system_prompt_path), 'r') as file:
             system_prompt = file.read()
@@ -22,6 +26,16 @@ class LLMAgent(KSPDGBaseAgent):
         self.saved_action = None
         self.refresh_action_duration = 5
         self.updating_action = False
+        
+        self.log_metrics = log_metrics
+        self.log_positions = log_positions
+        self.initial_fuel = None
+        if self.log_metrics:
+            self.log_metrics_filename = log_metrics_filename
+            open(self.log_metrics_filename, 'w').close()
+        if self.log_positions:
+            self.log_positions_filename = log_positions_filename
+            open(self.log_positions_filename, 'w').close()
     
     def get_message(self, observation):
         pass
@@ -125,8 +139,27 @@ class LLMAgent(KSPDGBaseAgent):
         self.updating_action = False
 
     def get_action(self, observation):
+        if not self.initial_fuel:
+            self.initial_fuel = observation[2]
         # log
+        if self.log_metrics:
+            distance = math.sqrt(sum([(a - b) ** 2 for a, b in zip(observation[3:6], observation[9:12])]))
+            rel_speed = math.sqrt(sum([(a - b) ** 2 for a, b in zip(observation[6:9], observation[12:15])]))
+            fuel_used = self.initial_fuel - observation[2]
+            with open(self.log_metrics_filename, 'a') as f:
+                writer = csv.writer(f)
+                writer.writerow([
+                    observation[0],
+                    distance,
+                    rel_speed,
+                    fuel_used,
+                    (0.1*distance)**2.0 + (0.5*rel_speed)**1.5 + (0.1*fuel_used)**1.25 + (0.01*observation[0])**1.0
+                    ])
         
+        if self.log_positions:
+            with open(self.log_positions_filename, 'a') as f:
+                writer = csv.writer(f)
+                writer.writerow([observation[0]] + list(observation[3:15]))
 
         if observation[0] - self.prev_time >= self.refresh_action_duration and not self.updating_action:
             self.prev_time = observation[0]

@@ -121,7 +121,7 @@ class State:
             angle1 = State.angle_between_vectors(self.rel_position, self.rel_velocity)
             angle2 = State.angle_between_vectors([0, 1, 0], self.get_retrograde())
             if abs((angle1 - angle2)) > 1:
-                print(f"Warning: angles in celestial {angle1:.2f} and vessel {angle2:.2f} frame differ by {angle1 - angle2:.2f} degrees")
+                print(f"\x1b[33;20mWarning: angles in celestial {angle1:.2f} and vessel {angle2:.2f} frame differ by {angle1 - angle2:.2f} degrees\x1b[0m")
 
         self.sun_position = sun_position
         if sun_position is not None:
@@ -592,7 +592,7 @@ class Action:
 def set_env_paths():
     base_directory = os.path.dirname(__file__)
 
-    env_path = os.path.join(base_directory, 'env')
+    env_path = os.path.join(base_directory, '.env')
     load_dotenv(env_path)
 
     # Load configuration from alex_prompt.txt

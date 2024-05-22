@@ -4,6 +4,7 @@ import time
 from arclab_mit.agents_data.mission_generator import generator
 from arclab_mit.agents import navball_agent
 
+
 def idle_play():
     while True:
 
@@ -23,7 +24,6 @@ def idle_play():
             if runner:
                 # Kill the navball agent if not timed out
                 navball_agent.kill(runner)
-
 
 
 if __name__ == "__main__":

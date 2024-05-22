@@ -185,29 +185,30 @@ class LLMAgent(KSPDGBaseAgent):
                         'pursuer_pos_y', 'pursuer_pos_z', 'pursuer_vel_x', 'pursuer_vel_y', 'pursuer_vel_z',
                         'evader_pos_x', 'evader_pos_y', 'evader_pos_z', 'evader_vel_x', 'evader_vel_y', 'evader_vel_z',
                         'guard_pos_x', 'guard_pos_y', 'guard_pos_z', 'guard_vel_x', 'guard_vel_y', 'guard_vel_z',
-                        'prograde', 'weighted_score']
+                        'vessel_up_x', 'vessel_up_y', 'vessel_up_z']
             else:
                 head = ['throttles', 'duration', 'time', 'vehicle_mass', 'vehicle_propellant', 'pursuer_pos_x',
                         'pursuer_pos_y', 'pursuer_pos_z', 'pursuer_vel_x', 'pursuer_vel_y', 'pursuer_vel_z',
                         'evader_pos_x', 'evader_pos_y', 'evader_pos_z', 'evader_vel_x', 'evader_vel_y', 'evader_vel_z',
-                        'guard_pos_x', 'guard_pos_y', 'guard_pos_z', 'guard_vel_x', 'guard_vel_y', 'guard_vel_z',
-                        'weighted_score']
+                        'guard_pos_x', 'guard_pos_y', 'guard_pos_z', 'guard_vel_x', 'guard_vel_y', 'guard_vel_z']
         else:
             if self.use_prograde:
                 head = ['throttles', 'duration', 'time', 'vehicle_mass', 'vehicle_propellant', 'pursuer_pos_x',
                         'pursuer_pos_y', 'pursuer_pos_z', 'pursuer_vel_x', 'pursuer_vel_y', 'pursuer_vel_z',
                         'evader_pos_x', 'evader_pos_y', 'evader_pos_z', 'evader_vel_x', 'evader_vel_y', 'evader_vel_z',
-                        'prograde', 'weighted_score']
+                        'vessel_up_x', 'vessel_up_y', 'vessel_up_z']
             else:
                 head = ['throttles', 'duration', 'time', 'vehicle_mass', 'vehicle_propellant', 'pursuer_pos_x',
                         'pursuer_pos_y', 'pursuer_pos_z', 'pursuer_vel_x', 'pursuer_vel_y', 'pursuer_vel_z',
-                        'evader_pos_x', 'evader_pos_y', 'evader_pos_z', 'evader_vel_x', 'evader_vel_y', 'evader_vel_z',
-                        'weighted_score']
+                        'evader_pos_x', 'evader_pos_y', 'evader_pos_z', 'evader_vel_x', 'evader_vel_y', 'evader_vel_z']
 
         csv.writer(self.log).writerow(head)
 
+        """
         log_name = log_name.replace("csv", "jsonl")
         self.log_jsonl = open(log_name, mode='w', newline='\n')
+        """
+        self.jsonl_log = None
 
         # Interval between actions
         self.duration = 0.5
@@ -549,8 +550,16 @@ class LLMAgent(KSPDGBaseAgent):
         """ Log result
         """
         if self.log is not None:
+            """ Add vessel up vector
+            """
+            vessel_up = state.vessel_up
+            observation.append(vessel_up[0])
+            observation.append(vessel_up[1])
+            observation.append(vessel_up[2])
+
             row = observation
             row = list(row)
+
             row.insert(0, action["burn_vec"][3])
             row.insert(0, action["burn_vec"][0:3])
             csv.writer(self.log).writerow(row)

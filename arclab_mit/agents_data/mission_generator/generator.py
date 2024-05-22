@@ -36,7 +36,7 @@ class OrbitPool:
 
 class Generator:
     def __init__(self):
-        self.kerbal_path = r'C:\Kerbal Space Program\saves\missions\pe1_i3\pe1_i3_init.sfs'
+        self.kerbal_path = r'C:\Kerbal Space Program\saves\missions\pe1_i1\pe1_i1_init.sfs'
         self.color_info_1 = '\033[92m'
         self.color_info_2 = '\033[94m'
         self.color_info_3 = '\033[95m'

@@ -38,8 +38,7 @@ PE_CHAIN_OF_THOUGHT=""
 
 # This CoT prompt only works for gpt-3.5-turbo-0125
 #
-PE_CHAIN_OF_THOUGHT_NAVBALL_BASIC="USER:
-
+PE_CHAIN_OF_THOUGHT_NAVBALL_BASIC="
 HUMAN: Given these observations {\"vehicle_mass\": 6685.0, \"vehicle_propellant\":
 1199.9976806640625, \"pursuer_pos_x\": 707714.9233405391, \"pursuer_pos_y\": -248272.96224747336, \"pursuer_pos_z\":
 -0.0005507227224457853, \"pursuer_vel_x\": 718.2699440171854, \"pursuer_vel_y\": 2047.6550602366287, \"pursuer_vel_z\":
@@ -59,7 +58,6 @@ perform_action({\"ft\": \"forward\", \"rt\": \"left\", \"dt\": \"up\"}).
 Now answer the following question:\n"
 
 PE_CHAIN_OF_THOUGHT_NAVBALL_BASIC_ALT="
-
 HUMAN: Given these observations {\"vehicle_mass\": 6685.0, \"vehicle_propellant\":
 1199.9976806640625, \"pursuer_pos_x\": 707714.9233405391, \"pursuer_pos_y\": -248272.96224747336, \"pursuer_pos_z\":
 -0.0005507227224457853, \"pursuer_vel_x\": 718.2699440171854, \"pursuer_vel_y\": 2047.6550602366287, \"pursuer_vel_z\":
@@ -79,7 +77,6 @@ perform_action({\"ft\": \"forward\", \"rt\": \"left\", \"dt\": \"up\"}).
 Now answer the following question:\n"
 
 PE_CHAIN_OF_THOUGHT="
-
 HUMAN: Given these observations {\"vehicle_mass\": 6685.0, \"vehicle_propellant\":
 1199.9976806640625, \"pursuer_pos_x\": 707714.9233405391, \"pursuer_pos_y\": -248272.96224747336, \"pursuer_pos_z\":
 -0.0005507227224457853, \"pursuer_vel_x\": 718.2699440171854, \"pursuer_vel_y\": 2047.6550602366287, \"pursuer_vel_z\":
@@ -88,16 +85,14 @@ HUMAN: Given these observations {\"vehicle_mass\": 6685.0, \"vehicle_propellant\
 0.0035782107557670575, \"prograde\": [0.6553969259127622, -0.3380649604462953, -0.6754013266366493]},
 what is the best throttle to capture evader?
 
-ASSISTANT: prograde[0] is positive, indicating that pursuer is moving to the right. prograde[1] is negative,
-indicating that evader is approaching. prograde[2] is negative, indicating that pursuer is moving down.
-To capture the evader, we should move in the opposite direction in the first dimension, towards the target
-in the second dimension, and in the opposite direction in the third dimension.
-This means we should apply throttles to move left, forward and up. Therefore we should call
+ASSISTANT: The x coordinate of prograde is positive, indicating that evader is moving to the right. The y coordinate
+of prograde is negative, indicating that evader is approaching. The z coordinate of prograde is negative,
+indicating that evader is moving down. To capture the evader we should counteract its motion, moving in the opposite
+direction in the x axis, towards the target in the y axis, and in the opposite direction in the z axis. This means
+we should apply throttles to move left, forward and up. Therefore we should call
 perform_action({\"ft\": \"forward\", \"rt\": \"left\", \"dt\": \"up\"}).
 
-
 Now answer the following question:\n"
-
 
 # This CoT prompt limits the approach speed to 20 m/s. Only works for gpt-3.5-turbo-0125.
 #
@@ -288,7 +283,7 @@ LBG_HISTORY_ITEM_PROMPT="\tFor observations {obs}, your action was {action}. "
 # Assistant Prompt
 #########################
 
-ASSISTANT_CONTENT="The best throttle is"
+ASSISTANT_CONTENT="The best throttle is {action}."
 
 # Use for training fine-tuned models using CoT Navball
 ASSISTANT_CONTENT_NAVBALL="I will call {action}"

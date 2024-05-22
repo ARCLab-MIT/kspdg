@@ -4,7 +4,6 @@ import numpy as np
 from arclab_mit.agents.agent_common import Action
 
 
-
 class SlidingWindow:
     """
     The SlidingWindow class holds the last N conversations of the agent where N is the size of a
@@ -21,7 +20,7 @@ class SlidingWindow:
     DEFAULT_SLIDING_WINDOW_SIZE = 0
     DEFAULT_EMBED_HISTORY = True
 
-    # State/action pair form oldest to newest
+    # State/action pair from oldest to newest
     _history = []
 
     def __init__(self, size: int = DEFAULT_SLIDING_WINDOW_SIZE, scenario="PE",
@@ -58,6 +57,7 @@ class SlidingWindow:
     Adds a state / action pair. Default action None means that action
     is not known at the time of the call.    
     """
+
     def add(self, state, action=None):
 
         # Initialize window with given state and default action [0,0,0]
@@ -65,15 +65,16 @@ class SlidingWindow:
             for i in range(self.size):
                 padded_action = Action([0, 0, 0])
                 self._history.append({"state": state,
-                                     "action": padded_action})
+                                      "action": padded_action})
 
         # Add state / action pair
         self._history.append({"state": state,
-                             "action": action})
+                              "action": action})
 
     """
     Removes and returns the last state / action pair.
     """
+
     def pop(self):
         return self._history.pop()
 
@@ -81,16 +82,18 @@ class SlidingWindow:
     Replaces the action at selected pos. Negative values of pos mean position starting
     from the end.
     """
+
     def set_action(self, pos, action):
         self._history[pos]["action"] = action
 
     """
     Returns the message structure of the conversation at position pos in the sliding window
     excluding the system prompt. This structure uses the format of the OpenAI API.
-    
+
     Negative values of pos refer to positions starting from the end of the conversation history
     (e.g. -1 refers to the last conversation).
     """
+
     def get_message_structure(self, pos):
         state = self._history[pos]["state"]
         action = self._history[pos]["action"]
@@ -143,20 +146,17 @@ class SlidingWindow:
     Returns the message structure of the last N conversations including the system prompt
     where N is the size of the sliding window. This structure uses the format of the OpenAI API.
     """
+
     def get_messages(self):
-        """ Insert the system prompt
-        """
         messages = []
         if self.system_prompt != "":
             messages.append({"role": "system", "content": self.system_prompt})
 
         if self.embed_history:
-            """ Past N conversations are included in the user prompt
-            """
             user_prompt = ""
             if self.size > 0:
                 history_msg = []
-                for i in range(-(self.size+1), -1):
+                for i in range(-(self.size + 1), -1):
                     item = self._history[i]
                     state = item["state"]
                     action = item["action"]
@@ -180,11 +180,9 @@ class SlidingWindow:
             message_structure = self.get_message_structure(-1)
             message_structure["messages"][0]["content"] = \
                 user_prompt + message_structure["messages"][0]["content"]
-            messages['messages'] += message_structure["messages"]
+            messages += message_structure["messages"]
         else:
-            """ Past N conversations are included before the user prompt
-            """
-            for i in range(-(self.size+1), 0):
+            for i in range(-(self.size + 1), 0):
                 message_structure = self.get_message_structure(i)
                 messages += message_structure["messages"]
 

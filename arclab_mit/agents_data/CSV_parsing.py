@@ -2,14 +2,13 @@ import pandas as pd
 import json
 import os
 import numpy as np
-
 import ast
-
 from os.path import join, dirname
 from dotenv import load_dotenv
-
 from arclab_mit.agents.sliding_window import SlidingWindow
 from arclab_mit.agents.agent_common import State, Action
+
+from datetime import datetime
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '..', 'agents', '.env')
 load_dotenv(dotenv_path)
@@ -20,7 +19,7 @@ load_dotenv(dotenv_path)
 
 pattern = r"pe\d+_i\d+_keyboard_agent_actions_\d{8}-\d{6}\.csv"
 # csv_file_path = r".\arclab_mit\agents_data\""
-# csv_file_path = r".\""
+# csv_file_path = r".\"
 
 DEFAULT_SKIP_ALL_NULL_ACTIONS = False
 DEFAULT_SLIDING_WINDOW_STRIDE = False
@@ -46,151 +45,95 @@ def csv_to_json_for_history(csv_file_path: str, problem_env: str,
                             size: int = SlidingWindow.DEFAULT_SLIDING_WINDOW_SIZE,
                             stride: int = DEFAULT_SLIDING_WINDOW_STRIDE,
                             embed_history: bool = SlidingWindow.DEFAULT_EMBED_HISTORY,
-                            skip_all_null_actions: bool = DEFAULT_SKIP_ALL_NULL_ACTIONS):
-
-    # Read the CSV file
+                            skip_all_null_actions: bool = DEFAULT_SKIP_ALL_NULL_ACTIONS,
+                            llama_format = None,
+                            output_folder: str = None):
     df = pd.read_csv(csv_file_path)
+    problem = problem_env[0:2].upper()
+    sliding_window = SlidingWindow(size, problem_env.upper(),
+                                   use_relative_coordinates, use_short_names, use_enum,
+                                   use_prograde, use_cot, use_cot_speed_limit, embed_history,
+                                   os.environ.get(f"{problem}_SYSTEM_PROMPT", ""),
+                                   os.environ.get(f"{problem}_USER_PROMPT", ""),
+                                   os.environ.get(f"{problem}_CHAIN_OF_THOUGHT", ""),
+                                   os.environ.get("ASSISTANT_CONTENT", ""),
+                                   os.environ.get(f"{problem}_HISTORY_PROMPT", ""),
+                                   os.environ.get(f"{problem}_HISTORY_ITEM_PROMPT", ""))
 
-    if problem_env.lower().startswith('pe'):
-        sliding_window = SlidingWindow(size, 'PE',
-                                       use_relative_coordinates, use_short_names, use_enum,
-                                       use_prograde, use_cot, use_cot_speed_limit, embed_history,
-                                       os.environ["PE_SYSTEM_PROMPT"],
-                                       os.environ["PE_USER_PROMPT"],
-                                       os.environ["PE_CHAIN_OF_THOUGHT"],
-                                       os.environ["ASSISTANT_CONTENT"],
-                                       os.environ["PE_HISTORY_PROMPT"],
-                                       os.environ["PE_HISTORY_ITEM_PROMPT"])
-    elif problem_env.lower().startswith('sb'):
-        sliding_window = SlidingWindow(size, 'SB',
-                                       use_relative_coordinates, use_short_names, use_enum,
-                                       use_prograde, use_cot, use_cot_speed_limit, embed_history,
-                                       os.environ["SB_SYSTEM_PROMPT"],
-                                       os.environ["SB_USER_PROMPT"],
-                                       os.environ["SB_CHAIN_OF_THOUGHT"],
-                                       os.environ["ASSISTANT_CONTENT"],
-                                       os.environ["SB_HISTORY_PROMPT"],
-                                       os.environ["SB_HISTORY_ITEM_PROMPT"])
-    elif problem_env.lower().startswith('lbg'):
-        sliding_window = SlidingWindow(size, 'LBG',
-                                       use_relative_coordinates, use_short_names, use_enum,
-                                       use_prograde, use_cot, embed_history,
-                                       os.environ["LBG_SYSTEM_PROMPT"],
-                                       os.environ["LBG_USER_PROMPT"],
-                                       os.environ["LBG_CHAIN_OF_THOUGHT"],
-                                       os.environ["ASSISTANT_CONTENT"],
-                                       os.environ["LBG_HISTORY_PROMPT"],
-                                       os.environ["LBG_HISTORY_ITEM_PROMPT"])
-    else:
-        sliding_window = None
-
-    # List of JSON structures
     json_list = []
-
     skip_null_actions = False
+
     for _, row in df.iterrows():
         input_data = {k: v for k, v in row.items() if k != 'throttles' and k != 'next_throttles'}
-        
+
         if problem_env.lower().startswith('lbg'):
-            observation = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-
-            observation[0] = input_data["time"]
-            observation[1] = input_data["bandit_mass"]
-            observation[2] = input_data["bandit_propellant"]
-
-            observation[3] = input_data['bandit_pos_x']
-            observation[4] = input_data['bandit_pos_y']
-            observation[5] = input_data['bandit_pos_z']
-
-            observation[6] = input_data['bandit_vel_x']
-            observation[7] = input_data['bandit_vel_y']
-            observation[8] = input_data['bandit_vel_z']
-
-            observation[9] = input_data['lady_pos_x']
-            observation[10] = input_data['lady_pos_y']
-            observation[11] = input_data['lady_pos_z']
-
-            observation[12] = input_data['lady_vel_x']
-            observation[13] = input_data['lady_vel_y']
-            observation[14] = input_data['lady_vel_z']
-
-            observation[15] = input_data['guard_pos_x']
-            observation[16] = input_data['guard_pos_y']
-            observation[17] = input_data['guard_pos_z']
-
-            observation[18] = input_data['guard_vel_x']
-            observation[19] = input_data['guard_vel_y']
-            observation[20] = input_data['guard_vel_z']
-
+            observation = [input_data["time"], input_data["bandit_mass"], input_data["bandit_propellant"],
+                           input_data['bandit_pos_x'], input_data['bandit_pos_y'], input_data['bandit_pos_z'],
+                           input_data['bandit_vel_x'], input_data['bandit_vel_y'], input_data['bandit_vel_z'],
+                           input_data['lady_pos_x'], input_data['lady_pos_y'], input_data['lady_pos_z'],
+                           input_data['lady_vel_x'], input_data['lady_vel_y'], input_data['lady_vel_z'],
+                           input_data['guard_pos_x'], input_data['guard_pos_y'], input_data['guard_pos_z'],
+                           input_data['guard_vel_x'], input_data['guard_vel_y'], input_data['guard_vel_z']]
             sun_position = None
-
         else:
-            observation = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            observation = [input_data["time"], input_data["vehicle_mass"], input_data["vehicle_propellant"],
+                           input_data['pursuer_pos_x'], input_data['pursuer_pos_y'], input_data['pursuer_pos_z'],
+                           input_data['pursuer_vel_x'], input_data['pursuer_vel_y'], input_data['pursuer_vel_z'],
+                           input_data['evader_pos_x'], input_data['evader_pos_y'], input_data['evader_pos_z'],
+                           input_data['evader_vel_x'], input_data['evader_vel_y'], input_data['evader_vel_z']]
+            sun_position = [input_data['sun_pos_x'], input_data['sun_pos_y'],
+                            input_data['sun_pos_z']] if "sun_pos_x" in input_data else None
 
-            observation[0] = input_data["time"]
-            observation[1] = input_data["vehicle_mass"]
-            observation[2] = input_data["vehicle_propellant"]
-
-            observation[3] = input_data['pursuer_pos_x']
-            observation[4] = input_data['pursuer_pos_y']
-            observation[5] = input_data['pursuer_pos_z']
-
-            observation[6] = input_data['pursuer_vel_x']
-            observation[7] = input_data['pursuer_vel_y']
-            observation[8] = input_data['pursuer_vel_z']
-
-            observation[9] = input_data['evader_pos_x']
-            observation[10] = input_data['evader_pos_y']
-            observation[11] = input_data['evader_pos_z']
-
-            observation[12] = input_data['evader_vel_x']
-            observation[13] = input_data['evader_vel_y']
-            observation[14] = input_data['evader_vel_z']
-
-            sun_position = None
-            if "sun_pos_x" in input_data:
-                sun_position = [input_data['sun_pos_x'], input_data['sun_pos_y'], input_data['sun_pos_z']]
-
-        vessel_up = None
-        if "vessel_up_x" in input_data:
-            vessel_up = np.array([input_data['vessel_up_x'], input_data['vessel_up_y'], input_data['vessel_up_z']])
+        vessel_up = np.array([input_data['vessel_up_x'], input_data['vessel_up_y'],
+                              input_data['vessel_up_z']]) if "vessel_up_x" in input_data else None
 
         state = State(observation, vessel_up, sun_position)
         action = Action(ast.literal_eval(row['throttles']))
 
-        """ Add state/action pair to sliding window.
-        """
         sliding_window.add(state, action)
 
-        # Skip null actions ALL except maybe the first one in a sequence of null actions
         if row['throttles'] == '[0, 0, 0]':
             if skip_all_null_actions:
-                """ Skip all null actions
-                """
                 continue
             else:
-                """ Skip all null actions except the first one in a sequence of consecutive
-                null actions.
-                """
                 if skip_null_actions:
                     continue
-                # Uncomment this line to skip all null actions after the first one in a sequence of consecutive null actions
-                # skip_null_actions = True
+                skip_null_actions = True
         else:
             skip_null_actions = False
 
-        """ Add messages to json list
-        """
         messages = sliding_window.get_messages()
-        message_structure = {
-            'messages': messages
-        }
-        json_list.append(message_structure)
+        if llama_format is not None:
+            system_prompt = ""
+            user_msg = ""
+            model_answer = ""
+            for message in messages:
+                if message['role'] == "system":
+                    system_prompt = message['content']
+                elif message['role'] == "user":
+                    user_msg = message['content']
+                elif message['role'] == "assistant":
+                    model_answer = message['content']
+            llama_text = llama_format.format(system_prompt=system_prompt,
+                                             user_msg=user_msg,
+                                             model_answer=model_answer)
+            json_list.append({'text': llama_text})
+        else:
+            json_list.append({'messages': messages})
 
-    # Save JSON to a file
-    json_file_path = csv_file_path.replace('.csv', '.json')
+    if not output_folder:
+        current_date = datetime.now().strftime("%m-%d-%y")
+        counter = 1
+        output_folder = f"training_ready_data_{current_date}-{counter}"
+        while os.path.exists(output_folder):
+            counter += 1
+            output_folder = f"training_ready_data_{current_date}-{counter}"
+        os.makedirs(output_folder)
+
+    json_file_path = os.path.join(output_folder, os.path.basename(csv_file_path).replace('.csv', '.json'))
     with open(json_file_path, 'w') as train:
         json.dump(json_list, train, indent=4)
+
     jsonl_file_path = json_file_path.replace('.json', '.jsonl')
     json_to_jsonl(json_file_path, jsonl_file_path)
     print(f"JSONL file saved: {jsonl_file_path}")
@@ -200,6 +143,7 @@ if __name__ == '__main__':
     # Load configuration from .env
     dotenv_path = join(dirname(__file__), '..', 'agents', '.env')
     load_dotenv(dotenv_path)
+
 
     use_relative_coordinates = State.DEFAULT_USE_RELATIVE_COORDINATES
     if 'USE_RELATIVE_COORDINATES' in os.environ:
@@ -241,6 +185,10 @@ if __name__ == '__main__':
     if 'SKIP_ALL_NULL_ACTIONS' in os.environ:
         skip_all_null_actions = (os.environ['SKIP_ALL_NULL_ACTIONS'].lower() == "true")
 
+    llama_format = None
+    if 'LLAMA_FORMAT' in os.environ:
+        llama_format = os.environ['LLAMA_FORMAT']
+
     # Process all CSV files in the current directory
     problem_env = input("Enter the problem and environment (e.g., pe1_i3): ")
     directory = '.'  # Current directory
@@ -256,4 +204,5 @@ if __name__ == '__main__':
                                     size=sliding_window_size,
                                     stride=sliding_window_stride,
                                     embed_history=embed_history,
-                                    skip_all_null_actions=skip_all_null_actions)
+                                    skip_all_null_actions=skip_all_null_actions,
+                                    llama_format=llama_format)

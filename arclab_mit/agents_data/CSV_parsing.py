@@ -7,6 +7,7 @@ from os.path import join, dirname
 from dotenv import load_dotenv
 from arclab_mit.agents.sliding_window import SlidingWindow
 from arclab_mit.agents.agent_common import State, Action
+import re
 
 from datetime import datetime
 
@@ -120,19 +121,21 @@ def csv_to_json_for_history(csv_file_path: str, problem_env: str,
 
             llama_text = ""
             for i in range(n):
-                llama_text += llama_format.format(system_prompt=system_prompt,
-                                                  user_msg=user_msg_list[i],
-                                                  model_answer=model_answer_list[i])
+                text = llama_format.format(system_prompt=system_prompt,
+                                                      user_msg=user_msg_list[i],
+                                                      model_answer=model_answer_list[i])
+                if i > 0:
+                    text = re.sub("<<SYS>>.*<</SYS>>", "", text, flags=re.DOTALL)
+                llama_text += text
             json_list.append({'text': llama_text})
 
             history = []
             for i in range(n-1):
-                history.append([usr_msg_list[i], model_answer_list[i]])
+                history.append([user_msg_list[i], model_answer_list[i]])
             alpaca_json_list.append({"instruction": user_msg_list[-1],
                                      "output": model_answer_list[-1],
                                      "system": system_prompt,
                                      "history": history})
-
 
             conversations = []
             for i in range(n):

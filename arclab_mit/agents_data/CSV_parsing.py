@@ -61,6 +61,8 @@ def csv_to_json_for_history(csv_file_path: str, problem_env: str,
                                    os.environ.get(f"{problem}_HISTORY_ITEM_PROMPT", ""))
 
     json_list = []
+    alpaca_json_list = []
+    sharegpt_json_list = []
     skip_null_actions = False
 
     for _, row in df.iterrows():
@@ -105,19 +107,41 @@ def csv_to_json_for_history(csv_file_path: str, problem_env: str,
         messages = sliding_window.get_messages()
         if llama_format is not None:
             system_prompt = ""
-            user_msg = ""
-            model_answer = ""
+            user_msg_list = []
+            model_answer_list = []
             for message in messages:
                 if message['role'] == "system":
                     system_prompt = message['content']
                 elif message['role'] == "user":
-                    user_msg = message['content']
+                    user_msg_list.append(message['content'])
                 elif message['role'] == "assistant":
-                    model_answer = message['content']
-            llama_text = llama_format.format(system_prompt=system_prompt,
-                                             user_msg=user_msg,
-                                             model_answer=model_answer)
+                    model_answer_list.append(message['content'])
+            n = len(user_msg_list)
+
+            llama_text = ""
+            for i in range(n):
+                llama_text += llama_format.format(system_prompt=system_prompt,
+                                                  user_msg=user_msg_list[i],
+                                                  model_answer=model_answer_list[i])
             json_list.append({'text': llama_text})
+
+            history = []
+            for i in range(n-1):
+                history.append([usr_msg_list[i], model_answer_list[i]])
+            alpaca_json_list.append({"instruction": user_msg_list[-1],
+                                     "output": model_answer_list[-1],
+                                     "system": system_prompt,
+                                     "history": history})
+
+
+            conversations = []
+            for i in range(n):
+                conversations.append({"from": "human",
+                                      "value": user_msg_list[i]})
+                conversations.append({"from": "gpt",
+                                      "value": model_answer_list[i]})
+            sharegpt_json_list.append({"conversations": conversations,
+                "system": system_prompt})
         else:
             json_list.append({'messages': messages})
 
@@ -137,6 +161,17 @@ def csv_to_json_for_history(csv_file_path: str, problem_env: str,
     jsonl_file_path = json_file_path.replace('.json', '.jsonl')
     json_to_jsonl(json_file_path, jsonl_file_path)
     print(f"JSONL file saved: {jsonl_file_path}")
+
+    if llama_format is not None:
+        # Save alpaca format
+        alpaca_jsonl_file_path = json_file_path.replace('.json', '_alpaca.json')
+        with open(alpaca_jsonl_file_path, 'w') as train:
+            json.dump(alpaca_json_list, train, indent=4)
+
+        # Save sharegpt format
+        sharegpt_jsonl_file_path = json_file_path.replace('.json', '_sharegpt.json')
+        with open(sharegpt_jsonl_file_path, 'w') as train:
+            json.dump(sharegpt_json_list, train, indent=4)
 
 
 if __name__ == '__main__':

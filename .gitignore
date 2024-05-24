@@ -2,6 +2,11 @@
 kspdg_results*.txt
 evaluation/configs/
 
+mintty.exe.stackdump
+bash.exe.stackdump
+
+*.loadmeta
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -14,6 +19,10 @@ __pycache__/
 history*.json
 pe*.json
 sb*.json
+
+*alpaca.json
+*sharegpt.json
+navball*.json
 
 #JSONL convos
 *.jsonl

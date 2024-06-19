@@ -148,15 +148,6 @@ def csv_to_json_for_history(csv_file_path: str, problem_env: str,
         else:
             json_list.append({'messages': messages})
 
-    if not output_folder:
-        current_date = datetime.now().strftime("%m-%d-%y")
-        counter = 1
-        output_folder = f"training_ready_data_{current_date}-{counter}"
-        while os.path.exists(output_folder):
-            counter += 1
-            output_folder = f"training_ready_data_{current_date}-{counter}"
-        os.makedirs(output_folder)
-
     json_file_path = os.path.join(output_folder, os.path.basename(csv_file_path).replace('.csv', '.json'))
     with open(json_file_path, 'w') as train:
         json.dump(json_list, train, indent=4)
@@ -227,11 +218,20 @@ if __name__ == '__main__':
     if 'LLAMA_FORMAT' in os.environ:
         llama_format = os.environ['LLAMA_FORMAT']
 
+    current_date = datetime.now().strftime("%m-%d-%y")
+    counter = 1
+    output_folder = f"training_ready_data_{current_date}-{counter}"
+    while os.path.exists(output_folder):
+        counter += 1
+        output_folder = f"training_ready_data_{current_date}-{counter}"
+    os.makedirs(output_folder)
+
     # Process all CSV files in the current directory
     problem_env = input("Enter the problem and environment (e.g., pe1_i3): ")
     directory = '.'  # Current directory
     for filename in os.listdir(directory):
-        if filename.endswith(".csv") and filename.startswith(problem_env):
+#        if filename.endswith(".csv") and filename.startswith(problem_env):
+        if filename.endswith(".csv"):
             csv_to_json_for_history(os.path.join(directory, filename), problem_env,
                                     use_relative_coordinates=use_relative_coordinates,
                                     use_short_names=use_short_names,
@@ -243,4 +243,5 @@ if __name__ == '__main__':
                                     stride=sliding_window_stride,
                                     embed_history=embed_history,
                                     skip_all_null_actions=skip_all_null_actions,
-                                    llama_format=llama_format)
+                                    llama_format=llama_format,
+                                    output_folder=output_folder)

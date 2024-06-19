@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 from kspdg.pe1.e1_envs import PE1_E1_I1_Env, PE1_E1_I3_Env, PE1_E1_I4_Env
 from kspdg.pe1.e2_envs import PE1_E2_I3_Env
-from kspdg.pe1.e3_envs import PE1_E3_I3_Env
+from kspdg.pe1.e3_envs import PE1_E3_I3_Env, PE1_E3_I4_Env
 from kspdg.sb1.e1_envs import SB1_E1_I1_Env, SB1_E1_I2_Env, SB1_E1_I3_Env, SB1_E1_I4_Env, SB1_E1_I5_Env
 
 DEFAULT_TARGET_VIEWING_DISTANCE = 100.0  # [m]
@@ -545,9 +545,9 @@ class Action:
             result[1] = 'right'
 
         if self.action[2] == -1:
-            result[2] = 'up'
-        elif self.action[2] == 1:
             result[2] = 'down'
+        elif self.action[2] == 1:
+            result[2] = 'up'
 
         # result = ["\"" + item + "\"" for item in result]
         return result
@@ -606,6 +606,7 @@ def setup_scenarios() -> dict:
     scenarios["PE1_E1_I3"] = PE1_E1_I3_Env
     scenarios["PE1_E1_I4"] = PE1_E1_I4_Env
     scenarios["PE1_E3_I3"] = PE1_E3_I3_Env
+    scenarios["PE1_E3_I4"] = PE1_E3_I4_Env
 
     scenarios["PE1_E2_I3"] = PE1_E2_I3_Env
 

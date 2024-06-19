@@ -154,6 +154,7 @@ ASSISTANT: Relative position in magnitude is 2657.45[m] and relative velocity in
 Now answer the following question:\n"
 
 PE_USER_PROMPT="{CoT}Given these observations {obs}, what is the best throttle to capture evader?. Reason step-by-step."
+#PE_USER_PROMPT="{CoT}Given these observations {obs}, what is the best throttle to capture evader?. Return only throttles."
 
 PE_USER_PROMPT_orig="{CoT}Given these observations {obs}, what is the best throttle to capture evader?."
 

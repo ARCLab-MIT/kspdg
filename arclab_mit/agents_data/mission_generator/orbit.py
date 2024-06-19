@@ -248,9 +248,11 @@ def sample_orbit(evader_orbit, dmin, dmax, speed_range, circular=True, precise=F
             # r should be close to evader_orbit.sma
             sma = evader_orbit.sma / ((1 - ecc**2) / (1 + ecc * np.cos(evader_orbit.mna.to_value(u.rad))))
             sma += d_rad
-        """ Sample random inclination in [0, MAX_INC] deg
+        """ Sample random inclination in [-MAX_INC, MAX_INC] deg
         """
         inc = np.random.rand(1)[0] * MAX_INC
+        if (np.random.rand(1)[0] < 0.5):
+            inc = (180<<u.degree) - inc
         lpe = evader_orbit.lpe
         """ Match lan with evader's sna since evader's inclination is approximately 0
         """
@@ -283,14 +285,15 @@ def sample_n_orbits(n, dmin, dmax, speed_range):
         """ Accept orbit if ecc < MAX_ECC and inc << MAX_INC
         """
         if pursuer_orbit.ecc < MAX_ECC and pursuer_orbit.inc < MAX_INC:
-            n -= 1
-            orbits.append(pursuer_orbit)
-
             d = np.linalg.norm(evader_orbit.r - pursuer_orbit.r)
-            speed = np.linalg.norm(evader_orbit.v - pursuer_orbit.v)
-            print(f" Distance from evader: {d:.5f}")
-            print(f" Relative speed: {speed:.5f}")
-            print(f" Pursuer position: {pursuer_orbit.r}")
+            if (d.to(u.m).value > dmin) and (d.to(u.m).value < dmax):
+                n -= 1
+                orbits.append(pursuer_orbit)
+
+                speed = np.linalg.norm(evader_orbit.v - pursuer_orbit.v)
+                print(f" Distance from evader: {d:.5f}")
+                print(f" Relative speed: {speed:.5f}")
+                print(f" Pursuer position: {pursuer_orbit.r}")
 
     return orbits
 

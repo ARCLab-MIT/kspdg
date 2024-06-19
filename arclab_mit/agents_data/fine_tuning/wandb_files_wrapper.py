@@ -204,8 +204,9 @@ def generate_statistics_experiment(working_dir, experiment):
                     d['failure'].append(True)
         df = pd.DataFrame(d, columns=['latency', 'failure'])
 
-        """ Collect distance and weighted score from agent logs (CSV files)
+        """ Collect distance, weighted score and failures from agent logs (CSV files)
         """
+        failure_data = []
         pe1Env = PursuitEvadeGroup1Env("pe1_i1_init")
         for filename in csv_filenames:
             with open(filename) as f:
@@ -310,6 +311,14 @@ def generate_statistics_experiment(working_dir, experiment):
             plt.title(basename)
             figure.savefig("fig_dist_series_" + os.path.basename(filename) + ".png", format='png')
             plt.close(figure)
+
+            """ Collect failures
+            """
+            for index, row in df_csv.iterrows():
+                failure_data.append(row['duration'] == 0.1)
+
+        # Add failure data to df
+        df['failure_2'] = failure_data
 
         """ Collect distance and weighted score from KSPDG result files
         """
@@ -501,7 +510,14 @@ def generate_statistics(working_dir, scenario):
         'PE1_E3_I3_LLM_0125_CoT_Navball_speed_limit_20': 'w/ CoT & speed limit 20 m/s - Scenario E3',
         'PE1_E3_I3_LLM_0125_CoT_Navball_speed_limit_30': 'w/ CoT & speed limit 30 m/s - Scenario E3',
         'PE1_navball': 'Navball (bot) - Scenario E3',
-        'PE1_E3_I3_LLM_0125_CoT_Navball_lrm_0.2': 'w/ CoT (fine tuned) - Scenario E3'
+        'PE1_E3_I3_LLM_0125_CoT_Navball_lrm_0.2': 'w/ CoT (fine tuned) - Scenario E3',
+        'PE1_E3_I3_Llama_Agent_dur_1': 'Llama3 Base Model - Scenario E3',
+        'PE1_E3_I3_Llama_Agent_FineTuning_25_dur_1': 'Llama3 Fine Tuned 25 files - Scenario E3',
+        'PE1_E3_I3_Llama_Agent_FineTuning_25_dur_0.5': 'Llama3 Fine Tuned 25 files - Scenario E3 (dur=0.5)',
+        'PE1_E3_I3_Llama_Agent_FineTuning_25_dur_2': 'Llama3 Fine Tuned 25 files - Scenario E3 (dur=2)',
+        'PE1_E3_I3_Llama_Agent_FineTuning_25_dur_1_return_throttles': 'Llama3 Fine Tuned 25 files (optimized) - Scenario E3',
+        'PE1_E3_I3_Llama_Agent_FineTuning_10_dur_1_return_throttles': 'Llama3 Fine Tuned 10 files (optimized) - Scenario E3',
+        'PE1_E3_I3_Llama_Agent_FineTuning_50_dur_1_return_throttles': 'Llama3 Fine Tuned 50 files (optimized) - Scenario E3',
     }
 
     """ Experiment directories to include for consolidation
@@ -532,6 +548,14 @@ def generate_statistics(working_dir, scenario):
                'PE1_E4_I3_LLM_0125_CoT_Navball_fix']
     include = ['PE1_E3_I3_LLM_0125_CoT_Navball_fix',
                'PE1_E3_I3_LLM_0125_CoT_Navball_lrm_0.2']
+    include = ['PE1_E3_I3_Llama_Agent_dur_1',
+               'PE1_E3_I3_Llama_Agent_FineTuning_25_dur_1',
+               'PE1_E3_I3_Llama_Agent_FineTuning_25_dur_0.5',
+               'PE1_E3_I3_Llama_Agent_FineTuning_25_dur_2']
+    include = ['PE1_E3_I3_Llama_Agent_dur_1',
+               'PE1_E3_I3_Llama_Agent_FineTuning_10_dur_1_return_throttles',
+               'PE1_E3_I3_Llama_Agent_FineTuning_25_dur_1_return_throttles',
+               'PE1_E3_I3_Llama_Agent_FineTuning_50_dur_1_return_throttles']
 
     """ Best runs for each experiment. They are identified by the filename of the
         agent log (CSV file) which resulted in lowest score.
@@ -566,6 +590,13 @@ def generate_statistics(working_dir, scenario):
         'w/ CoT & speed limit 20 m/s - Scenario E3': 'fine_tune_agent_log_PE1_E3_I3_20240224-140430.csv',
         'w/ CoT & speed limit 30 m/s - Scenario E3': 'fine_tune_agent_log_PE1_E3_I3_20240224-141137.csv',
         'Navball (bot) - Scenario E3': 'PE1_E3_I3_navball_log_20240215-115242.csv',
+        'Llama3 Base Model - Scenario E3': 'llama_fine_tune_agent_log_PE1_E3_I3_20240616-104825.csv',
+        'Llama3 Fine Tuned 25 files - Scenario E3': 'llama_fine_tune_agent_log_PE1_E3_I3_20240616-094012.csv',
+        'Llama3 Fine Tuned 25 files - Scenario E3 (dur=0.5)': 'llama_fine_tune_agent_log_PE1_E3_I3_20240616-092943.csv',
+        'Llama3 Fine Tuned 25 files - Scenario E3 (dur=2)': 'llama_fine_tune_agent_log_PE1_E3_I3_20240616-090506.csv',
+        'Llama3 Fine Tuned 25 files (optimized) - Scenario E3': 'llama_fine_tune_agent_log_PE1_E3_I3_20240618-114801.csv',
+        'Llama3 Fine Tuned 10 files (optimized) - Scenario E3': 'llama_fine_tune_agent_log_PE1_E3_I3_20240618-095800.csv',
+        'Llama3 Fine Tuned 50 files (optimized) - Scenario E3': 'llama_fine_tune_agent_log_PE1_E3_I3_20240618-101213.csv',
     }
 
     """ Process experiment directories
@@ -620,7 +651,7 @@ def generate_statistics(working_dir, scenario):
             'avg': df_results.mean()['closest_approach_pursuer_fuel_usage'],
             'std': df_results.std()['closest_approach_pursuer_fuel_usage']
         }
-        fr = df.mean()['failure'] * 100
+        fr = df.mean()['failure_2'] * 100
 
         summary[label] = {
             'failure_rate': fr,

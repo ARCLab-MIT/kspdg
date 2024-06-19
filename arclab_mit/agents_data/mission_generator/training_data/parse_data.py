@@ -21,8 +21,6 @@ if __name__ == "__main__":
     print(dotenv_path)
     load_dotenv(dotenv_path)
 
-    print(os.environ)
-
     use_relative_coordinates = State.DEFAULT_USE_RELATIVE_COORDINATES
     if 'USE_RELATIVE_COORDINATES' in os.environ:
         use_relative_coordinates = (os.environ['USE_RELATIVE_COORDINATES'].lower() == "true")
@@ -67,7 +65,7 @@ if __name__ == "__main__":
     if 'LLAMA_FORMAT' in os.environ:
         llama_format = os.environ['LLAMA_FORMAT']
 
-    directory = './logs_05-19-2024/'
+    directory = './logs_05-27-2024/'
 
     problem_env = 'pe'
     # Get list of all CSV files in the directory

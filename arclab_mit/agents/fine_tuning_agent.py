@@ -329,7 +329,7 @@ class LLMAgent(KSPDGBaseAgent):
             action = [0, 0, 0, 0.1]
         else:
             # Set action in last conversation
-            self.sliding_window.set_action(-1, action[0:3])
+            self.sliding_window.set_action(-1, Action(action[0:3]))
 
             # Check if prograde direction is aligned with action
             #

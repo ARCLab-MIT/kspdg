@@ -518,6 +518,7 @@ def generate_statistics(working_dir, scenario):
         'PE1_E3_I3_Llama_Agent_FineTuning_25_dur_1_return_throttles': 'Llama3 Fine Tuned 25 files (optimized) - Scenario E3',
         'PE1_E3_I3_Llama_Agent_FineTuning_10_dur_1_return_throttles': 'Llama3 Fine Tuned 10 files (optimized) - Scenario E3',
         'PE1_E3_I3_Llama_Agent_FineTuning_50_dur_1_return_throttles': 'Llama3 Fine Tuned 50 files (optimized) - Scenario E3',
+        'PE1_E3_I3_Llama_Agent_FineTuning_10_win_3_dur_1_return_throttles': 'Llama3 Fine Tuned 10 files win=3 (optimized) - Scenario E3',
     }
 
     """ Experiment directories to include for consolidation
@@ -556,6 +557,8 @@ def generate_statistics(working_dir, scenario):
                'PE1_E3_I3_Llama_Agent_FineTuning_10_dur_1_return_throttles',
                'PE1_E3_I3_Llama_Agent_FineTuning_25_dur_1_return_throttles',
                'PE1_E3_I3_Llama_Agent_FineTuning_50_dur_1_return_throttles']
+    include = ['PE1_E3_I3_Llama_Agent_FineTuning_10_dur_1_return_throttles',
+               'PE1_E3_I3_Llama_Agent_FineTuning_10_win_3_dur_1_return_throttles']
 
     """ Best runs for each experiment. They are identified by the filename of the
         agent log (CSV file) which resulted in lowest score.
@@ -597,6 +600,7 @@ def generate_statistics(working_dir, scenario):
         'Llama3 Fine Tuned 25 files (optimized) - Scenario E3': 'llama_fine_tune_agent_log_PE1_E3_I3_20240618-114801.csv',
         'Llama3 Fine Tuned 10 files (optimized) - Scenario E3': 'llama_fine_tune_agent_log_PE1_E3_I3_20240618-095800.csv',
         'Llama3 Fine Tuned 50 files (optimized) - Scenario E3': 'llama_fine_tune_agent_log_PE1_E3_I3_20240618-101213.csv',
+        'Llama3 Fine Tuned 10 files win=3 (optimized) - Scenario E3': 'llama_fine_tune_agent_log_PE1_E3_I3_20240627-135210.csv',
     }
 
     """ Process experiment directories

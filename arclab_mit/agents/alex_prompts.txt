@@ -153,8 +153,16 @@ ASSISTANT: Relative position in magnitude is 2657.45[m] and relative velocity in
 
 Now answer the following question:\n"
 
+# User prompts
+# For Llama we distinguish between training and running prompts to reduce inference time
 PE_USER_PROMPT="{CoT}Given these observations {obs}, what is the best throttle to capture evader?. Reason step-by-step."
-#PE_USER_PROMPT="{CoT}Given these observations {obs}, what is the best throttle to capture evader?. Return only throttles."
+
+PE_USER_PROMPT_train="{CoT}Given these observations {obs}, what is the best throttle to capture evader?. Reason step-by-step."
+PE_USER_PROMPT_run="{CoT}Given these observations {obs}, what is the best throttle to capture evader?. Return only throttles."
+
+# User prompts used by the look-ahead mechanism (e.g. next action predictions)
+PE_USER_PROMPT_look_ahead_train="{CoT}Given these observations {obs}, what is the best throttle to capture evader?. Also predict the next throttles. Reason step-by-step."
+PE_USER_PROMPT_look_ahead_run="{CoT}Given these observations {obs}, what is the best throttle to capture evader?. Also predict the next throttles. Return only throttles."
 
 PE_USER_PROMPT_orig="{CoT}Given these observations {obs}, what is the best throttle to capture evader?."
 
@@ -280,7 +288,8 @@ LBG_HISTORY_ITEM_PROMPT="\tFor observations {obs}, your action was {action}. "
 # Assistant Prompt
 #########################
 
-ASSISTANT_CONTENT="The best throttle is {action}."
+#ASSISTANT_CONTENT="The best throttle is {action}."
+ASSISTANT_CONTENT="The best throttle is {action}. Next predicted throttles are {next_actions}"
 
 # Use for training fine-tuned models using CoT Navball
 ASSISTANT_CONTENT_NAVBALL="I will call {action}"

@@ -48,6 +48,7 @@ def csv_to_json_for_history(csv_file_path: str, problem_env: str,
                             embed_history: bool = SlidingWindow.DEFAULT_EMBED_HISTORY,
                             skip_all_null_actions: bool = DEFAULT_SKIP_ALL_NULL_ACTIONS,
                             llama_format = None,
+                            look_ahead: int = 0,
                             output_folder: str = None):
     df = pd.read_csv(csv_file_path)
     problem = problem_env[0:2].upper()
@@ -59,14 +60,17 @@ def csv_to_json_for_history(csv_file_path: str, problem_env: str,
                                    os.environ.get(f"{problem}_CHAIN_OF_THOUGHT", ""),
                                    os.environ.get("ASSISTANT_CONTENT", ""),
                                    os.environ.get(f"{problem}_HISTORY_PROMPT", ""),
-                                   os.environ.get(f"{problem}_HISTORY_ITEM_PROMPT", ""))
+                                   os.environ.get(f"{problem}_HISTORY_ITEM_PROMPT", ""),
+                                   look_ahead)
 
     json_list = []
     alpaca_json_list = []
     sharegpt_json_list = []
     skip_null_actions = False
 
+    pos = -1
     for _, row in df.iterrows():
+        pos += 1
         input_data = {k: v for k, v in row.items() if k != 'throttles' and k != 'next_throttles'}
 
         if problem_env.lower().startswith('lbg'):
@@ -93,7 +97,15 @@ def csv_to_json_for_history(csv_file_path: str, problem_env: str,
         state = State(observation, vessel_up, sun_position)
         action = Action(ast.literal_eval(row['throttles']))
 
-        sliding_window.add(state, action)
+        next_actions = None
+        if look_ahead > 0:
+            next_actions = []
+            for i in range(look_ahead):
+                j = pos + i + 1
+                if j < len(df):
+                    next_actions.append(Action(ast.literal_eval(df['throttles'][j])))
+
+        sliding_window.add(state, action, next_actions)
 
         if row['throttles'] == '[0, 0, 0]':
             if skip_all_null_actions:
@@ -218,6 +230,10 @@ if __name__ == '__main__':
     if 'LLAMA_FORMAT' in os.environ:
         llama_format = os.environ['LLAMA_FORMAT']
 
+    look_ahead = 0
+    if 'LOOK_AHEAD' in os.environ:
+        look_ahead = int(os.environ["LOOK_AHEAD"])
+
     current_date = datetime.now().strftime("%m-%d-%y")
     counter = 1
     output_folder = f"training_ready_data_{current_date}-{counter}"
@@ -244,4 +260,5 @@ if __name__ == '__main__':
                                     embed_history=embed_history,
                                     skip_all_null_actions=skip_all_null_actions,
                                     llama_format=llama_format,
+                                    look_ahead=look_ahead,
                                     output_folder=output_folder)

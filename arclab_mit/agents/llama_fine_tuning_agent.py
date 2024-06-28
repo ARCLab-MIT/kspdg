@@ -22,6 +22,7 @@ import time
 
 import krpc
 import numpy as np
+import re
 import openai
 from dotenv import load_dotenv
 
@@ -221,6 +222,7 @@ class LlamaAgent(KSPDGBaseAgent):
 
         # Interval between actions
         self.duration = 1
+        # self.duration = 0.5
 
         # Threshold for prograde alignment
         self.THRESHOLD = 0.1
@@ -266,6 +268,9 @@ class LlamaAgent(KSPDGBaseAgent):
         # FastAPI client
         base_url = os.environ['LLAMA_URL']
         self.client = LlamaAPIClient(base_url)
+
+        # Next actions
+        self.next_actions = []
 
     # Return sun position in the celestial body orbital reference frame
     def get_sun_position(self):
@@ -320,6 +325,12 @@ class LlamaAgent(KSPDGBaseAgent):
         """ compute agent's action given observation """
         print("\nget_action called, prompting ChatGPT model ..." + self.model)
 
+        # First empty list of next actions predicted
+        if len(self.next_actions) > 0:
+            action = self.next_actions.pop(0)
+            print("Response action: " + str(action))
+            return action
+
         # Get vessel up direction in celestial body reference frame
         vessel_up = None
         vessel_up = self.conn.space_center.transform_direction((0, 0, 1),
@@ -361,12 +372,15 @@ class LlamaAgent(KSPDGBaseAgent):
         messages = self.sliding_window.get_messages()
 
         print("Model: " + self.model)
-        action = self.check_response(response=self.get_completion(prompt=messages, model=self.model))
+        action, next_actions = self.check_response(response=self.get_completion(prompt=messages, model=self.model))
         # action[2] = -action[2]
         if action is None:
             _ = self.sliding_window.pop()
             action = [0, 0, 0, 0.1]
         else:
+            # Set next actions
+            self.next_actions = next_actions
+
             # Set action in last conversation
             self.sliding_window.set_action(-1, Action(action[0:3]))
 
@@ -497,7 +511,24 @@ class LlamaAgent(KSPDGBaseAgent):
         if function_args[0] == "down":
             function_args[0] = "forward"
 
-        return function_args
+        # Find and extract next actions
+        s = response
+        index = s.find("Next predicted throttles are")
+        pattern = r'[^\[]+([^\]]+)\]'
+        s = s[index:]
+        m = re.search(pattern, s)
+        next_actions = []
+        if m:
+            try:
+                data = json.loads(m.group(1) + ']')
+                # Convert to list of actions
+                for d in data:
+                    action = Action.from_enum([d["ft"], d["rt"], d["dt"], self.duration])
+                    next_actions.append(action)
+            except Exception as ex:
+                print("Exception processing next actions:" + s)
+
+        return function_args, next_actions
 
     def check_response(self, response):
         if response is None:
@@ -508,6 +539,7 @@ class LlamaAgent(KSPDGBaseAgent):
         available_functions = {
             "perform_action": lambda ft, rt, dt: [ft, rt, dt, duration],
         }
+        next_actions = []
         if response.get("function_call"):
             function_name = response["function_call"]["name"]
             if function_name not in available_functions:
@@ -519,7 +551,7 @@ class LlamaAgent(KSPDGBaseAgent):
                 # Get function arguments
                 function_args = response["function_call"]["arguments"]
                 try:
-                    function_args = self.clean_response(function_args)
+                    function_args, next_actions = self.clean_response(function_args)
                     function_args = json.loads(function_args)
                     function_response = function_to_call(**function_args)
                     if self.use_enum:
@@ -537,7 +569,7 @@ class LlamaAgent(KSPDGBaseAgent):
                 index = 0
                 if index != -1:
                     # Get function args from content
-                    function_args = self.clean_response(content)
+                    function_args, next_actions = self.clean_response(content)
                     function_args = json.loads(function_args)
 
                     print ("Function args: " + str(function_args))
@@ -565,7 +597,7 @@ class LlamaAgent(KSPDGBaseAgent):
                 print("Exception processing function_args:" + str(function_args))
                 function_response = [0, 0, 0, 0.1]
 
-        return function_response
+        return function_response, next_actions
 
     def get_completion(self, prompt, model="gpt-4-1106-preview"):
 

@@ -13,6 +13,7 @@ class SlidingWindow:
         - size: the size of the sliding window.
         - embed_history: to choose between placing the conversation history in user/assistant pairs or the
           embed it in the user prompt.
+        - look_ahead: number of actions to predict in the future.
 
     The implementation of this class is adapted to the message structure of the OpenAI API.
     """
@@ -28,7 +29,7 @@ class SlidingWindow:
                  use_prograde_marker=False, use_cot=False, use_cot_speed_limit=False,
                  embed_history=False,
                  system_prompt="", user_prompt="", cot_prompt=None, assistant_content="",
-                 history_prompt="", history_item_prompt=""):
+                 history_prompt="", history_item_prompt="", look_ahead: int = 0):
 
         # Window size
         self.size = size
@@ -53,23 +54,28 @@ class SlidingWindow:
         self.history_prompt = history_prompt
         self.history_item_prompt = history_item_prompt
 
+        # Look ahead parameter
+        self.look_ahead = look_ahead
+
     """
     Adds a state / action pair. Default action None means that action
     is not known at the time of the call.    
     """
 
-    def add(self, state, action=None):
+    def add(self, state, action=None, next_actions: list = None):
 
         # Initialize window with given state and default action [0,0,0]
         if len(self._history) == 0:
             for i in range(self.size):
                 padded_action = Action([0, 0, 0])
                 self._history.append({"state": state,
-                                      "action": padded_action})
+                                      "action": padded_action,
+                                      "next_actions": None})
 
         # Add state / action pair
         self._history.append({"state": state,
-                              "action": action})
+                              "action": action,
+                              "next_actions": next_actions})
 
     """
     Removes and returns the last state / action pair.
@@ -128,18 +134,15 @@ class SlidingWindow:
 
         if action is not None:
             action_str = "perform_action(" + json.dumps(action.to_json(self.use_enum)) + ")"
-            if self.scenario.lower().startswith('pe'):
-                message_structure["messages"] \
-                    .append({"role": "assistant",
-                             "content": self.assistant_content.format(action=action_str),
-                             "function_call": {"name": "perform_action",
-                                               "arguments": json.dumps(action.to_json(self.use_enum))}})
-            else:
-                message_structure["messages"] \
-                    .append({"role": "assistant",
-                             "content": self.assistant_content.format(action=action_str),
-                             "function_call": {"name": "perform_action",
-                                               "arguments": json.dumps(action.to_json(self.use_enum))}})
+            next_actions = []
+            for action in self._history[pos]["next_actions"]:
+                next_actions.append(action.to_json(self.use_enum))
+            message_structure["messages"] \
+                .append({"role": "assistant",
+                         "content": self.assistant_content.format(action=action_str, next_actions=json.dumps(next_actions)),
+                         "function_call": {"name": "perform_action",
+                                           "arguments": json.dumps(action.to_json(self.use_enum))}})
+
         return message_structure
 
     """

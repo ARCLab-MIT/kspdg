@@ -134,7 +134,7 @@ def upload_files(working_dir, path, run_id):
         print ("Exception: " + str(e))
 
 
-def generate_statistics_experiment(working_dir, experiment):
+def generate_statistics_experiment(working_dir, experiment, extended_graphs=False):
     """ Collects data and save charts of the evaluations found in <working_dir>/<experiment>.
 
         Data is collected from:
@@ -286,16 +286,42 @@ def generate_statistics_experiment(working_dir, experiment):
             dist_data = []
             closest_dist_data = []
             closest_distance = sys.float_info.max
+            pursuer_pos_data = []
+            evader_pos_data = []
+            rel_pos_data = []
+            rel_vel_data = []
+            vel_data = []
             for index, row in df_csv.iterrows():
-                distance = np.linalg.norm([row['evader_pos_x']-row['pursuer_pos_x'],
-                                           row['evader_pos_y']-row['pursuer_pos_y'],
-                                           row['evader_pos_z']-row['pursuer_pos_z']], ord=2)
+                rel_pos = [row['evader_pos_x']-row['pursuer_pos_x'],
+                           row['evader_pos_y']-row['pursuer_pos_y'],
+                           row['evader_pos_z']-row['pursuer_pos_z']]
+                rel_vel = [row['evader_vel_x']-row['pursuer_vel_x'],
+                           row['evader_vel_y']-row['pursuer_vel_y'],
+                           row['evader_vel_z']-row['pursuer_vel_z']]
+                pursuer_pos = [row['pursuer_pos_x'],
+                               row['pursuer_pos_y'],
+                               row['pursuer_pos_z']]
+                evader_pos = [row['evader_pos_x'],
+                              row['evader_pos_y'],
+                              row['evader_pos_z']]
+                distance = np.linalg.norm(rel_pos, ord=2)
+                velocity = np.linalg.norm(rel_vel, ord=2)
                 if distance < closest_distance:
                     closest_distance = distance
                 dist_data.append(distance)
                 closest_dist_data.append(closest_distance)
+                pursuer_pos_data.append(pursuer_pos)
+                evader_pos_data.append(evader_pos)
+                rel_pos_data.append(rel_pos)
+                rel_vel_data.append(rel_vel)
+                vel_data.append(velocity)
             df_csv['distance'] = dist_data
             df_csv['closest_distance'] = closest_dist_data
+            df_csv['pursuer_pos'] = pursuer_pos_data
+            df_csv['evader_pos'] = evader_pos_data
+            df_csv['rel_pos'] = rel_pos_data
+            df_csv['rel_vel'] = rel_vel_data
+            df_csv['velocity'] = vel_data
 
             basename = os.path.basename(filename)
             df_series_dist[basename] = df_csv
@@ -312,6 +338,246 @@ def generate_statistics_experiment(working_dir, experiment):
             figure.savefig("fig_dist_series_" + os.path.basename(filename) + ".png", format='png')
             plt.close(figure)
 
+            if extended_graphs:
+                """ Plot celestial body relative position time series chart (multiple plot line chart)
+                """
+                best_distance = df_csv.min()['distance']
+                figure, axs = plt.subplots(4, constrained_layout=True)
+
+                axs[0].tick_params(axis='x', which='major', labelsize=8)
+                axs[0].tick_params(axis='y', which='major', labelsize=8)
+                l1, = axs[0].plot(df_csv['time'],  [p[0] for p in df_csv['rel_pos']], c='blue', label='position')
+                axs[0].set_xlabel('Time (s)', fontsize=8)
+                axs[0].set_ylabel(r'$\Delta$x (m)', fontsize=8)
+    #            axs[0].set_yscale('symlog')
+                axs[0].grid(linestyle='--')
+
+                axs[1].tick_params(axis='x', which='major', labelsize=8)
+                axs[1].tick_params(axis='y', which='major', labelsize=8)
+                l1, = axs[1].plot(df_csv['time'],  [p[1] for p in df_csv['rel_pos']], c='blue', label='position')
+                axs[1].set_xlabel('Time (s)', fontsize=8)
+                axs[1].set_ylabel(r'$\Delta$y (m)', fontsize=8)
+    #            axs[1].set_yscale('symlog')
+                axs[1].grid(linestyle='--')
+
+                axs[2].tick_params(axis='x', which='major', labelsize=8)
+                axs[2].tick_params(axis='y', which='major', labelsize=8)
+                l1, = axs[2].plot(df_csv['time'],  [p[2] for p in df_csv['rel_pos']], c='blue', label='position')
+                axs[2].set_xlabel('Time (s)', fontsize=8)
+                axs[2].set_ylabel(r'$\Delta$z (m)', fontsize=8)
+    #            axs[2].set_yscale('symlog')
+                axs[2].grid(linestyle='--')
+
+                axs[3].tick_params(axis='x', which='major', labelsize=8)
+                axs[3].tick_params(axis='y', which='major', labelsize=8)
+                l1, = axs[3].plot(df_csv['time'],  df_csv['distance'], c='green', label='position')
+                axs[3].set_xlabel('Time (s)', fontsize=8)
+                axs[3].set_ylabel('Distance (m)', fontsize=8)
+                axs[3].grid(linestyle='--')
+
+                figure.savefig("fig_rel_pos_series_" + os.path.basename(filename) + ".png", format='png')
+                plt.close(figure)
+
+                """ Plot celestial body relative position and velocity time series chart (multiple plot line chart)
+                """
+                best_distance = df_csv.min()['distance']
+                figure, axs = plt.subplots(4, constrained_layout=True)
+
+                axs[0].tick_params(axis='x', which='major', labelsize=8)
+                axs[0].tick_params(axis='y', which='major', labelsize=8)
+                l1, = axs[0].plot(df_csv['time'],  [p[0] for p in df_csv['rel_pos']], c='green', label='position')
+                axs[0].set_xlabel('Time (s)', fontsize=8)
+                axs[0].set_ylabel(r'$\Delta$x (m)', fontsize=8)
+    #            axs[0].set_yscale('symlog')
+                axs[0].grid(linestyle='--')
+
+                axs_speed = axs[0].twinx()
+                axs_speed.tick_params(axis='y', which='major', labelsize=8)
+                l2, = axs_speed.plot(df_csv['time'],  [p[0] for p in df_csv['rel_vel']], c='blue', label='velocity')
+                axs_speed.set_ylabel(r'$\Delta$vx (m/s)', fontsize=8)
+                axs_speed.grid(linestyle='--')
+
+                plt.legend([l1, l2], ["position", "velocity"], loc="upper right", fontsize=8)
+
+                axs[1].tick_params(axis='x', which='major', labelsize=8)
+                axs[1].tick_params(axis='y', which='major', labelsize=8)
+                l1, = axs[1].plot(df_csv['time'],  [p[1] for p in df_csv['rel_pos']], c='green', label='position')
+                axs[1].set_xlabel('Time (s)', fontsize=8)
+                axs[1].set_ylabel(r'$\Delta$y (m)', fontsize=8)
+    #            axs[1].set_yscale('symlog')
+                axs[1].grid(linestyle='--')
+
+                axs_speed = axs[1].twinx()
+                axs_speed.tick_params(axis='y', which='major', labelsize=8)
+                l2, = axs_speed.plot(df_csv['time'],  [p[1] for p in df_csv['rel_vel']], c='blue', label='velocity')
+                axs_speed.set_ylabel(r'$\Delta$vy (m/s)', fontsize=8)
+                axs_speed.grid(linestyle='--')
+
+                plt.legend([l1, l2], ["position", "velocity"], loc="upper right", fontsize=8)
+
+                axs[2].tick_params(axis='x', which='major', labelsize=8)
+                axs[2].tick_params(axis='y', which='major', labelsize=8)
+                l1, = axs[2].plot(df_csv['time'],  [p[2] for p in df_csv['rel_pos']], c='green', label='position')
+                axs[2].set_xlabel('Time (s)', fontsize=8)
+                axs[2].set_ylabel(r'$\Delta$z (m)', fontsize=8)
+    #            axs[2].set_yscale('symlog')
+                axs[2].grid(linestyle='--')
+
+                axs_speed = axs[2].twinx()
+                axs_speed.tick_params(axis='y', which='major', labelsize=8)
+                l2, = axs_speed.plot(df_csv['time'],  [p[2] for p in df_csv['rel_vel']], c='blue', label='velocity')
+                axs_speed.set_ylabel(r'$\Delta$vz (m/s)', fontsize=8)
+                axs_speed.grid(linestyle='--')
+
+                plt.legend([l1, l2], ["position", "velocity"], loc="upper right", fontsize=8)
+
+                axs[3].tick_params(axis='x', which='major', labelsize=8)
+                axs[3].tick_params(axis='y', which='major', labelsize=8)
+                l1, = axs[3].plot(df_csv['time'],  df_csv['distance'], c='green', label='position')
+                axs[3].set_xlabel('Time (s)', fontsize=8)
+                axs[3].set_ylabel('Distance (m)', fontsize=8)
+                axs[3].grid(linestyle='--')
+
+                axs_speed = axs[3].twinx()
+                axs_speed.tick_params(axis='y', which='major', labelsize=8)
+                l2, = axs_speed.plot(df_csv['time'],  df_csv['velocity'], c='blue', label='speed')
+                axs_speed.set_ylabel(r'Speed (m/s)', fontsize=8)
+                axs_speed.grid(linestyle='--')
+
+                plt.legend([l1, l2], ["distance", "speed"], loc="upper right", fontsize=8)
+
+                figure.savefig("fig_rel_pos_vel_series_" + os.path.basename(filename) + ".png", format='png')
+                plt.close(figure)
+
+                """ Plot celestial body pursuer and evader position time series chart (multiple plot line chart)
+                """
+                best_distance = df_csv.min()['distance']
+                figure, axs = plt.subplots(4, constrained_layout = True)
+                axs[0].tick_params(axis='y', which='major', labelsize=8)
+                axs[0].plot(df_csv['time'],  [p[0] for p in df_csv['pursuer_pos']], c='green')
+                axs[0].plot(df_csv['time'],  [p[0] for p in df_csv['evader_pos']], c='red')
+                axs[0].set_xlabel('Time (s)')
+                axs[0].set_ylabel('x (m)')
+
+                axs[1].tick_params(axis='y', which='major', labelsize=8)
+                axs[1].plot(df_csv['time'],  [p[1] for p in df_csv['pursuer_pos']], c='green')
+                axs[1].plot(df_csv['time'],  [p[1] for p in df_csv['evader_pos']], c='red')
+                axs[1].set_xlabel('Time (s)')
+                axs[1].set_ylabel('y (m)')
+
+                axs[2].tick_params(axis='y', which='major', labelsize=8)
+                axs[2].plot(df_csv['time'],  [p[2] for p in df_csv['pursuer_pos']], c='green')
+                axs[2].plot(df_csv['time'],  [p[2] for p in df_csv['evader_pos']], c='red')
+                axs[2].set_xlabel('Time (s)')
+                axs[2].set_ylabel('z (m)')
+
+                axs[3].tick_params(axis='y', which='major', labelsize=8)
+                axs[3].plot(df_csv['time'],  df_csv['distance'], c='green')
+                axs[3].set_xlabel('Time (s)')
+                axs[3].set_ylabel('Distance (m)')
+
+                figure.savefig("fig_pursuer_evader_series_" + os.path.basename(filename) + ".png", format='png')
+                plt.close(figure)
+
+                """ Plot celestial body relative position time series chart (3D Chart)
+                """
+                figure = plt.figure()
+                ax = plt.axes(projection ='3d')
+                ax.tick_params(axis='x', labelsize=6, rotation=45, pad=5)
+                for label in ax.get_xticklabels():
+                    label.set_horizontalalignment('center')
+                    label.set_verticalalignment('bottom')
+                ax.tick_params(axis='y', labelsize=6, rotation=-15, pad=5)
+                for label in ax.get_yticklabels():
+                    label.set_horizontalalignment('center')
+                    label.set_verticalalignment('bottom')
+                ax.tick_params(axis='z', labelsize=6, pad=0)
+
+                ax.set_xlabel(r'$\Delta$x (m)')
+                ax.set_ylabel(r'$\Delta$y (m)')
+                ax.set_zlabel(r'$\Delta$z (m)')
+    #            ax.invert_yaxis()
+                """
+                ax.set_xscale('symlog')
+                ax.set_yscale('symlog')
+                ax.set_zscale('symlog')
+                """
+                x = [p[0] for p in df_csv['rel_pos']]
+                y = [p[1] for p in df_csv['rel_pos']]
+                z = [p[2] for p in df_csv['rel_pos']]
+                u = [p[0] for p in df_csv['rel_vel']]
+                v = [p[1] for p in df_csv['rel_vel']]
+                w = [p[2] for p in df_csv['rel_vel']]
+                ax.plot3D(x, y, z, 'green')
+                ax.scatter(x[-1],y[-1],z[-1], '-', c="green")
+                ax.quiver(x, y, z, u, v, w, color="blue", arrow_length_ratio=0.02)
+    #            ax.set_title('Relative position between pursuer and evader')
+                figure.savefig("fig_3D_rel_pos_series_" + os.path.basename(filename) + ".png", format='png')
+                plt.close(figure)
+
+                """ Plot celestial body pursuer and evader positions time series chart (3D Chart)
+                """
+                figure = plt.figure()
+                ax = plt.axes(projection='3d')
+                ax.tick_params(axis='x', labelsize=6, rotation=45, pad=10)
+                for label in ax.get_xticklabels():
+                    label.set_horizontalalignment('center')
+                    label.set_verticalalignment('bottom')
+                ax.tick_params(axis='y', labelsize=6, rotation=-15, pad=5)
+                for label in ax.get_yticklabels():
+                    label.set_horizontalalignment('center')
+                    label.set_verticalalignment('bottom')
+                ax.tick_params(axis='z', labelsize=6, pad=0)
+
+                ax.set_xlabel('x (m)')
+                ax.set_ylabel('y (m)')
+                ax.set_zlabel('z (m)')
+
+    #            ax.invert_yaxis()
+
+                x = [p[0] for p in df_csv['pursuer_pos']]
+                y = [p[1] for p in df_csv['pursuer_pos']]
+                z = [p[2] for p in df_csv['pursuer_pos']]
+                ax.plot3D(x, y, z, 'green', label='pursuer')
+                ax.scatter(x[0], y[0], z[0], '-', c="green")
+                ax.scatter(x[-1],y[-1],z[-1], '-', c="green")
+                x = [p[0] for p in df_csv['evader_pos']]
+                y = [p[1] for p in df_csv['evader_pos']]
+                z = [p[2] for p in df_csv['evader_pos']]
+                ax.plot3D(x, y, z, 'red', label='evader')
+                ax.scatter(x[0], y[0], z[0], '-', c="red")
+                ax.scatter(x[-1], y[-1], z[-1], '-', c="red")
+    #            ax.scatter(x, y, z, c="red")
+    #
+                elev = 4
+                azim = -30
+                roll = 0
+                ax.view_init(elev, azim, roll)
+                plt.legend(loc="upper right")
+                figure.align_labels()
+                figure.savefig("fig_3D_pursuer_evader_series_" + os.path.basename(filename) + ".png", format='png')
+                # plt.show()
+                plt.close(figure)
+
+                """ Plot celestial body pursuer and evader positions time series chart (2D Chart)
+                """
+                figure = plt.figure()
+                ax = plt.axes()
+                ax.set_xlabel('x (m)')
+                ax.set_ylabel('y (m)')
+                ax.invert_yaxis()
+                x = [p[0] for p in df_csv['pursuer_pos']]
+                y = [p[1] for p in df_csv['pursuer_pos']]
+                ax.plot(x, y, 'green', label='pursuer')
+    #            ax.scatter(x[-1], y[-1], '-', c="green")
+                x = [p[0] for p in df_csv['evader_pos']]
+                y = [p[1] for p in df_csv['evader_pos']]
+                ax.plot(x, y, 'red', label='evader')
+    #            ax.scatter(x[-1], y[-1], '-', c="red")
+                plt.legend(loc="upper right")
+                figure.savefig("fig_2D_pursuer_evader_series_" + os.path.basename(filename) + ".png", format='png')
+                plt.close(figure)
+
             """ Collect failures
             """
             for index, row in df_csv.iterrows():
@@ -319,6 +585,7 @@ def generate_statistics_experiment(working_dir, experiment):
 
         # Add failure data to df
         df['failure_2'] = failure_data
+
 
         """ Collect distance and weighted score from KSPDG result files
         """
@@ -519,6 +786,7 @@ def generate_statistics(working_dir, scenario):
         'PE1_E3_I3_Llama_Agent_FineTuning_10_dur_1_return_throttles': 'Llama3 Fine Tuned 10 files (optimized) - Scenario E3',
         'PE1_E3_I3_Llama_Agent_FineTuning_50_dur_1_return_throttles': 'Llama3 Fine Tuned 50 files (optimized) - Scenario E3',
         'PE1_E3_I3_Llama_Agent_FineTuning_10_win_3_dur_1_return_throttles': 'Llama3 Fine Tuned 10 files win=3 (optimized) - Scenario E3',
+        'PE1_E3_I3_Navball_delay_0_seconds': 'Navball (bot) - Scenario E3 (delay=0)',
     }
 
     """ Experiment directories to include for consolidation
@@ -558,6 +826,18 @@ def generate_statistics(working_dir, scenario):
                'PE1_E3_I3_Llama_Agent_FineTuning_25_dur_1_return_throttles',
                'PE1_E3_I3_Llama_Agent_FineTuning_50_dur_1_return_throttles']
     include = ['PE1_E3_I3_Llama_Agent_FineTuning_10_dur_1_return_throttles',
+               'PE1_E3_I3_Llama_Agent_FineTuning_10_win_3_dur_1_return_throttles']
+    include = ['PE1_E3_I3_Llama_Agent_FineTuning_25_dur_1_return_throttles',
+               'PE1_E3_I3_Navball_delay_0_seconds']
+    include = ['PE1_E3_I3_Navball_delay_0_seconds',
+               'PE1_E3_I3_Llama_Agent_FineTuning_10_dur_1_return_throttles',
+               'PE1_E3_I3_Llama_Agent_FineTuning_25_dur_1_return_throttles',
+               'PE1_E3_I3_Llama_Agent_FineTuning_50_dur_1_return_throttles']
+    include = ['PE1_E3_I3_Navball_delay_0_seconds',
+               'PE1_E3_I3_Llama_Agent_dur_1',
+               'PE1_E3_I3_Llama_Agent_FineTuning_10_dur_1_return_throttles',
+               'PE1_E3_I3_Llama_Agent_FineTuning_25_dur_1_return_throttles',
+               'PE1_E3_I3_Llama_Agent_FineTuning_50_dur_1_return_throttles',
                'PE1_E3_I3_Llama_Agent_FineTuning_10_win_3_dur_1_return_throttles']
 
     """ Best runs for each experiment. They are identified by the filename of the
@@ -601,6 +881,7 @@ def generate_statistics(working_dir, scenario):
         'Llama3 Fine Tuned 10 files (optimized) - Scenario E3': 'llama_fine_tune_agent_log_PE1_E3_I3_20240618-095800.csv',
         'Llama3 Fine Tuned 50 files (optimized) - Scenario E3': 'llama_fine_tune_agent_log_PE1_E3_I3_20240618-101213.csv',
         'Llama3 Fine Tuned 10 files win=3 (optimized) - Scenario E3': 'llama_fine_tune_agent_log_PE1_E3_I3_20240627-135210.csv',
+        'Navball (bot) - Scenario E3 (delay=0)': 'navball_log_PE1_E3_I3_20240630-124618.csv',
     }
 
     """ Process experiment directories

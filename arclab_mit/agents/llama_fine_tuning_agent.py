@@ -279,7 +279,7 @@ class LlamaAgent(KSPDGBaseAgent):
         sun_pos = self.conn.space_center.bodies['Sun'].position(reference_frame)
         return sun_pos
 
-    def get_action(self, observation, sun_position=None):
+    def get_action(self, observation, vessel_up=None, sun_position=None):
 
         # NOTE: Observations are given in the celestial body celestial reference frame using right-handed coordinate system.
         # See https://krpc.github.io/krpc/tutorials/reference-frames.html#tutorial-reference-frames for details about krpc reference frames.
@@ -332,12 +332,12 @@ class LlamaAgent(KSPDGBaseAgent):
             return action
 
         # Get vessel up direction in celestial body reference frame
-        vessel_up = None
-        vessel_up = self.conn.space_center.transform_direction((0, 0, 1),
-                                                               self.vessel.reference_frame,
-                                                               self.body.orbital_reference_frame)
-        # BE CAREFUL
-        vessel_up = State.lh_to_rh(vessel_up)
+        if vessel_up is None:
+            vessel_up = self.conn.space_center.transform_direction((0, 0, 1),
+                                                                   self.vessel.reference_frame,
+                                                                   self.body.orbital_reference_frame)
+            # BE CAREFUL
+            vessel_up = State.lh_to_rh(vessel_up)
 
         # Get the sun position in the given reference frame
         if sun_position is None:

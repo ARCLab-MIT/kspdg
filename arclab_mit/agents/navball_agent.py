@@ -61,7 +61,7 @@ from astropy import units as u
 set_env_paths()
 
 APPROACH_SPEED = 40
-VESSEL_ACCELERATION = 0.1
+VESSEL_ACCELERATION = 0.05
 EVASION_DISTANCE = 0
 ROTATION_THRESHOLD = 0.03
 
@@ -472,7 +472,7 @@ class LLMAgent(KSPDGBaseAgent):
                 dt = 0
             #            if state.distance < 1500:
             if (np.dot(state.rel_position, state.rel_velocity) < 0) and (
-                    state.time_to_intercept * VESSEL_ACCELERATION < state.velocity) and (
+                    state.time_to_intercept * 2 * VESSEL_ACCELERATION < state.velocity) and (
                     state.distance > EVASION_DISTANCE):
                 # Target is approaching and intercept time is insufficient to stop
                 if state.velocity > APPROACH_SPEED:

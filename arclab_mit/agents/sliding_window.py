@@ -135,8 +135,12 @@ class SlidingWindow:
         if action is not None:
             action_str = "perform_action(" + json.dumps(action.to_json(self.use_enum)) + ")"
             next_actions = []
+            """
+            TODO: Complete implementation when sliding window is used as well as look-ahead
+            
             for action in self._history[pos]["next_actions"]:
                 next_actions.append(action.to_json(self.use_enum))
+            """
             message_structure["messages"] \
                 .append({"role": "assistant",
                          "content": self.assistant_content.format(action=action_str, next_actions=json.dumps(next_actions)),

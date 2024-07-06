@@ -14,7 +14,8 @@ import ast
 from sklearn.metrics import log_loss
 
 from arclab_mit.agents.agent_common import Action
-from arclab_mit.agents.fine_tuning_agent_history import LLMAgent
+from arclab_mit.agents.fine_tuning_agent import LLMAgent
+from arclab_mit.agents.llama_fine_tuning_agent import LlamaAgent
 
 
 def calculate_loss_accuracy(throttles, predictions):
@@ -73,6 +74,31 @@ def evaluate_predictions(datafile):
     out_file.write(f"Accuracy: {accuracy:.4f}\n")
 
     out_file.close()
+
+
+def simulate(datafile):
+    print("Simulate run from: " + datafile)
+    # Load data file into pandas dataframe
+    csv_filename = datafile
+    df = pd.read_csv(csv_filename)
+
+    agent = LlamaAgent()
+
+    for _, row in df.iterrows():
+        input_data = {k: v for k, v in row.items() if k != 'throttles' and k != 'next_throttles'}
+
+        observation = [input_data["time"], input_data["vehicle_mass"], input_data["vehicle_propellant"],
+                       input_data['pursuer_pos_x'], input_data['pursuer_pos_y'], input_data['pursuer_pos_z'],
+                       input_data['pursuer_vel_x'], input_data['pursuer_vel_y'], input_data['pursuer_vel_z'],
+                       input_data['evader_pos_x'], input_data['evader_pos_y'], input_data['evader_pos_z'],
+                       input_data['evader_vel_x'], input_data['evader_vel_y'], input_data['evader_vel_z']]
+        sun_position = [input_data['sun_pos_x'], input_data['sun_pos_y'],
+                        input_data['sun_pos_z']] if "sun_pos_x" in input_data else None
+
+        vessel_up = np.array([input_data['vessel_up_x'], input_data['vessel_up_y'],
+                              input_data['vessel_up_z']]) if "vessel_up_x" in input_data else None
+
+        action = agent.get_action(observation, sun_position, vessel_up)
 
 
 def generate_predictions_from_jsonl(scenario, model, jsonl_file):
@@ -363,7 +389,7 @@ if __name__ == '__main__':
     wandb.login(key=wandb_api_key)
 
     while True:
-        option = input("\nChoose option:\nc: create fine-tune job\nr: retrieve fine-tune job\nl: log fine-tune job\np: predict\nq: quit\n")
+        option = input("\nChoose option:\nc: create fine-tune job\nr: retrieve fine-tune job\nl: log fine-tune job\np: predict\ns: simulate\nq: quit\n")
         option = option.lower()
 
         try:
@@ -427,6 +453,9 @@ if __name__ == '__main__':
                 jsonl_file = input("jsonl file: ")
                 generate_predictions_from_jsonl(scenario, model, jsonl_file)
                 evaluate_predictions(jsonl_file.replace(".jsonl", ".csv"))
+            elif option == 's':
+                datafile = input("datafile (csv): ")
+                simulate(datafile)
             else:
                 print("Wrong option: " + option)
         except Exception as e:

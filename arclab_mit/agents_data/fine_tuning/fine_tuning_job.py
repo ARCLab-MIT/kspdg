@@ -98,7 +98,7 @@ def simulate(datafile):
         vessel_up = np.array([input_data['vessel_up_x'], input_data['vessel_up_y'],
                               input_data['vessel_up_z']]) if "vessel_up_x" in input_data else None
 
-        action = agent.get_action(observation, sun_position, vessel_up)
+        action = agent.get_action(observation, vessel_up=vessel_up, sun_position=sun_position)
 
 
 def generate_predictions_from_jsonl(scenario, model, jsonl_file):

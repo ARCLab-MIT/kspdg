@@ -11,8 +11,8 @@ See papers and software tools related to this project in the `resources` folder
 Feel free to reach out if you have questions, feedback, or inquiries!
 
 - <img src="https://raw.githubusercontent.com/gauravghongde/social-icons/master/PNG/Color/Gmail.png" width="20" height="20"/> **Email**: [victor.rfernandez@upm.es](mailto:victor.rfernandez@upm.es)
-- <img src="https://raw.githubusercontent.com/gauravghongde/social-icons/master/PNG/Color/LinkedIN.png" width="20" height="20"/> **LinkedIn**: [Your LinkedIn Profile](https://www.linkedin.com/in/vrodriguezf90)
-- <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/x-social-media-round-icon.png" width="20" height="20"/> **X**: [@YourTwitterHandle](https://twitter.com/vrodriguezf90)
+- <img src="https://raw.githubusercontent.com/gauravghongde/social-icons/master/PNG/Color/LinkedIN.png" width="20" height="20"/> **LinkedIn**: [LinkedIn](https://www.linkedin.com/in/vrodriguezf90)
+- <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/x-social-media-round-icon.png" width="20" height="20"/> **X**: [@vrodriguezf90](https://twitter.com/vrodriguezf90)
 
 
 ### Environments / Challenge Scenarios

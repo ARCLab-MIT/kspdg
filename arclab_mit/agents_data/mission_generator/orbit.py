@@ -246,7 +246,8 @@ def sample_orbit(evader_orbit, dmin, dmax, speed_range, circular=True, precise=F
             ecc = frac * MAX_ECC
             # r is given by the equation r = a(1-e^2)/(1+e*cos(nu)) where a is sma and nu the true anomaly.
             # r should be close to evader_orbit.sma
-            sma = evader_orbit.sma / ((1 - ecc**2) / (1 + ecc * np.cos(evader_orbit.mna.to_value(u.rad))))
+            r_evader = evader_orbit.sma * (1 - evader_orbit.ecc**2) / (1 + ecc * np.cos(evader_orbit.mna.to_value(u.rad)))
+            sma = r_evader / ((1 - ecc**2) / (1 + ecc * np.cos(evader_orbit.mna.to_value(u.rad))))
             sma += d_rad
         """ Sample random inclination in [-MAX_INC, MAX_INC] deg
         """

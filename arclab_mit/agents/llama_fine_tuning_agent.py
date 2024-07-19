@@ -244,8 +244,8 @@ class LlamaAgent(KSPDGBaseAgent):
                                                 os.environ["PE_USER_PROMPT"],
                                                 os.environ["PE_CHAIN_OF_THOUGHT"],
                                                 os.environ["ASSISTANT_CONTENT"],
-                                                "",
-                                                "")
+                                                os.environ["PE_HISTORY_PROMPT"],
+                                                os.environ["PE_HISTORY_ITEM_PROMPT"])
         else:
             self.sliding_window = SlidingWindow(self.sliding_window_size, 'SB',
                                                 self.use_relative_coordinates,

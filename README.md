@@ -33,7 +33,7 @@ MIT-ArcLab has developed a diverse range of agents during this research, categor
 
 - **Fine-Tuning Agents**: These agents will use the fine-tuned models. They tend to be more consistent and reliable, but harder to lead them to high quality results.
 
-- **Training Agent**: This agent called 'jason_keyboard_input' will collect the data of your gameplay in real time while the player accomplishes the mission.
+- **Training Agents**: These agent called 'jason_keyboard_input' and 'navball_agent' will collect the data of your gameplay in real time while the player or the navball bot accomplishes the mission.
 
 You can explore and learn more about these agents in our [agents folder](https://github.com/ARCLab-MIT/kspdg/tree/main/arclab_mit/agents).
 

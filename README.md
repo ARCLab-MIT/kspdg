@@ -57,9 +57,9 @@ The data associated with our research is organized into three main sections, eac
 
 ### Synthetic Expert Data
 
-- **Purpose**: This section focuses on generating synthetic data that mimics expert behavior for training and fine-tuning the agents. The synthetic data is essential for enhancing the learning process and helping the agents generalize across various mission scenarios.
+- **Purpose**: This section focuses on generating synthetic data that mimics expert behavior for training and fine-tuning the agents. The synthetic data is indeed needed for gathering enough data for the fine-tuning process of a self hosted model such as LLaMA. This data will allow the agents to generalize across various newly generated mission scenarios.
 
-- **Contents**: This section includes scripts located in the `mission_generator` folder, which are designed to create four different mission-accomplishable orbits. These scripts will run autonomously, generating random automated data that is essential for further fine-tuning the agents, especially in idle scenarios where real-time gameplay is not available. This data allows for a more efficient training process by simulating expert-like behavior across different orbital conditions.
+- **Contents**: This section includes scripts located in the `mission_generator` folder, which are designed to create four minute mission-accomplishable orbits. These scripts will run autonomously, generating random automated data that is essential for further fine-tuning the agents, especially in idle scenarios where real-time gameplay is not available. This data allows for a more efficient training process by simulating expert-like behavior across different orbital conditions.
 
 
 ### Evaluation Results

@@ -55,6 +55,13 @@ The data associated with our research is organized into three main sections, eac
 - **Purpose**: This section houses all the data generated from human gameplay. It is crucial for understanding human strategies and behaviors, which aids in developing more human-like agents.
 - **Contents**: Features raw gameplay data, processed datasets, and analysis scripts to glean insights from human play patterns.
 
+### Synthetic Expert Data
+
+- **Purpose**: This section focuses on generating synthetic data that mimics expert behavior for training and fine-tuning the agents. The synthetic data is essential for enhancing the learning process and helping the agents generalize across various mission scenarios.
+
+- **Contents**: This section includes scripts located in the `mission_generator` folder, which are designed to create four different mission-accomplishable orbits. These scripts will run autonomously, generating random automated data that is essential for further fine-tuning the agents, especially in idle scenarios where real-time gameplay is not available. This data allows for a more efficient training process by simulating expert-like behavior across different orbital conditions.
+
+
 ### Evaluation Results
 
 - **Purpose**: Dedicated to storing and presenting the evaluation results of our agents. This section is essential for assessing the performance and effectiveness of different agent strategies.
